@@ -1,0 +1,1 @@
+docs/08-collaborate/AGENTS.md
