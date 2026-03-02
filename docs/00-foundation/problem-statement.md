@@ -59,13 +59,16 @@ Interview evidence (n=8, Sprint 29):
 
 ## Success Metrics
 
-| Metric | Current | Target (Sprint 8) |
-|--------|---------|-------------------|
-| Feature waste rate | ~60% (industry) | <30% (with Spec Factory) |
-| Time to first AI response | N/A | <5s (p95) |
-| SOUL adoption (MTS) | 0% | 90% daily active |
-| Governance compliance | 0 rails | 3 rails running |
-| Evidence capture rate | 0% | 100% for gated actions |
+| Metric | Current | Sprint 4 | Sprint 6 | Sprint 8 |
+|--------|---------|----------|----------|----------|
+| Feature waste rate | ~60% (industry) | — | — | <30% |
+| Time to first AI response | N/A | <5s (p95) | <5s | <5s |
+| SOUL adoption (MTS) | 0% | 30% WAU (3/10) | 60% WAU (6/10) | 70% WAU (7/10) |
+| Governance compliance | 0 rails | 1 rail (Spec) | 2 rails | 3 rails |
+| Evidence capture rate | 0% | — | 50% | 100% for gated actions |
+
+> **Note (CPO directive)**: Use **weekly active users (WAU)** not daily — matches how employees
+> adopt AI tools (not every-day usage). Tiered targets reflect progressive value delivery.
 
 ---
 

@@ -84,6 +84,11 @@
 - US-010: G0.2 + G1 gates
 - US-011: RLS tenant isolation design
 - US-012: /spec command design (for Sprint 4 prototype)
+- **US-013: User Journey Map (CPO CONCERN-1)** — 3 personas x first interaction flow
+
+## Sprint 4 Preview (User Stories)
+
+- US-0xx: SOUL user feedback session (CPO CONCERN-3) — 3-4 MTS users test their assigned SOUL, collect qualitative feedback
 
 ---
 
