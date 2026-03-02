@@ -49,9 +49,16 @@ slog.InfoContext(ctx, "soul invoked",
 | `mtclaw_token_usage_total` | Counter | tenant_id, soul, provider |
 | `mtclaw_active_sessions` | Gauge | tenant_id |
 
-### Token Cost Tracking
+### Token Cost Tracking (Proposed — Sprint 3 Migration)
+
+> **Note**: This schema is a **target design for Sprint 3**, not current state.
+> GoClaw's existing `traces` + `spans` tables already track token usage.
+> The `tenants` table referenced below does not yet exist — it will be created
+> in the Sprint 3 RLS migration alongside `token_usage`.
+> Until then, token tracking uses GoClaw's native `traces.total_cost` field.
 
 ```sql
+-- PROPOSED: Sprint 3 migration (after tenants table exists)
 CREATE TABLE token_usage (
     id          BIGSERIAL PRIMARY KEY,
     tenant_id   UUID NOT NULL REFERENCES tenants(id),

@@ -64,6 +64,17 @@ MTClaw needs a runtime that supports multi-tenant PostgreSQL, agent orchestratio
 - **GoClaw upstream abandonment** → MIT fork, we own the code
 - **LICENSE file missing** → documented, MIT declared in multiple places
 
+### go.mod Module Name (Intentionally Kept)
+
+`go.mod` retains `module github.com/nextlevelbuilder/goclaw` through Sprint 1-3.
+
+**Rationale**: Renaming the Go module path requires updating every internal import across 300+ Go files. Doing this prematurely risks import path breakage during the Go competency ramp-up phase. The module name does not affect binary output or runtime behavior.
+
+**Plan**:
+- Sprint 1-3: Keep `nextlevelbuilder/goclaw` (stability during learning phase)
+- Sprint 4+: Evaluate rename to `github.com/Minh-Tam-Solution/MTClaw` when team is confident with Go tooling
+- Rename is a single `sed` + `go mod tidy` operation — low risk when ready
+
 ---
 
 ## References
