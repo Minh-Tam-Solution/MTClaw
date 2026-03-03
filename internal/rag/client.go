@@ -24,8 +24,7 @@ type Result struct {
 
 // Metadata contains source information for a RAG result.
 type Metadata struct {
-	Source string  `json:"source"`
-	Score  float64 `json:"score"`
+	Source string `json:"source"`
 }
 
 // Response represents the RAG API response.

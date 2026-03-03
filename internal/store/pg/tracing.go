@@ -115,6 +115,11 @@ func buildTraceWhere(opts store.TraceListOpts) (string, []interface{}) {
 		args = append(args, opts.Status)
 		argIdx++
 	}
+	if opts.Since != nil {
+		conditions = append(conditions, fmt.Sprintf("created_at >= $%d", argIdx))
+		args = append(args, *opts.Since)
+		argIdx++
+	}
 
 	where := ""
 	if len(conditions) > 0 {

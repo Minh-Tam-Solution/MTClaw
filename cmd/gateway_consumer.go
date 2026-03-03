@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -66,7 +68,9 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 		// Parse @agent_key prefix to override routing target.
 		// Strip the @mention from content before passing to agent loop.
 		mentionAgent := ""
-		mentionTeam := "" // Sprint 6: track if routed via team
+		mentionTeam := ""              // Sprint 6: track if routed via team
+		var matchedTeamID *uuid.UUID   // CTO-13 FIX: cache team from first lookup
+		var matchedTeamName string     // CTO-13 FIX: cache team name for context injection
 		if msg.Metadata["command"] == "" { // Don't override command-routed messages (e.g. /spec → pm)
 			if strings.HasPrefix(msg.Content, "@") {
 				parts := strings.SplitN(msg.Content, " ", 2)
@@ -89,6 +93,8 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 							if t.Name == fullName {
 								mentionAgent = t.LeadAgentKey
 								mentionTeam = candidate
+								matchedTeamID = &t.ID   // CTO-13: cache for reuse
+								matchedTeamName = t.Name // CTO-13: cache for reuse
 								if len(parts) > 1 {
 									msg.Content = strings.TrimSpace(parts[1])
 								}
@@ -126,11 +132,20 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 		}
 
 		// --- Sprint 6: Tenant cost guardrails (US-039, CTO-9: PostgreSQL-only) ---
+		// CTO-11 FIX: Filter by today's date (was counting ALL traces).
 		// Check daily request count before proceeding. Fail-open on error.
 		if tracingStore != nil {
-			dailyCount, err := tracingStore.CountTraces(ctx, store.TraceListOpts{})
+			today := time.Now().Truncate(24 * time.Hour)
+			dailyCount, err := tracingStore.CountTraces(ctx, store.TraceListOpts{
+				Since: &today,
+			})
 			if err == nil {
 				dailyLimit := 500 // Default daily request limit
+				if envLimit := os.Getenv("GOCLAW_TENANT_DAILY_REQUEST_LIMIT"); envLimit != "" {
+					if parsed, parseErr := strconv.Atoi(envLimit); parseErr == nil && parsed > 0 {
+						dailyLimit = parsed
+					}
+				}
 				if dailyCount >= dailyLimit {
 					slog.Warn("tenant daily limit exceeded",
 						"count", dailyCount, "limit", dailyLimit, "channel", msg.Channel)
@@ -313,19 +328,14 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 		}
 
 		// --- Sprint 6: Team context injection (US-036) ---
-		if mentionTeam != "" && teamStore != nil {
-			fullName := teamMentionMap[mentionTeam]
-			teamCtx := fmt.Sprintf("## Team Context\nYou are responding as the **lead** of the **%s** team.\n", fullName)
+		// CTO-13 FIX: Reuse cached matchedTeamID/matchedTeamName from first lookup
+		// instead of calling ListTeams() again.
+		if mentionTeam != "" && teamStore != nil && matchedTeamID != nil {
+			teamCtx := fmt.Sprintf("## Team Context\nYou are responding as the **lead** of the **%s** team.\n", matchedTeamName)
 			teamCtx += "Team members available for delegation:\n"
-			teams, _ := teamStore.ListTeams(ctx)
-			for _, t := range teams {
-				if t.Name == fullName {
-					members, _ := teamStore.ListMembers(ctx, t.ID)
-					for _, m := range members {
-						teamCtx += fmt.Sprintf("- @%s\n", m.AgentKey)
-					}
-					break
-				}
+			members, _ := teamStore.ListMembers(ctx, *matchedTeamID)
+			for _, m := range members {
+				teamCtx += fmt.Sprintf("- @%s\n", m.AgentKey)
 			}
 			if extraPrompt != "" {
 				extraPrompt += "\n\n"
