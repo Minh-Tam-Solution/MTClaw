@@ -53,12 +53,16 @@ docs/08-collaborate/souls/
 ### Data Flow
 
 ```
-1. Source of truth: Git files → docs/08-collaborate/souls/SOUL-*.md
-2. Build-time:     make souls-validate → checks YAML frontmatter
-3. Startup:        Server reads all SOUL files → memory cache (map[string]Soul)
-4. Runtime:        Request arrives → detect role → inject SOUL as system prompt prefix
-5. Reload:         SIGHUP or file watch → cache invalidation → re-read files
+1.  Source of truth: Git files → docs/08-collaborate/souls/SOUL-*.md
+1b. Sprint 3:      Git files seeded to PostgreSQL via migration (SeedToStore pattern)
+                    → 16 agents + 48 agent_context_files (SOUL.md, IDENTITY.md, AGENTS.md)
+2.  Build-time:    make souls-validate → checks YAML frontmatter
+3.  Startup:       GoClaw LoadFromStore() loads predefined agents from DB → memory
+4.  Runtime:       Request arrives → session → agent → BuildSystemPrompt() injects SOUL
+5.  Reload:        Re-run migration or API update → DB updated → next request loads fresh
 ```
+
+**Note**: Git remains source of truth for SOUL content authoring (reviewed via PR). The DB seeding migration copies Git content into PostgreSQL for GoClaw's `LoadFromStore()` loading path. This is GoClaw's native pattern for "predefined" agent types.
 
 ### Memory Cache Structure
 

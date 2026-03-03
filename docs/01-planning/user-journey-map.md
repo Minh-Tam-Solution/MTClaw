@@ -22,7 +22,7 @@
 
 **Persona**: Phú (Senior Dev, Engineering team)
 **Context**: Cần review PR trước khi merge, muốn Bflow API context
-**SOUL**: `mts-dev` (default active) → `reviewer` (on-demand via `@reviewer`)
+**SOUL**: `assistant` (default router) → delegates to `dev` or `reviewer` based on context
 
 ### Flow
 
@@ -38,19 +38,19 @@ Step 1: Open Telegram → find MTClaw bot → /start
         │ • @reviewer để code review               │
         │ • /help để xem danh sách commands         │
         │                                          │
-        │ SOUL mặc định: mts-dev (MTS Engineering) │
+        │ SOUL: assistant (universal router)        │
         └──────────────────────────────────────────┘
         ⏱ Response: <2s (welcome = cached, no AI call)
 
 Step 2: Gõ câu hỏi — "Review PR #42: thêm tenant isolation cho agent_shares table"
-        → SOUL `mts-dev` responds (default active for Engineering context)
+        → assistant detects engineering context → delegates to `dev`
         → AI-Platform call: POST /v1/chat/completions
-           system_prompt = SOUL-mts-dev.md content
+           system_prompt = SOUL-dev.md content
            user_message = PR review request
         ⏱ Response: 3-5s (AI generation)
 
 Step 3: Muốn deep review → "@reviewer PR #42 check SQL injection risk"
-        → SOUL switch: mts-dev → reviewer (via @mention detection)
+        → SOUL switch: dev → reviewer (via @mention detection)
         → reviewer SOUL has Rail #2 (PR Gate) context
         → Response includes structured checklist
         ⏱ Response: 3-5s
@@ -75,7 +75,7 @@ Step 4: Hài lòng → merge PR
 
 **Persona**: Hương (Sales, 2 years at MTS)
 **Context**: Cần draft proposal cho khách hàng SME, muốn Bflow pricing context
-**SOUL**: `mts-sales` (on-demand via `@mts-sales`)
+**SOUL**: `assistant` (default) → delegates to `sales` on-demand
 
 ### Flow
 
@@ -83,7 +83,7 @@ Step 4: Hài lòng → merge PR
 Step 1: Open Telegram → send message trực tiếp (không cần /start lần 2)
         "Tạo proposal cho khách hàng ABC Corp, gói Bflow Professional"
         → SOUL `assistant` (default router) detects sales context
-        → Routes to `mts-sales` SOUL automatically
+        → Delegates to `sales` SOUL automatically
         ⏱ Response: 3-5s
 
 Step 2: AI responds với draft proposal
@@ -99,7 +99,7 @@ Step 2: AI responds với draft proposal
         │ Cần confirm với manager trước khi gửi.   │
         └──────────────────────────────────────────┘
         → AI-Platform RAG call: POST /v1/rag/query
-           collection = "mts-sales-playbook"
+           collection = "sales"
            query = "Bflow Professional pricing features"
 
 Step 3: "Thêm case study ngành F&B cho proposal này"
@@ -127,7 +127,7 @@ Step 4: "OK, format lại thành email gửi cho khách"
 
 **Persona**: Thảo (HR Admin, Back Office team)
 **Context**: Lần đầu dùng MTClaw, không rành tech, cần HR policy lookup
-**SOUL**: `assistant` (default router) → `mts-general` (auto-detect)
+**SOUL**: `assistant` (default, handles directly — no delegation needed for general tasks)
 
 ### Flow
 
@@ -139,29 +139,29 @@ Step 1: Nhận link bot từ đồng nghiệp → click → /start
         │ MTClaw giúp bạn:                         │
         │ • Tra cứu chính sách HR nhanh            │
         │ • Soạn biên bản họp từ ghi chú           │
-        │ • Trả lời câu hỏi về quy trình MTS      │
+        │ • Trả lời câu hỏi về quy trình công ty   │
         │                                          │
         │ Gõ câu hỏi bất kỳ để bắt đầu!           │
         └──────────────────────────────────────────┘
         ⏱ Response: <2s
 
-Step 2: "Chính sách nghỉ phép của MTS năm 2026 như thế nào?"
-        → assistant SOUL detects HR context → routes to mts-general
-        → RAG query: collection = "mts-hr-policies"
+Step 2: "Chính sách nghỉ phép năm 2026 như thế nào?"
+        → assistant SOUL handles directly (general Q&A = no delegation needed)
+        → RAG query: collection = "hr-policies"
         ⏱ Response: 3-5s
         ┌──────────────────────────────────────────┐
-        │ 📋 Chính sách nghỉ phép MTS 2026         │
+        │ 📋 Chính sách nghỉ phép 2026              │
         │                                          │
         │ • Nghỉ phép năm: 12 ngày (FTE)           │
         │ • Nghỉ phép tích lũy: tối đa 5 ngày...  │
         │ • [nguồn: HR-Policy-2026.md]             │
         │                                          │
-        │ ℹ️ Tôi trả lời dựa trên tài liệu HR MTS.│
+        │ ℹ️ Tôi trả lời dựa trên tài liệu HR.    │
         │ Nếu cần xác nhận, liên hệ HR Manager.   │
         └──────────────────────────────────────────┘
 
 Step 3: "Tạo biên bản họp: họp sprint review 10/3, thành viên: Phú, Hương, An"
-        → mts-general SOUL processes meeting notes
+        → assistant SOUL handles directly (meeting notes = direct capability)
         → Output: formatted minutes
         ⏱ Response: 3-5s
 
@@ -194,7 +194,7 @@ Step 4: (1 tuần sau) Thảo quay lại → gõ câu hỏi mới
 ### Pattern 2: SOUL Switching Must Be Invisible
 
 Users don't think in "SOULs" — they think in tasks. SOUL routing should be:
-- **Automatic** for context detection (HR question → mts-general)
+- **Automatic** for context detection (HR question → assistant handles directly)
 - **Explicit** only for power users (`@reviewer`, `@pm`)
 - **Never require restart** — switch mid-conversation
 

@@ -19,6 +19,12 @@ const (
 	// In group chats, UserIDKey is group-scoped but SenderIDKey preserves
 	// the actual person who sent the message.
 	SenderIDKey contextKey = "goclaw_sender_id"
+	// TenantIDKey is the context key for RLS tenant isolation (maps to agents.owner_id).
+	// Set by tenant middleware; used by SET LOCAL app.tenant_id in transactions.
+	TenantIDKey contextKey = "goclaw_tenant_id"
+	// AgentKeyKey is the context key for the agent's string key (e.g. "pm", "dev", "assistant").
+	// Set after agent resolution; used for structured logging and OTEL attributes.
+	AgentKeyKey contextKey = "goclaw_agent_key"
 )
 
 // WithUserID returns a new context with the given user ID.
@@ -68,6 +74,32 @@ func WithSenderID(ctx context.Context, id string) context.Context {
 // SenderIDFromContext extracts the sender ID from context. Returns "" if not set.
 func SenderIDFromContext(ctx context.Context) string {
 	if v, ok := ctx.Value(SenderIDKey).(string); ok {
+		return v
+	}
+	return ""
+}
+
+// WithTenantID returns a new context with the given tenant ID (maps to agents.owner_id).
+func WithTenantID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, TenantIDKey, id)
+}
+
+// TenantIDFromContext extracts the tenant ID from context. Returns "" if not set.
+func TenantIDFromContext(ctx context.Context) string {
+	if v, ok := ctx.Value(TenantIDKey).(string); ok {
+		return v
+	}
+	return ""
+}
+
+// WithAgentKey returns a new context with the given agent key string.
+func WithAgentKey(ctx context.Context, key string) context.Context {
+	return context.WithValue(ctx, AgentKeyKey, key)
+}
+
+// AgentKeyFromContext extracts the agent key from context. Returns "" if not set.
+func AgentKeyFromContext(ctx context.Context) string {
+	if v, ok := ctx.Value(AgentKeyKey).(string); ok {
 		return v
 	}
 	return ""

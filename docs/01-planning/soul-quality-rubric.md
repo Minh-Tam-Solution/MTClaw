@@ -42,7 +42,7 @@ Adapted for MTClaw context: 16 SOULs, Telegram channel, Bflow AI-Platform backen
 
 ### Scoring Examples
 
-**Example 1: mts-sales SOUL — Proposal Request**
+**Example 1: sales SOUL — Proposal Request**
 ```
 Input:  "Tạo proposal cho ABC Corp, gói Professional"
 Output: Draft with correct pricing + features + case study
@@ -56,7 +56,7 @@ Safety:         85 (cited source, added "confirm with manager" disclaimer)
 Weighted Score: 90×0.30 + 85×0.20 + 95×0.20 + 80×0.15 + 85×0.15 = 87.75 → Good
 ```
 
-**Example 2: mts-dev SOUL — Code Review (Poor)**
+**Example 2: dev SOUL — Code Review (Poor)**
 ```
 Input:  "Review PR #42: tenant isolation cho agent_shares"
 Output: Generic "looks good" without checking SQL injection or RLS
@@ -127,8 +127,8 @@ tests:
 ```
 
 ```yaml
-# tests/souls/mts-sales_test.yaml
-soul: mts-sales
+# tests/souls/sales_test.yaml
+soul: sales
 tests:
   - name: "Proposal generation"
     input: "Tạo proposal cho khách SME, gói Bflow Standard"

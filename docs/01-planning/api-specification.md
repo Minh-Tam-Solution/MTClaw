@@ -252,8 +252,8 @@ http://localhost:8080/v1/
 ```json
 {
   "query": "Quy trình xử lý khiếu nại khách hàng",
-  "soul": "mts-cs",
-  "collections": ["mts-sops", "mts-policies"],
+  "soul": "cs",
+  "collections": ["hr-policies", "engineering"],
   "max_results": 5
 }
 ```
@@ -269,7 +269,7 @@ http://localhost:8080/v1/
       "relevance_score": 0.92
     }
   ],
-  "soul_author": "mts-cs",
+  "soul_author": "cs",
   "trace_id": "ghi-789-jkl"
 }
 ```

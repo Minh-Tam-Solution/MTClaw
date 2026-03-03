@@ -81,8 +81,8 @@ Endpoints:
 
 ## 16 SOULs
 
-- **12 SDLC SOULs** (from EndiorBot): pm, architect, coder, reviewer, researcher, writer, pjm, devops, tester, cto, cpo, ceo
-- **4 MTS Business SOULs** (from MTS-OpenClaw): mts-dev, mts-sales, mts-cs, mts-general
+- **13 SDLC SOULs** (from EndiorBot): pm, architect, coder, reviewer, researcher, writer, pjm, devops, tester, cto, cpo, ceo, assistant (universal router)
+- **3 Business SOULs** (tenant-agnostic): dev, sales, cs
 - **All ported Day 1** as markdown files → loaded at startup → injected as system prompt prefix
 
 ## Consequences

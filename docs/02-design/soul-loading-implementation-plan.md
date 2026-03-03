@@ -93,7 +93,7 @@ Path B: Database (managed/predefined mode) ★ MTClaw will use this
 | Column | Type | SOUL Purpose |
 |--------|------|-------------|
 | `id` | UUID v7 | Primary key |
-| `agent_key` | VARCHAR(100) UNIQUE | SOUL identifier: `pm`, `mts-sales`, `cto`, etc. |
+| `agent_key` | VARCHAR(100) UNIQUE | SOUL identifier: `pm`, `sales`, `cto`, `assistant`, etc. |
 | `display_name` | VARCHAR(255) | Human-facing: "Product Manager", "MTS Sales Assistant" |
 | `frontmatter` | TEXT | Short expertise summary for discovery/routing |
 | `agent_type` | VARCHAR(20) | `predefined` for all 16 MTClaw SOULs |
@@ -131,7 +131,7 @@ Path B: Database (managed/predefined mode) ★ MTClaw will use this
 | `user_agent_profiles` | Track first_seen_at, workspace per user per SOUL |
 | `user_agent_overrides` | Per-user provider/model override (e.g., prefer Claude over Ollama) |
 | `agent_links` | Delegation permissions: which SOULs can delegate to which |
-| `handoff_routes` | Temporary routing override (escalation: `mts-cs` → `cto`) |
+| `handoff_routes` | Temporary routing override (escalation: `cs` → `cto`) |
 | `agent_teams` | SOUL team grouping (e.g., "MTS Engineering Team") |
 | `delegation_history` | Audit trail of SOUL-to-SOUL delegations |
 
@@ -244,10 +244,10 @@ Current (generic): `"You are a personal assistant running inside GoClaw."` (line
 | 10 | `cto` | CTO Advisor | predefined | Architecture guard, P0 blocking, technical decisions |
 | 11 | `cpo` | CPO Advisor | predefined | Product guard, strategic decisions, user advocacy |
 | 12 | `ceo` | CEO Advisor | predefined | Business direction, priority setting, resource allocation |
-| 13 | `mts-dev` | MTS Developer Assistant | predefined | Bflow API docs, code review, MTS engineering daily tasks |
-| 14 | `mts-sales` | MTS Sales Assistant | predefined | Proposal templates, MTS pricing, client communication |
-| 15 | `mts-cs` | MTS Customer Service | predefined | SOP lookup, customer context, ticket resolution |
-| 16 | `mts-general` | MTS General Assistant | predefined | HR policy, contracts, general office tasks |
+| 13 | `dev` | Developer Assistant | predefined | Engineering daily tasks, code review, debugging |
+| 14 | `sales` | Sales Assistant | predefined | Proposals, pricing, case studies, client communication |
+| 15 | `cs` | Customer Success Assistant | predefined | Ticket responses, onboarding, troubleshooting |
+| 16 | `assistant` | Universal Router | predefined (`is_default`) | General Q&A, meeting notes, routing to specialized SOULs |
 
 All SOULs: `owner_id = 'mts'`, `provider = 'bflow-ai-platform'`, `model = 'qwen3:14b'`
 
@@ -274,7 +274,7 @@ Each SOUL gets 3 agent_context_files:
 - Use delegation (@mention) for cross-role requests
 - pm → coder: implementation tasks
 - reviewer → coder: code fixes after review
-- mts-sales → mts-cs: customer handoff
+- sales → cs: customer handoff
 
 ## Memory
 - Read MEMORY.md for long-term context
@@ -311,7 +311,7 @@ New user → /start on Telegram
 Router logic (internal/gateway/):
   1. Check handoff_routes: any temporary override for this chat?
   2. Check user_agent_profiles: returning user? → last used SOUL
-  3. Default: mts-general (general-purpose entry point)
+  3. Default: assistant (universal router, `is_default=true`)
 ```
 
 ### 5.2 SOUL Switching (Delegation)
@@ -319,33 +319,33 @@ Router logic (internal/gateway/):
 GoClaw supports delegation via `agent_links` + `spawn` tool:
 
 ```
-User to mts-general: "Review PR #42"
+User to assistant: "Review PR #42"
   │
   ▼
-mts-general detects: code review request → outside my expertise
+assistant detects: code review request → delegate to specialist
   │
   ▼
 Delegation: spawn(agent="reviewer", task="Review PR #42")
-  │ (agent_links: mts-general → reviewer = active)
+  │ (agent_links: assistant → reviewer = active)
   │
   ▼
 reviewer SOUL processes request with reviewer persona
   │
   ▼
-Response returned to user (via mts-general session)
+Response returned to user (via assistant session)
 ```
 
 ### 5.3 Handoff (Persistent Route Change)
 
 ```
-User to mts-cs: "Tôi cần nói chuyện với sales team"
+User to cs: "Tôi cần nói chuyện với sales team"
   │
   ▼
-mts-cs creates handoff:
-  INSERT INTO handoff_routes (channel='telegram', chat_id=X, to_agent_key='mts-sales')
+cs creates handoff:
+  INSERT INTO handoff_routes (channel='telegram', chat_id=X, to_agent_key='sales')
   │
   ▼
-Next message → routed to mts-sales SOUL
+Next message → routed to sales SOUL
 (handoff_routes checked before default resolution)
 ```
 
@@ -389,10 +389,10 @@ For Rail #3 (Knowledge & Answering), leverage GoClaw's built-in `memory_chunks` 
 
 ```
 Sprint 6: Populate memory_documents + memory_chunks for each SOUL:
-  - mts-dev: Bflow API docs, engineering standards
-  - mts-sales: Pricing tables, proposal templates, case studies
-  - mts-cs: SOPs, customer FAQs, escalation procedures
-  - mts-general: HR policies, company info, office procedures
+  - dev: Engineering docs, API docs, coding standards
+  - sales: Pricing tables, proposal templates, case studies
+  - cs: SOPs, customer FAQs, escalation procedures
+  - assistant: HR policies, company info, office procedures (direct handling)
 ```
 
 GoClaw already has hybrid search (70% vector + 30% BM25) — no custom RAG needed.
@@ -408,10 +408,10 @@ GoClaw's `agents.owner_id` serves as tenant identifier:
 ```sql
 -- Phase 1: MTS tenant
 INSERT INTO agents (agent_key, owner_id, ...) VALUES ('pm', 'mts', ...);
-INSERT INTO agents (agent_key, owner_id, ...) VALUES ('mts-sales', 'mts', ...);
+INSERT INTO agents (agent_key, owner_id, ...) VALUES ('sales', 'mts', ...);
 
--- Phase 2: NQH tenant (if approved)
-INSERT INTO agents (agent_key, owner_id, ...) VALUES ('nqh-general', 'nqh', ...);
+-- Phase 2: NQH tenant (if approved) — same SOUL keys, different owner_id
+INSERT INTO agents (agent_key, owner_id, ...) VALUES ('assistant', 'nqh', ...);
 ```
 
 ### 7.2 RLS Policies (Sprint 3 Implementation)

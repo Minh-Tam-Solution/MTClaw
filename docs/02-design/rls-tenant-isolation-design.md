@@ -81,7 +81,26 @@
 - PostgreSQL 15+ RLS is mature, tested, and adds <5% query overhead
 - BFlow pattern: single schema + tenant_id + RLS (proven at 200K users, 3 years production)
 
-### 2.3 Session Variable Approach
+### 2.3 Multi-Tenant Unique Constraint (CTO-ISSUE-1)
+
+**Decision**: Change `agents.agent_key` unique constraint from global to per-tenant.
+
+**Problem**: GoClaw default has `UNIQUE(agent_key)`. With tenant-agnostic SOUL naming (`dev`, `sales`, `cs`), both MTS and NQH tenants will have agents with key `dev` → constraint violation.
+
+**Fix** (Sprint 3 RLS migration):
+```sql
+-- Drop global unique constraint
+DROP INDEX IF EXISTS agents_agent_key_key;
+
+-- Create composite unique constraint (per-tenant uniqueness)
+CREATE UNIQUE INDEX agents_owner_agent_key ON agents(owner_id, agent_key);
+```
+
+**Timing**: Fix in Sprint 3 (not deferred). MTS-only today, but if forgotten by Sprint 6 (NQH tenant) → production bug. Defense-in-depth: fix early.
+
+**Impact on GoClaw code**: Agent lookup queries already filter by `owner_id` in RLS context. The unique index change only affects the constraint, not query behavior.
+
+### 2.4 Session Variable Approach
 
 **Decision**: Use `SET LOCAL app.tenant_id` in transaction-scoped middleware.
 

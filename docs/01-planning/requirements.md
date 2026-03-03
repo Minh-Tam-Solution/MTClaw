@@ -1,7 +1,7 @@
 # Requirements — MTClaw
 
 **SDLC Stage**: 01-Planning
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Date**: 2026-03-02
 **Author**: [@pm]
 
@@ -17,8 +17,8 @@
 - Each tenant has isolated data, SOUL config, and cost limits
 
 ### FR-002: 16 SOULs (Role-Aware AI Personas)
-- 12 SDLC SOULs: pm, architect, coder, reviewer, researcher, writer, pjm, devops, tester, cto, cpo, ceo
-- 4 MTS Business SOULs: mts-dev, mts-sales, mts-cs, mts-general
+- 13 SDLC SOULs: pm, architect, coder, reviewer, researcher, writer, pjm, devops, tester, cto, cpo, ceo, assistant (universal router)
+- 3 Business SOULs (tenant-agnostic): dev, sales, cs
 - Stored as Git markdown files with YAML frontmatter
 - Loaded at startup, cached in memory, reloadable via SIGHUP
 - 6 active by default, 10 on-demand (see ROLE_TOOL_MATRIX)
@@ -56,6 +56,14 @@
 - OTEL metrics → Prometheus
 - Token cost tracking per tenant per SOUL
 - Tenant cost guardrails (monthly token limit, daily request limit)
+
+### FR-008: Context Drift & Semantic Blindness Prevention
+- **Context Anchoring**: SOUL identity (SOUL.md + IDENTITY.md) always injected in system prompt to prevent role confusion in long conversations
+- **Session Goal Anchoring**: Per-session objectives re-injected on every turn to prevent objective drift after 50-100K tokens
+- **SOUL-Aware Retrieval**: RAG queries routed to domain-specific collections based on active SOUL role (dev → engineering, sales → sales)
+- **Retrieval Evidence**: Every RAG retrieval logged with ranking_reason enum for auditability
+- **Token Budget**: Hard cap 2,500 tokens per retrieval to prevent context window overflow
+- **Reference**: EndiorBot TS-007, ADR-009, ADR-015 (battle-tested patterns adapted for Go/GoClaw)
 
 ## Non-Functional Requirements
 
