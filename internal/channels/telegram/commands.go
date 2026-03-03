@@ -75,6 +75,9 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 		helpText := "Available commands:\n" +
 			"/start — Start chatting with the bot\n" +
 			"/help — Show this help message\n" +
+			"/spec <description> — Generate structured specification (Rail #1)\n" +
+			"/review <pr_url> — Review a GitHub pull request (Rail #2)\n" +
+			"/teams — List available teams and how to mention them\n" +
 			"/stop — Stop current running task\n" +
 			"/stopall — Stop all running tasks\n" +
 			"/reset — Reset conversation history\n" +
@@ -84,10 +87,102 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 			"/writers — List file writers for this group\n" +
 			"/addwriter — Add a file writer (reply to their message)\n" +
 			"/removewriter — Remove a file writer (reply to their message)\n" +
-			"\nJust send a message to chat with the AI."
+			"\nUse @soul_name to route to a specific SOUL (e.g. @reviewer, @pm).\n" +
+			"Use @team_name to route to a team lead (e.g. @engineering, @business).\n" +
+			"Just send a message to chat with the AI."
 		msg := tu.Message(chatIDObj, helpText)
 		setThread(msg)
 		c.bot.SendMessage(ctx, msg)
+		return true
+
+	case "/spec":
+		// Rail #1: Spec Factory — route to PM SOUL for structured spec generation.
+		// Extract description text after "/spec ".
+		taskText := strings.TrimSpace(text[len("/spec"):])
+		if taskText == "" {
+			usageMsg := tu.Message(chatIDObj, "Usage: /spec <requirement description>\n\nExample: /spec Create login feature for Bflow mobile app")
+			setThread(usageMsg)
+			c.bot.SendMessage(ctx, usageMsg)
+			return true
+		}
+
+		// Send acknowledgment
+		ackMsg := tu.Message(chatIDObj, "📋 Generating spec...")
+		setThread(ackMsg)
+		c.bot.SendMessage(ctx, ackMsg)
+
+		// Publish to agent loop — PM SOUL handles /spec via spec-factory skill
+		peerKind := "direct"
+		if isGroup {
+			peerKind = "group"
+		}
+		c.Bus().PublishInbound(bus.InboundMessage{
+			Channel:  c.Name(),
+			SenderID: senderID,
+			ChatID:   chatIDStr,
+			Content:  taskText,
+			PeerKind: peerKind,
+			AgentID:  "pm", // Always route to PM SOUL for /spec
+			UserID:   strings.SplitN(senderID, "|", 2)[0],
+			Metadata: map[string]string{
+				"command":           "spec",
+				"rail":              "spec-factory",
+				"local_key":         localKey,
+				"is_forum":          fmt.Sprintf("%t", isForum),
+				"message_thread_id": fmt.Sprintf("%d", messageThreadID),
+			},
+		})
+		return true
+
+	case "/review":
+		// Rail #2: PR Gate — route to reviewer SOUL for code review.
+		prURL := strings.TrimSpace(text[len("/review"):])
+		if prURL == "" || !strings.Contains(prURL, "/pull/") {
+			usageMsg := tu.Message(chatIDObj, "Usage: /review <github_pr_url>\n\nExample: /review https://github.com/org/repo/pull/123")
+			setThread(usageMsg)
+			c.bot.SendMessage(ctx, usageMsg)
+			return true
+		}
+
+		ackMsg := tu.Message(chatIDObj, "🔍 Reviewing PR...")
+		setThread(ackMsg)
+		c.bot.SendMessage(ctx, ackMsg)
+
+		peerKind := "direct"
+		if isGroup {
+			peerKind = "group"
+		}
+		c.Bus().PublishInbound(bus.InboundMessage{
+			Channel:  c.Name(),
+			SenderID: senderID,
+			ChatID:   chatIDStr,
+			Content:  prURL,
+			PeerKind: peerKind,
+			AgentID:  "reviewer", // Always route to Reviewer SOUL
+			UserID:   strings.SplitN(senderID, "|", 2)[0],
+			Metadata: map[string]string{
+				"command":           "review",
+				"rail":              "pr-gate",
+				"pr_url":            prURL,
+				"local_key":         localKey,
+				"is_forum":          fmt.Sprintf("%t", isForum),
+				"message_thread_id": fmt.Sprintf("%d", messageThreadID),
+			},
+		})
+		return true
+
+	case "/teams":
+		// Sprint 6: List available teams (US-037).
+		// Hardcoded for Sprint 6 (3 static teams). Dynamic listing in Sprint 9+.
+		teamsText := "Available Teams:\n\n" +
+			"@engineering — SDLC Engineering (lead: @pm)\n" +
+			"@business — Business Operations (lead: @assistant)\n" +
+			"@advisory — Advisory Board (lead: @cto)\n" +
+			"\nUse @team_name <message> to route to a team.\n" +
+			"Use @agent_name <message> to route to a specific agent."
+		teamsMsg := tu.Message(chatIDObj, teamsText)
+		setThread(teamsMsg)
+		c.bot.SendMessage(ctx, teamsMsg)
 		return true
 
 	case "/reset":

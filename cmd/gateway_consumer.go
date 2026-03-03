@@ -14,10 +14,20 @@ import (
 	"github.com/nextlevelbuilder/goclaw/internal/bus"
 	"github.com/nextlevelbuilder/goclaw/internal/channels"
 	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/nextlevelbuilder/goclaw/internal/rag"
 	"github.com/nextlevelbuilder/goclaw/internal/scheduler"
 	"github.com/nextlevelbuilder/goclaw/internal/sessions"
 	"github.com/nextlevelbuilder/goclaw/internal/store"
 )
+
+// teamMentionMap maps short mention keys to full team names in DB.
+// CTO-8: DB names are "SDLC Engineering" but users type @engineering.
+// Hardcoded for Sprint 6 (3 static teams). Sprint 9+: add mention_key column to teams table.
+var teamMentionMap = map[string]string{
+	"engineering": "SDLC Engineering",
+	"business":    "Business Operations",
+	"advisory":    "Advisory Board",
+}
 
 // makeSchedulerRunFunc creates the RunFunc for the scheduler.
 // It extracts the agentID from the session key and routes to the correct agent loop.
@@ -41,7 +51,7 @@ func makeSchedulerRunFunc(agents *agent.Router, cfg *config.Config) scheduler.Ru
 // and routes them through the scheduler/agent loop, then publishes the response back.
 // Also handles subagent announcements: routes them through the parent agent's session
 // (matching TS subagent-announce.ts pattern) so the agent can reformulate for the user.
-func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents *agent.Router, cfg *config.Config, sched *scheduler.Scheduler, channelMgr *channels.Manager, teamStore store.TeamStore) {
+func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents *agent.Router, cfg *config.Config, sched *scheduler.Scheduler, channelMgr *channels.Manager, teamStore store.TeamStore, tracingStore store.TracingStore, ragClient *rag.Client) {
 	slog.Info("inbound message consumer started")
 
 	// Inbound message deduplication (matching TS src/infra/dedupe.ts + inbound-dedupe.ts).
@@ -51,14 +61,58 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 	// processNormalMessage handles routing, scheduling, and response delivery for a single
 	// (possibly merged) inbound message. Called directly by the debouncer's flush callback.
 	processNormalMessage := func(msg bus.InboundMessage) {
+		// --- Sprint 4: @mention SOUL routing (US-022) ---
+		// Extended Sprint 6: team mention routing (US-036, CTO-8)
+		// Parse @agent_key prefix to override routing target.
+		// Strip the @mention from content before passing to agent loop.
+		mentionAgent := ""
+		mentionTeam := "" // Sprint 6: track if routed via team
+		if msg.Metadata["command"] == "" { // Don't override command-routed messages (e.g. /spec → pm)
+			if strings.HasPrefix(msg.Content, "@") {
+				parts := strings.SplitN(msg.Content, " ", 2)
+				candidate := strings.TrimPrefix(parts[0], "@")
+				candidate = strings.ToLower(candidate)
+
+				// Agent-first resolution (existing Sprint 4)
+				if _, err := agents.Get(candidate); err == nil {
+					mentionAgent = candidate
+					if len(parts) > 1 {
+						msg.Content = strings.TrimSpace(parts[1])
+					}
+					slog.Info("inbound: @mention agent route",
+						"mention", candidate, "channel", msg.Channel)
+				} else if teamStore != nil {
+					// Team-second resolution (Sprint 6, CTO-8)
+					if fullName, ok := teamMentionMap[candidate]; ok {
+						teams, _ := teamStore.ListTeams(ctx)
+						for _, t := range teams {
+							if t.Name == fullName {
+								mentionAgent = t.LeadAgentKey
+								mentionTeam = candidate
+								if len(parts) > 1 {
+									msg.Content = strings.TrimSpace(parts[1])
+								}
+								slog.Info("inbound: @mention team route",
+									"team", t.Name, "mention", candidate,
+									"lead", t.LeadAgentKey, "channel", msg.Channel)
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+
 		// Determine target agent via bindings or explicit AgentID
 		agentID := msg.AgentID
-		if agentID == "" {
+		if mentionAgent != "" {
+			agentID = mentionAgent // @mention overrides default routing
+		} else if agentID == "" {
 			agentID = resolveAgentRoute(cfg, msg.Channel, msg.ChatID, msg.PeerKind)
 		}
 
 		// Check handoff routing override (managed mode only)
-		if teamStore != nil && msg.AgentID == "" {
+		if teamStore != nil && msg.AgentID == "" && mentionAgent == "" {
 			if route, _ := teamStore.GetHandoffRoute(ctx, msg.Channel, msg.ChatID); route != nil {
 				agentID = route.ToAgentKey
 				slog.Info("inbound: handoff route active",
@@ -69,6 +123,26 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 		if _, err := agents.Get(agentID); err != nil {
 			slog.Warn("inbound: agent not found", "agent", agentID, "channel", msg.Channel)
 			return
+		}
+
+		// --- Sprint 6: Tenant cost guardrails (US-039, CTO-9: PostgreSQL-only) ---
+		// Check daily request count before proceeding. Fail-open on error.
+		if tracingStore != nil {
+			dailyCount, err := tracingStore.CountTraces(ctx, store.TraceListOpts{})
+			if err == nil {
+				dailyLimit := 500 // Default daily request limit
+				if dailyCount >= dailyLimit {
+					slog.Warn("tenant daily limit exceeded",
+						"count", dailyCount, "limit", dailyLimit, "channel", msg.Channel)
+					msgBus.PublishOutbound(bus.OutboundMessage{
+						Channel:  msg.Channel,
+						ChatID:   msg.ChatID,
+						Content:  "⚠️ Đã đạt giới hạn sử dụng hôm nay. Vui lòng thử lại vào ngày mai.",
+						Metadata: msg.Metadata,
+					})
+					return
+				}
+			}
 		}
 
 		// Build session key based on scope config (matching TS buildAgentPeerSessionKey).
@@ -169,6 +243,96 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 			extraPrompt += tsp
 		}
 
+		// --- Sprint 4: Context Anchoring Layer A (US-024) ---
+		// Inject session goal and SOUL identity reminder into ExtraPrompt.
+		// This prevents SOUL drift across long conversations.
+		{
+			var anchor string
+
+			// Extract session goal from command metadata or first message.
+			if rail := msg.Metadata["rail"]; rail != "" {
+				anchor = fmt.Sprintf("## Session Context\nGoal: Execute %s rail\nCommand: /%s",
+					rail, msg.Metadata["command"])
+			} else if msg.Content != "" {
+				// Use first 200 runes of message as session goal hint.
+				// Rune-safe truncation for Vietnamese/UTF-8 text (ISSUE-2 fix).
+				goal := msg.Content
+				goalRunes := []rune(goal)
+				if len(goalRunes) > 200 {
+					goal = string(goalRunes[:200]) + "..."
+				}
+				anchor = fmt.Sprintf("## Session Context\nGoal: %s", goal)
+			}
+
+			// SOUL identity reminder (prevents drift in long conversations).
+			if agentID != "" {
+				anchor += fmt.Sprintf("\n\nNote: You are operating as the **%s** SOUL. Stay in character per your SOUL.md persona.", agentID)
+			}
+
+			if anchor != "" {
+				if extraPrompt != "" {
+					extraPrompt += "\n\n"
+				}
+				extraPrompt += anchor
+			}
+		}
+
+		// --- Sprint 6: SOUL-Aware RAG Routing (US-034, Context Drift Layer B) ---
+		// Query RAG collections based on active SOUL role, inject results into ExtraPrompt.
+		var ragTags []string
+		if ragClient != nil && msg.Content != "" {
+			collections := rag.CollectionMap[agentID]
+			if len(collections) > 0 {
+				ragCtx, ragCancel := context.WithTimeout(ctx, 5*time.Second)
+				ragResults, err := ragClient.QueryMultiple(ragCtx, msg.Content, collections, 2500)
+				ragCancel()
+				if err != nil {
+					slog.Warn("rag: query failed, proceeding without RAG context",
+						"agent", agentID, "error", err)
+				} else if ragResults != nil && len(ragResults.Results) > 0 {
+					var ragSection strings.Builder
+					ragSection.WriteString("## Knowledge Base Context\n")
+					ragSection.WriteString("The following information was retrieved from the knowledge base.\n")
+					ragSection.WriteString("Cite sources when using this information.\n\n")
+					for _, r := range ragResults.Results {
+						ragSection.WriteString(fmt.Sprintf("### %s (score: %.2f)\n%s\n\n",
+							r.Metadata.Source, r.Score, r.Content))
+					}
+					if extraPrompt != "" {
+						extraPrompt += "\n\n"
+					}
+					extraPrompt += ragSection.String()
+
+					ragTags = append(ragTags,
+						"rag:"+strings.Join(collections, "+"),
+						fmt.Sprintf("rag_hits:%d", ragResults.TotalHits),
+						fmt.Sprintf("rag_tokens:%d", ragResults.TokensUsed),
+					)
+				}
+			}
+		}
+
+		// --- Sprint 6: Team context injection (US-036) ---
+		if mentionTeam != "" && teamStore != nil {
+			fullName := teamMentionMap[mentionTeam]
+			teamCtx := fmt.Sprintf("## Team Context\nYou are responding as the **lead** of the **%s** team.\n", fullName)
+			teamCtx += "Team members available for delegation:\n"
+			teams, _ := teamStore.ListTeams(ctx)
+			for _, t := range teams {
+				if t.Name == fullName {
+					members, _ := teamStore.ListMembers(ctx, t.ID)
+					for _, m := range members {
+						teamCtx += fmt.Sprintf("- @%s\n", m.AgentKey)
+					}
+					break
+				}
+			}
+			if extraPrompt != "" {
+				extraPrompt += "\n\n"
+			}
+			extraPrompt += teamCtx
+		}
+
 		// Per-topic skill filter override (from group/topic config hierarchy).
 		var skillFilter []string
 		if ts := msg.Metadata["topic_skills"]; ts != "" {
@@ -182,6 +346,27 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 			fwdMedia = msg.Media
 		} else {
 			reqMedia = msg.Media
+		}
+
+		// --- Sprint 4: Evidence metadata enrichment (US-025) ---
+		// Thread command metadata into trace record via TraceName + TraceTags.
+		// This enables querying traces by rail/command for governance audit.
+		var traceName string
+		var traceTags []string
+		if rail := msg.Metadata["rail"]; rail != "" {
+			traceName = rail // e.g. "spec-factory"
+			traceTags = append(traceTags, "rail:"+rail)
+		}
+		if command := msg.Metadata["command"]; command != "" {
+			traceTags = append(traceTags, "command:"+command)
+		}
+		if mentionAgent != "" {
+			traceTags = append(traceTags, "mention:"+mentionAgent)
+		}
+		// Sprint 6: RAG + team evidence tags
+		traceTags = append(traceTags, ragTags...)
+		if mentionTeam != "" {
+			traceTags = append(traceTags, "team:"+mentionTeam)
 		}
 
 		// Schedule through main lane (per-session concurrency controlled by maxConcurrent)
@@ -201,6 +386,8 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 			HistoryLimit:      msg.HistoryLimit,
 			ExtraSystemPrompt: extraPrompt,
 			SkillFilter:       skillFilter,
+			TraceName:         traceName,
+			TraceTags:         traceTags,
 		}, scheduler.ScheduleOpts{
 			MaxConcurrent: maxConcurrent,
 		})
