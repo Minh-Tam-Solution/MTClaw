@@ -80,6 +80,11 @@ func registerProviders(registry *providers.Registry, cfg *config.Config) {
 		registry.Register(providers.NewOpenAIProvider("bailian", cfg.Providers.Bailian.APIKey, base, "qwen3.5-plus"))
 		slog.Info("registered provider", "name", "bailian")
 	}
+
+	if cfg.Providers.BflowAI.APIKey != "" {
+		registry.Register(providers.NewBflowAIProvider(cfg.Providers.BflowAI.APIKey, cfg.Providers.BflowAI.APIBase, "", ""))
+		slog.Info("registered provider", "name", "bflow-ai-platform")
+	}
 }
 
 // registerProvidersFromDB loads providers from Postgres and registers them.
@@ -106,6 +111,8 @@ func registerProvidersFromDB(registry *providers.Registry, provStore store.Provi
 				base = "https://coding-intl.dashscope.aliyuncs.com/v1"
 			}
 			registry.Register(providers.NewOpenAIProvider(p.Name, p.APIKey, base, "qwen3.5-plus"))
+		} else if p.ProviderType == store.ProviderBflowAI {
+			registry.Register(providers.NewBflowAIProvider(p.APIKey, p.APIBase, "", ""))
 		} else {
 			prov := providers.NewOpenAIProvider(p.Name, p.APIKey, p.APIBase, "")
 			if p.ProviderType == store.ProviderMiniMax {

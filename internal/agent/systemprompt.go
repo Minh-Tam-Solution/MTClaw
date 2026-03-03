@@ -72,7 +72,7 @@ func BuildSystemPrompt(cfg SystemPromptConfig) string {
 	var lines []string
 
 	// 1. Identity
-	lines = append(lines, "You are a personal assistant running inside GoClaw.")
+	lines = append(lines, "You are a personal assistant running inside MTClaw.")
 	lines = append(lines, "")
 
 	// 1.5. First-run bootstrap override (must be early so model sees it first)

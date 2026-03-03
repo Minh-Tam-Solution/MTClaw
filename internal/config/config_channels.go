@@ -139,6 +139,7 @@ type ProvidersConfig struct {
 	Perplexity ProviderConfig `json:"perplexity"`
 	DashScope  ProviderConfig `json:"dashscope"`
 	Bailian    ProviderConfig `json:"bailian"`
+	BflowAI    ProviderConfig `json:"bflow_ai"`
 }
 
 type ProviderConfig struct {
@@ -161,7 +162,8 @@ func (c *Config) HasAnyProvider() bool {
 		p.Cohere.APIKey != "" ||
 		p.Perplexity.APIKey != "" ||
 		p.DashScope.APIKey != "" ||
-		p.Bailian.APIKey != ""
+		p.Bailian.APIKey != "" ||
+		p.BflowAI.APIKey != ""
 }
 
 // GatewayConfig controls the gateway server.

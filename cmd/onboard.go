@@ -38,8 +38,9 @@ var providerMap = map[string]providerInfo{
 	"xai":        {"xai", "GOCLAW_XAI_API_KEY", "grok-3-mini"},
 	"minimax":    {"minimax", "GOCLAW_MINIMAX_API_KEY", "MiniMax-M2.5"},
 	"cohere":     {"cohere", "GOCLAW_COHERE_API_KEY", "command-a"},
-	"perplexity": {"perplexity", "GOCLAW_PERPLEXITY_API_KEY", "sonar-pro"},
-	"custom":     {"custom", "", ""},
+	"perplexity":        {"perplexity", "GOCLAW_PERPLEXITY_API_KEY", "sonar-pro"},
+	"bflow-ai-platform": {"bflow-ai-platform", "GOCLAW_BFLOW_API_KEY", "qwen3:14b"},
+	"custom":            {"custom", "", ""},
 }
 
 func runOnboard() {

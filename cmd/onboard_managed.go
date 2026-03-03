@@ -361,6 +361,8 @@ func resolveProviderAPIKey(cfg *config.Config, providerName string) string {
 		return cfg.Providers.Cohere.APIKey
 	case "perplexity":
 		return cfg.Providers.Perplexity.APIKey
+	case "bflow-ai-platform":
+		return cfg.Providers.BflowAI.APIKey
 	default:
 		return ""
 	}
@@ -389,6 +391,8 @@ func resolveProviderType(name string) string {
 		return store.ProviderCohere
 	case "perplexity":
 		return store.ProviderPerplexity
+	case "bflow-ai-platform":
+		return store.ProviderBflowAI
 	default:
 		return store.ProviderOpenAICompat
 	}

@@ -58,7 +58,7 @@ func buildMessagingSection() []string {
 		"- Sub-agent orchestration → use subagent(action=list|steer|kill)",
 		"- `[System Message] ...` blocks are internal context and are not user-visible by default.",
 		"- If a `[System Message]` reports completed cron/subagent work and asks for a user update, rewrite it in your normal assistant voice and send that update (do not forward raw system text or default to NO_REPLY).",
-		"- Never use exec/curl for provider messaging; GoClaw handles all routing internally.",
+		"- Never use exec/curl for provider messaging; MTClaw handles all routing internally.",
 		"- **Language**: Always match the user's language. If the user writes in Vietnamese, respond in Vietnamese. If in English, respond in English. Detect from the user's first message and stay consistent.",
 		"",
 	}
@@ -159,7 +159,7 @@ func buildHeartbeatsSection() []string {
 		"If you receive a heartbeat poll and there is nothing that needs attention, reply exactly:",
 		"HEARTBEAT_OK",
 		"",
-		"GoClaw treats a leading/trailing \"HEARTBEAT_OK\" as a heartbeat ack (and may discard it).",
+		"MTClaw treats a leading/trailing \"HEARTBEAT_OK\" as a heartbeat ack (and may discard it).",
 		"If something needs attention, do NOT include \"HEARTBEAT_OK\"; reply with the alert text instead.",
 		"",
 	}

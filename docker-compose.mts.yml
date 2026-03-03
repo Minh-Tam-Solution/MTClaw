@@ -1,0 +1,35 @@
+# MTS deployment overlay — Bflow AI-Platform + Telegram + tenant config.
+#
+# Usage:
+#   docker compose -f docker-compose.yml \
+#                  -f docker-compose.managed.yml \
+#                  -f docker-compose.mts.yml \
+#                  up -d --build
+#
+# Required env vars (set in .env):
+#   GOCLAW_BFLOW_API_KEY     — Bflow AI-Platform API key (aip_ prefix)
+#   BFLOW_TENANT_ID          — Tenant ID (default: mts)
+#   GOCLAW_TELEGRAM_TOKEN    — Telegram bot token
+#   GOCLAW_ENCRYPTION_KEY    — AES-256 key (openssl rand -hex 32)
+
+services:
+  mtclaw:
+    environment:
+      # Bflow AI-Platform (single source of AI infra truth)
+      - GOCLAW_BFLOW_API_KEY=${GOCLAW_BFLOW_API_KEY:-}
+      - GOCLAW_BFLOW_BASE_URL=${GOCLAW_BFLOW_BASE_URL:-http://ai-platform:8120/api/v1}
+      - BFLOW_TENANT_ID=${BFLOW_TENANT_ID:-mts}
+      # Default provider + model
+      - GOCLAW_PROVIDER=bflow-ai-platform
+      - GOCLAW_MODEL=qwen3:14b
+      # Tenant cost guardrails
+      - TENANT_MONTHLY_TOKEN_LIMIT=${TENANT_MONTHLY_TOKEN_LIMIT:-1000000}
+      - TENANT_DAILY_REQUEST_LIMIT=${TENANT_DAILY_REQUEST_LIMIT:-5000}
+    networks:
+      - default
+      - ai-net
+
+networks:
+  ai-net:
+    external: true
+    name: ai-net

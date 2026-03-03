@@ -9,7 +9,7 @@
 #   Managed+OTel:  docker compose -f docker-compose.yml -f docker-compose.managed.yml -f docker-compose.otel.yml up -d --build
 
 services:
-  goclaw:
+  mtclaw:
     build:
       context: .
       dockerfile: Dockerfile
@@ -55,8 +55,8 @@ services:
       # Debug
       - GOCLAW_TRACE_VERBOSE=${GOCLAW_TRACE_VERBOSE:-0}
     volumes:
-      - goclaw-data:/app/data
-      - goclaw-workspace:/app/workspace  # standalone mode workspace
+      - mtclaw-data:/app/data
+      - mtclaw-workspace:/app/workspace  # standalone mode workspace
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -73,5 +73,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  goclaw-data:
-  goclaw-workspace:
+  mtclaw-data:
+  mtclaw-workspace:

@@ -228,7 +228,7 @@ The agent loop receives the message and:
 | Current SOUL | Action |
 |-------------|--------|
 | `pm` | Handle directly (primary owner of /spec) |
-| `mts-general` | Delegate to `pm` via spawn(agent="pm") |
+| `assistant` | Delegate to `pm` via spawn(agent="pm") |
 | `coder` | Delegate to `pm` |
 | `reviewer` | Delegate to `pm` |
 | Any other | Delegate to `pm` |

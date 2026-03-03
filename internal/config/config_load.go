@@ -107,6 +107,8 @@ func (c *Config) applyEnvOverrides() {
 	envStr("GOCLAW_PERPLEXITY_API_KEY", &c.Providers.Perplexity.APIKey)
 	envStr("GOCLAW_DASHSCOPE_API_KEY", &c.Providers.DashScope.APIKey)
 	envStr("GOCLAW_BAILIAN_API_KEY", &c.Providers.Bailian.APIKey)
+	envStr("GOCLAW_BFLOW_API_KEY", &c.Providers.BflowAI.APIKey)
+	envStr("GOCLAW_BFLOW_BASE_URL", &c.Providers.BflowAI.APIBase)
 	envStr("GOCLAW_GATEWAY_TOKEN", &c.Gateway.Token)
 	envStr("GOCLAW_TELEGRAM_TOKEN", &c.Channels.Telegram.Token)
 	envStr("GOCLAW_DISCORD_TOKEN", &c.Channels.Discord.Token)
@@ -340,14 +342,14 @@ func (c *Config) ResolveDefaultAgentID() string {
 }
 
 // ResolveDisplayName returns the display name for an agent.
-// Falls back to "GoClaw" if not configured.
+// Falls back to "MTClaw" if not configured.
 func (c *Config) ResolveDisplayName(agentID string) string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	if spec, ok := c.Agents.List[agentID]; ok && spec.DisplayName != "" {
 		return spec.DisplayName
 	}
-	return "GoClaw"
+	return "MTClaw"
 }
 
 // ApplyEnvOverrides re-applies environment variable overrides onto the config.

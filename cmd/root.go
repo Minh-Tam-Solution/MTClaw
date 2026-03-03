@@ -18,9 +18,9 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "goclaw",
-	Short: "GoClaw — AI agent gateway",
-	Long:  "GoClaw: multi-agent AI platform with WebSocket RPC, tool execution, and channel integration. A Go port of OpenClaw with enhanced security and multi-tenant support.",
+	Use:   "mtclaw",
+	Short: "MTClaw — AI agent gateway",
+	Long:  "MTClaw: multi-agent AI platform with WebSocket RPC, tool execution, and channel integration. Built on GoClaw runtime with SDLC 6.1.1 governance.",
 	Run: func(cmd *cobra.Command, args []string) {
 		runGateway()
 	},
@@ -50,7 +50,7 @@ func versionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Print version information",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("goclaw %s (protocol %d)\n", Version, protocol.ProtocolVersion)
+			fmt.Printf("mtclaw %s (protocol %d)\n", Version, protocol.ProtocolVersion)
 		},
 	}
 }

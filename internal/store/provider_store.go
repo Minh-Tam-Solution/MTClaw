@@ -21,6 +21,7 @@ const (
 	ProviderPerplexity      = "perplexity"
 	ProviderDashScope       = "dashscope"
 	ProviderBailian         = "bailian"
+	ProviderBflowAI         = "bflow_ai"
 )
 
 // ValidProviderTypes lists all accepted provider_type values.
@@ -38,6 +39,7 @@ var ValidProviderTypes = map[string]bool{
 	ProviderPerplexity:      true,
 	ProviderDashScope:       true,
 	ProviderBailian:         true,
+	ProviderBflowAI:         true,
 }
 
 // LLMProviderData represents an LLM provider configuration.

@@ -30,6 +30,7 @@ import (
 	"github.com/nextlevelbuilder/goclaw/internal/scheduler"
 	"github.com/nextlevelbuilder/goclaw/internal/sessions"
 	"github.com/nextlevelbuilder/goclaw/internal/skills"
+	"github.com/nextlevelbuilder/goclaw/internal/rag"
 	"github.com/nextlevelbuilder/goclaw/internal/store"
 	"github.com/nextlevelbuilder/goclaw/internal/store/file"
 	"github.com/nextlevelbuilder/goclaw/internal/store/pg"
@@ -881,10 +882,17 @@ func runGateway() {
 
 	// Start inbound message consumer (channel → scheduler → agent → channel)
 	var consumerTeamStore store.TeamStore
+	var consumerTracingStore store.TracingStore
 	if managedStores != nil {
 		consumerTeamStore = managedStores.Teams
+		consumerTracingStore = managedStores.Tracing
 	}
-	go consumeInboundMessages(ctx, msgBus, agentRouter, cfg, sched, channelMgr, consumerTeamStore)
+	// Sprint 6: RAG client for SOUL-Aware RAG routing (US-034).
+	var ragClient *rag.Client
+	if cfg.Providers.BflowAI.APIKey != "" {
+		ragClient = rag.NewClient(cfg.Providers.BflowAI.APIBase, cfg.Providers.BflowAI.APIKey, "")
+	}
+	go consumeInboundMessages(ctx, msgBus, agentRouter, cfg, sched, channelMgr, consumerTeamStore, consumerTracingStore, ragClient)
 
 	go func() {
 		sig := <-sigCh

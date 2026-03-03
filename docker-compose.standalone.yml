@@ -4,16 +4,16 @@
 #   docker compose -f docker-compose.yml -f docker-compose.standalone.yml up
 
 services:
-  goclaw:
+  mtclaw:
     volumes:
       - ./config.json:/app/config.json:ro
-      - goclaw-workspace:/app/workspace
-      - goclaw-data:/app/data
-      - goclaw-sessions:/app/sessions
-      - goclaw-skills:/app/skills
+      - mtclaw-workspace:/app/workspace
+      - mtclaw-data:/app/data
+      - mtclaw-sessions:/app/sessions
+      - mtclaw-skills:/app/skills
 
 volumes:
-  goclaw-workspace:
-  goclaw-data:
-  goclaw-sessions:
-  goclaw-skills:
+  mtclaw-workspace:
+  mtclaw-data:
+  mtclaw-sessions:
+  mtclaw-skills:

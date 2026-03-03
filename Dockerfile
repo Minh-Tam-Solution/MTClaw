@@ -27,7 +27,7 @@ RUN set -eux; \
     if [ -n "$TAGS" ]; then TAGS="-tags $TAGS"; fi; \
     CGO_ENABLED=0 GOOS=linux \
     go build -ldflags="-s -w -X github.com/nextlevelbuilder/goclaw/cmd.Version=${VERSION}" \
-    ${TAGS} -o /out/goclaw .
+    ${TAGS} -o /out/mtclaw .
 
 # ── Stage 2: Runtime ──
 FROM alpine:3.22
@@ -42,18 +42,18 @@ RUN set -eux; \
     fi
 
 # Non-root user
-RUN adduser -D -u 1000 -h /app goclaw
+RUN adduser -D -u 1000 -h /app mtclaw
 WORKDIR /app
 
 # Copy binary and migrations
-COPY --from=builder /out/goclaw /app/goclaw
+COPY --from=builder /out/mtclaw /app/mtclaw
 COPY --from=builder /src/migrations/ /app/migrations/
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
-# Create data directories (owned by goclaw user)
-RUN mkdir -p /app/workspace /app/data /app/sessions /app/skills /app/tsnet-state /app/.goclaw \
-    && chown -R goclaw:goclaw /app
+# Create data directories (owned by mtclaw user)
+RUN mkdir -p /app/workspace /app/data /app/sessions /app/skills /app/tsnet-state /app/.mtclaw \
+    && chown -R mtclaw:mtclaw /app
 
 # Default environment
 ENV GOCLAW_CONFIG=/app/config.json \
@@ -65,7 +65,7 @@ ENV GOCLAW_CONFIG=/app/config.json \
     GOCLAW_HOST=0.0.0.0 \
     GOCLAW_PORT=18790
 
-USER goclaw
+USER mtclaw
 
 EXPOSE 18790
 

@@ -75,6 +75,8 @@ func (h *ProvidersHandler) registerInMemory(p *store.LLMProviderData) {
 			base = "https://coding-intl.dashscope.aliyuncs.com/v1"
 		}
 		h.providerReg.Register(providers.NewOpenAIProvider(p.Name, p.APIKey, base, "qwen3.5-plus"))
+	} else if p.ProviderType == store.ProviderBflowAI {
+		h.providerReg.Register(providers.NewBflowAIProvider(p.APIKey, p.APIBase, "", ""))
 	} else {
 		prov := providers.NewOpenAIProvider(p.Name, p.APIKey, p.APIBase, "")
 		if p.ProviderType == store.ProviderMiniMax {

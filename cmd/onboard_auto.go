@@ -16,6 +16,7 @@ import (
 var providerPriority = []string{
 	"openrouter", "anthropic", "openai", "groq", "deepseek",
 	"gemini", "mistral", "xai", "minimax", "cohere", "perplexity",
+	"bflow-ai-platform",
 }
 
 // canAutoOnboard returns true if any GOCLAW_*_API_KEY env var is set,

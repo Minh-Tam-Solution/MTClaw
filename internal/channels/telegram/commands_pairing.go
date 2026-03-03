@@ -16,7 +16,7 @@ import (
 // buildPairingReply builds the pairing reply message matching TS behavior.
 func buildPairingReply(telegramUserID, code string) string {
 	return fmt.Sprintf(
-		"GoClaw: access not configured.\n\nYour Telegram user id: %s\n\nPairing code: %s\n\nAsk the bot owner to approve with:\n  goclaw pairing approve %s",
+		"MTClaw: access not configured.\n\nYour Telegram user id: %s\n\nPairing code: %s\n\nAsk the bot owner to approve with:\n  mtclaw pairing approve %s",
 		telegramUserID, code, code,
 	)
 }
@@ -72,7 +72,7 @@ func (c *Channel) sendGroupPairingReply(ctx context.Context, chatID int64, chatI
 	}
 
 	replyText := fmt.Sprintf(
-		"This group is not approved yet.\n\nPairing code: %s\n\nAsk the bot owner to approve with:\n  goclaw pairing approve %s",
+		"This group is not approved yet.\n\nPairing code: %s\n\nAsk the bot owner to approve with:\n  mtclaw pairing approve %s",
 		code, code,
 	)
 	msg := tu.Message(tu.ID(chatID), replyText)
@@ -95,7 +95,7 @@ func (c *Channel) SendPairingApproved(ctx context.Context, chatID, botName strin
 		return fmt.Errorf("invalid chat ID: %w", err)
 	}
 	if botName == "" {
-		botName = "GoClaw"
+		botName = "MTClaw"
 	}
 
 	msg := tu.Message(tu.ID(id), fmt.Sprintf("✅ %s access approved. Send a message to start chatting.", botName))

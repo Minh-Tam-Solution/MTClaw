@@ -6,26 +6,26 @@ case "${1:-serve}" in
     # Managed mode: auto-upgrade (schema migrations + data hooks) before starting.
     if [ "$GOCLAW_MODE" = "managed" ] && [ -n "$GOCLAW_POSTGRES_DSN" ]; then
       echo "Managed mode: running upgrade..."
-      /app/goclaw upgrade || \
+      /app/mtclaw upgrade || \
         echo "Upgrade warning (may already be up-to-date)"
     fi
-    exec /app/goclaw
+    exec /app/mtclaw
     ;;
   upgrade)
     shift
-    exec /app/goclaw upgrade "$@"
+    exec /app/mtclaw upgrade "$@"
     ;;
   migrate)
     shift
-    exec /app/goclaw migrate "$@"
+    exec /app/mtclaw migrate "$@"
     ;;
   onboard)
-    exec /app/goclaw onboard
+    exec /app/mtclaw onboard
     ;;
   version)
-    exec /app/goclaw version
+    exec /app/mtclaw version
     ;;
   *)
-    exec /app/goclaw "$@"
+    exec /app/mtclaw "$@"
     ;;
 esac
