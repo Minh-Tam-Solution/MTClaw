@@ -18,4 +18,5 @@ type Stores struct {
 	AgentLinks       AgentLinkStore       // nil in standalone mode
 	Teams            TeamStore            // nil in standalone mode
 	BuiltinTools     BuiltinToolStore     // nil in standalone mode
+	Specs            SpecStore            // nil in standalone mode — Sprint 7 Rail #1
 }

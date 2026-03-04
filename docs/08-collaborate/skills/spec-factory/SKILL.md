@@ -1,6 +1,7 @@
 ---
 name: spec-factory
 description: Generate structured specifications from natural language requirements. Governance Rail #1.
+version: 1.0.0
 ---
 
 # Spec Factory — Governance Rail #1
@@ -17,7 +18,7 @@ Generate a JSON specification following this schema:
 
 ```json
 {
-  "spec_version": "0.1.0",
+  "spec_version": "1.0.0",
   "title": "Short descriptive title",
   "narrative": {
     "as_a": "role",
@@ -25,12 +26,28 @@ Generate a JSON specification following this schema:
     "so_that": "business value"
   },
   "acceptance_criteria": [
-    "Given X, When Y, Then Z"
+    {
+      "scenario": "Happy path",
+      "given": "precondition",
+      "when": "action",
+      "then": "expected result"
+    }
   ],
+  "bdd_scenarios": [
+    "Feature: Feature Name\n  Scenario: Scenario Name\n    Given precondition\n    When action\n    Then expected result"
+  ],
+  "risks": [
+    {
+      "description": "risk description",
+      "probability": "low|medium|high",
+      "impact": "low|medium|high",
+      "mitigation": "mitigation plan"
+    }
+  ],
+  "technical_requirements": ["requirement 1", "requirement 2"],
+  "dependencies": [],
   "priority": "P0|P1|P2|P3",
-  "estimated_effort": "S|M|L|XL",
-  "soul_author": "pm",
-  "created_at": "ISO 8601 timestamp"
+  "estimated_effort": "S|M|L|XL"
 }
 ```
 
@@ -43,16 +60,33 @@ Generate a JSON specification following this schema:
 2. **Generate**:
    - Create spec JSON following the schema above
    - Use Vietnamese for narrative if user wrote in Vietnamese
-   - Use BDD format (Given/When/Then) for acceptance criteria
+   - Use BDD format (GIVEN/WHEN/THEN) for acceptance criteria
+   - Include at least 2 acceptance criteria (happy path + error case)
+   - Include at least 1 risk assessment
+   - Include technical requirements if the request implies technical constraints
 
 3. **Present**:
    - Show formatted summary to user (not raw JSON)
-   - Format: Title, Narrative, Acceptance Criteria list
+   - Format: Title, Narrative, Acceptance Criteria list, Risks
    - Ask: "Approve, modify, or discard?"
 
 4. **Record**:
    - On approval: Save spec as evidence (write_file to workspace)
    - Link to trace_id for audit trail
+   - System assigns SPEC-YYYY-NNNN ID automatically
+
+## BDD Format Reference
+
+Follow SDLC 6.1.1 Specification Standard:
+
+```gherkin
+GIVEN [initial context]
+  AND [additional context if needed]
+WHEN [action or trigger]
+  AND [additional action if needed]
+THEN [expected outcome]
+  AND [additional outcome if needed]
+```
 
 ## Boundaries
 

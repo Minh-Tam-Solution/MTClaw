@@ -26,6 +26,7 @@ type Channel struct {
 	pairingService   store.PairingStore
 	agentStore       store.AgentStore // for group file writer management (nil in standalone)
 	teamStore        store.TeamStore  // for /tasks, /task_detail commands (nil in standalone)
+	specStore        store.SpecStore  // for /spec-list, /spec-detail commands (nil in standalone)
 	placeholders     sync.Map         // localKey string → messageID int
 	stopThinking     sync.Map         // localKey string → *thinkingCancel
 	typingCtrls      sync.Map         // localKey string → *typing.Controller
@@ -55,7 +56,8 @@ func (c *thinkingCancel) Cancel() {
 // pairingSvc is optional (nil = fall back to allowlist only).
 // agentStore is optional (nil = group file writer commands disabled).
 // teamStore is optional (nil = /tasks, /task_detail commands disabled).
-func New(cfg config.TelegramConfig, msgBus *bus.MessageBus, pairingSvc store.PairingStore, agentStore store.AgentStore, teamStore store.TeamStore) (*Channel, error) {
+// specStore is optional (nil = /spec-list, /spec-detail commands disabled).
+func New(cfg config.TelegramConfig, msgBus *bus.MessageBus, pairingSvc store.PairingStore, agentStore store.AgentStore, teamStore store.TeamStore, specStore store.SpecStore) (*Channel, error) {
 	var opts []telego.BotOption
 
 	if cfg.Proxy != "" {
@@ -95,6 +97,7 @@ func New(cfg config.TelegramConfig, msgBus *bus.MessageBus, pairingSvc store.Pai
 		pairingService: pairingSvc,
 		agentStore:     agentStore,
 		teamStore:      teamStore,
+		specStore:      specStore,
 		groupHistory:   channels.NewPendingHistory(),
 		historyLimit:   historyLimit,
 		requireMention: requireMention,

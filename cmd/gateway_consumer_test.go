@@ -7,6 +7,7 @@ import (
 
 	"github.com/nextlevelbuilder/goclaw/internal/config"
 	"github.com/nextlevelbuilder/goclaw/internal/rag"
+	"github.com/nextlevelbuilder/goclaw/internal/routing"
 )
 
 // =============================================================
@@ -474,22 +475,22 @@ func TestTeamMentionMap_AllTeamsMapped(t *testing.T) {
 		"advisory":    "Advisory Board",
 	}
 	for key, want := range expected {
-		got, ok := teamMentionMap[key]
+		got, ok := routing.TeamMentionMap[key]
 		if !ok {
-			t.Errorf("teamMentionMap missing key %q", key)
+			t.Errorf("routing.TeamMentionMap missing key %q", key)
 			continue
 		}
 		if got != want {
-			t.Errorf("teamMentionMap[%q]: got %q, want %q", key, got, want)
+			t.Errorf("routing.TeamMentionMap[%q]: got %q, want %q", key, got, want)
 		}
 	}
 }
 
 func TestTeamMentionMap_ShortKeysAreCorrect(t *testing.T) {
 	// Verify users type short keys, not full names
-	for key := range teamMentionMap {
+	for key := range routing.TeamMentionMap {
 		if strings.Contains(key, " ") {
-			t.Errorf("teamMentionMap key %q contains spaces — should be short mention key", key)
+			t.Errorf("routing.TeamMentionMap key %q contains spaces — should be short mention key", key)
 		}
 	}
 }
@@ -507,8 +508,8 @@ func TestParseMention_TeamMention(t *testing.T) {
 	}
 
 	// Verify it's a valid team mention key
-	if _, ok := teamMentionMap[mention]; !ok {
-		t.Errorf("parsed mention %q is not in teamMentionMap", mention)
+	if _, ok := routing.TeamMentionMap[mention]; !ok {
+		t.Errorf("parsed mention %q is not in routing.TeamMentionMap", mention)
 	}
 }
 

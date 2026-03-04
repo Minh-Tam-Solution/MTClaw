@@ -1,8 +1,8 @@
 # Product Roadmap — MTClaw
 
 **SDLC Stage**: 01-Planning
-**Version**: 2.2.0
-**Date**: 2026-03-03 (updated 2026-03-03 post-Team routing adoption)
+**Version**: 2.3.0
+**Date**: 2026-03-04 (updated Sprint 6 COMPLETE, Sprint 7 planning)
 **Author**: [@pm]
 **Framework**: SDLC Enterprise Framework 6.1.1
 **Tier**: STANDARD
@@ -25,8 +25,8 @@
    16 SOULs  API Spec  Tenant    Telegram  PR Gate  │ Zalo      BDD      G4       │ Audit     Multi-
    G0.1      G0.2      G2        (proto)   G3 warn  │ RAG       Risk     Valid    │ Comply    Tenant
    ────────  ────────  ────────  ────────  ──────── │ ────────  ────────  ──────── │ ────────  ──────────
-   ✅ DONE   ✅ DONE   ✅ DONE   ✅ DONE   → NEXT    │                              │
-                       9.2/10   9.0/10               │                              │
+   ✅ DONE   ✅ DONE   ✅ DONE   ✅ DONE   ✅ DONE   │ ✅ DONE   → NEXT              │
+                       9.2/10   9.0/10               │ 8.0/10                       │
    ◄───────── MTS Internal (10 users) ──────────────►│◄── NQH Expansion (150) ────►│◄── Revenue ──►
 ```
 
@@ -138,7 +138,7 @@
 
 ---
 
-### Sprint 5 — MTS Pilot + PR Gate WARNING (Rail #2) ← NEXT
+### Sprint 5 — MTS Pilot + PR Gate WARNING (Rail #2) ✅ COMPLETE
 
 **Gate**: G3 (Build Ready)
 **Duration**: 5 days
@@ -173,11 +173,12 @@
 
 ## Phase 2: Governance Hardening (Sprint 6-8)
 
-### Sprint 6 — NQH Tenant + Rail #3 Knowledge + SOUL-Aware RAG
+### Sprint 6 — NQH Tenant + Rail #3 Knowledge + SOUL-Aware RAG ✅ COMPLETE
 
 **Duration**: 5 days
 **Owner**: [@coder] + [@devops] (Zalo) + [@pm] (RAG content curation)
-**Points**: ~17
+**Points**: ~17 (delivered ~7 — MTS-focused scope per CEO Option A)
+**Status**: COMPLETE — CTO 8.0/10 APPROVED, 3 fixes applied (CTO-11/12/13)
 **Entry Criteria**: G3 APPROVED, MTS pilot running
 
 | Day | Deliverable | Priority | Points |
@@ -222,30 +223,45 @@ nqh-* SOULs   →  nqh-sops (805 docs)             →  department filter
 
 ---
 
-### Sprint 7 — Rail #1 Spec Factory Full + Retrieval Evidence
+### Sprint 7 — Rail #1 Spec Factory Full + Retrieval Evidence ← NEXT
 
 **Duration**: 5 days
 **Owner**: [@coder] + [@pm] (spec validation)
 **Points**: ~13
-**Entry Criteria**: Rail #3 RAG operational, SOUL-Aware routing working
+**Entry Criteria**: Rail #3 RAG operational ✅, SOUL-Aware routing working ✅
 
 | Day | Deliverable | Priority | Points |
 |-----|------------|----------|--------|
-| 1-2 | Spec Factory full: spec_id, BDD scenarios, risk scoring | P0 | 3 |
-| 2-3 | Evidence vault link (spec → trace → file) | P0 | 2 |
+| 1-2 | Spec Factory v1.0: spec_id, BDD scenarios, risk scoring + migration | P0 | 3 |
+| 2-3 | Evidence vault link (spec → trace → bidirectional query) | P0 | 2 |
 | 3 | **Retrieval Evidence logging (Context Drift Layer C)** | P0 | 2 |
-| 3-4 | Spec query API + list/detail endpoints | P1 | 2 |
-| 4 | SOUL drift detection (checksum monitoring, ADR-004) | P1 | 2 |
-| 4-5 | SOUL behavioral test suite (16 SOULs × 5+ tests) | P1 | 2 |
+| 3-4 | Spec Telegram commands: /spec-list, /spec-detail | P1 | 2 |
+| 4-5 | Gateway consumer refactoring (CTO-14: extract 5 modules) | P1 | 2 |
+| 4-5 | SOUL drift detection (checksum monitoring, ADR-004) | P1 | 2 |
+
+**Scope adjustment** (vs roadmap v2.1):
+- SOUL behavioral test suite (80+ tests) DEFERRED to Sprint 8. CTO-14 refactoring is prerequisite for testability — behavioral tests more effective after module extraction.
+- CTO-14 refactoring ADDED (P2 from Sprint 6 review): extract gateway_consumer.go from 993 → ~600 lines.
 
 **Context Drift Layer C — Evidence & Explainability**:
 - RetrievalEvidence logged per RAG call: `{query, collection, results, ranking_reason, soul_role, token_count}`
-- Ranking reason enum: `exact_match | semantic_similar | soul_domain_boost | recency | fallback`
+- Ranking reason enum: `exact_match | semantic_similar | soul_domain_boost | fallback`
 - Enables audit trail for RAG quality + debugging retrieval drift
 - Adapted from EndiorBot ADR-015 (Retrieval Explainability)
+- Reference: SDLC Orchestrator `SpecValidationResult` pattern (metadata in parent entity)
+
+**Spec Factory v1.0** (reference: SDLC Orchestrator `GovernanceSpecification` + SDLC Framework `spec-frontmatter-schema.json`):
+- spec_id: `SPEC-YYYY-NNNN` format (Framework compliant)
+- BDD: `{scenario, given, when, then}` structured objects (Framework `GIVEN/WHEN/THEN` standard)
+- Risk: `{description, probability, impact, mitigation}` matrix
+- Status lifecycle: `draft → review → approved → deprecated` (4 states, matches Orchestrator)
+- Evidence: `trace_id` FK to traces table (lighter than Orchestrator's S3 vault — appropriate for MTClaw scale)
 
 **Key Deliverable**: `/spec` produces `SPEC-2026-NNNN` with BDD, risk, evidence link
 **SOUL Drift**: Checksum-based detection per ADR-004 + version field tracking
+**CTO-14**: gateway_consumer.go refactored into 5 focused modules
+
+**Handoff**: `docs/04-build/SPRINT-007-CODER-HANDOFF.md`
 
 ---
 
@@ -262,7 +278,7 @@ nqh-* SOULs   →  nqh-sops (805 docs)             →  department filter
 | 1-2 | PR Gate → ENFORCE mode (block merge on policy violation) | P0 | 3 |
 | 2-3 | 3 Rails integration test (all 3 running together) | P0 | 2 |
 | 3 | Context Drift full validation (Layer A+B+C end-to-end test) | P0 | 2 |
-| 3-4 | Compliance scoring dashboard (per-tenant, per-SOUL) | P1 | 2 |
+| 3-4 | **SOUL behavioral test suite (16 SOULs × 5+ tests)** (deferred from Sprint 7) | P1 | 2 |
 | 4 | Evidence export for audit (JSON + CSV) | P1 | 2 |
 | 5 | G4 gate proposal (Validation Ready) | P0 | 2 |
 

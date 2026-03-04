@@ -691,7 +691,7 @@ func runGateway() {
 	var instanceLoader *channels.InstanceLoader
 	if managedStores != nil && managedStores.ChannelInstances != nil {
 		instanceLoader = channels.NewInstanceLoader(managedStores.ChannelInstances, managedStores.Agents, channelMgr, msgBus, pairingStore)
-		instanceLoader.RegisterFactory("telegram", telegram.FactoryWithStores(managedStores.Agents, managedStores.Teams))
+		instanceLoader.RegisterFactory("telegram", telegram.FactoryWithStores(managedStores.Agents, managedStores.Teams, managedStores.Specs))
 		instanceLoader.RegisterFactory("discord", discord.Factory)
 		instanceLoader.RegisterFactory("feishu", feishu.Factory)
 		instanceLoader.RegisterFactory("zalo_oa", zalo.Factory)
@@ -704,7 +704,7 @@ func runGateway() {
 	// Register config-based channels as fallback (standalone mode only).
 	// In managed mode, channels are loaded from DB via instanceLoader — skip config-based registration.
 	if cfg.Channels.Telegram.Enabled && cfg.Channels.Telegram.Token != "" && instanceLoader == nil {
-		tg, err := telegram.New(cfg.Channels.Telegram, msgBus, pairingStore, nil, nil)
+		tg, err := telegram.New(cfg.Channels.Telegram, msgBus, pairingStore, nil, nil, nil)
 		if err != nil {
 			slog.Error("failed to initialize telegram channel", "error", err)
 		} else {
@@ -892,7 +892,12 @@ func runGateway() {
 	if cfg.Providers.BflowAI.APIKey != "" {
 		ragClient = rag.NewClient(cfg.Providers.BflowAI.APIBase, cfg.Providers.BflowAI.APIKey, "")
 	}
-	go consumeInboundMessages(ctx, msgBus, agentRouter, cfg, sched, channelMgr, consumerTeamStore, consumerTracingStore, ragClient)
+	// Sprint 7: Wire specStore for governance spec processing (Rail #1).
+	var consumerSpecStore store.SpecStore
+	if managedStores != nil {
+		consumerSpecStore = managedStores.Specs
+	}
+	go consumeInboundMessages(ctx, msgBus, agentRouter, cfg, sched, channelMgr, consumerTeamStore, consumerTracingStore, ragClient, consumerSpecStore)
 
 	go func() {
 		sig := <-sigCh

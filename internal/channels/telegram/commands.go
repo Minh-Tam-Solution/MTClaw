@@ -76,6 +76,8 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 			"/start — Start chatting with the bot\n" +
 			"/help — Show this help message\n" +
 			"/spec <description> — Generate structured specification (Rail #1)\n" +
+			"/spec_list — List recent specifications\n" +
+			"/spec_detail <id> — View specification detail\n" +
 			"/review <pr_url> — Review a GitHub pull request (Rail #2)\n" +
 			"/teams — List available teams and how to mention them\n" +
 			"/stop — Stop current running task\n" +
@@ -262,6 +264,14 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 		msg := tu.Message(chatIDObj, statusText)
 		setThread(msg)
 		c.bot.SendMessage(ctx, msg)
+		return true
+
+	case "/spec_list", "/spec-list":
+		c.handleSpecList(ctx, chatID, setThread)
+		return true
+
+	case "/spec_detail", "/spec-detail":
+		c.handleSpecDetail(ctx, chatID, text, setThread)
 		return true
 
 	case "/tasks":

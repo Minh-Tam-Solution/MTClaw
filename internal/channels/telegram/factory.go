@@ -29,23 +29,23 @@ type telegramInstanceConfig struct {
 	AllowFrom      []string `json:"allow_from,omitempty"`
 }
 
-// Factory creates a Telegram channel from DB instance data (no agent/team store).
+// Factory creates a Telegram channel from DB instance data (no agent/team/spec store).
 func Factory(name string, creds json.RawMessage, cfg json.RawMessage,
 	msgBus *bus.MessageBus, pairingSvc store.PairingStore) (channels.Channel, error) {
-	return buildChannel(name, creds, cfg, msgBus, pairingSvc, nil, nil)
+	return buildChannel(name, creds, cfg, msgBus, pairingSvc, nil, nil, nil)
 }
 
-// FactoryWithStores returns a ChannelFactory that includes agent and team stores
-// for group file writer management and /tasks, /task_detail commands.
-func FactoryWithStores(agentStore store.AgentStore, teamStore store.TeamStore) channels.ChannelFactory {
+// FactoryWithStores returns a ChannelFactory that includes agent, team, and spec stores
+// for group file writer management, /tasks, /task_detail, /spec-list, /spec-detail commands.
+func FactoryWithStores(agentStore store.AgentStore, teamStore store.TeamStore, specStore store.SpecStore) channels.ChannelFactory {
 	return func(name string, creds json.RawMessage, cfg json.RawMessage,
 		msgBus *bus.MessageBus, pairingSvc store.PairingStore) (channels.Channel, error) {
-		return buildChannel(name, creds, cfg, msgBus, pairingSvc, agentStore, teamStore)
+		return buildChannel(name, creds, cfg, msgBus, pairingSvc, agentStore, teamStore, specStore)
 	}
 }
 
 func buildChannel(name string, creds json.RawMessage, cfg json.RawMessage,
-	msgBus *bus.MessageBus, pairingSvc store.PairingStore, agentStore store.AgentStore, teamStore store.TeamStore) (channels.Channel, error) {
+	msgBus *bus.MessageBus, pairingSvc store.PairingStore, agentStore store.AgentStore, teamStore store.TeamStore, specStore store.SpecStore) (channels.Channel, error) {
 
 	var c telegramCreds
 	if len(creds) > 0 {
@@ -85,7 +85,7 @@ func buildChannel(name string, creds json.RawMessage, cfg json.RawMessage,
 		tgCfg.GroupPolicy = "pairing"
 	}
 
-	ch, err := New(tgCfg, msgBus, pairingSvc, agentStore, teamStore)
+	ch, err := New(tgCfg, msgBus, pairingSvc, agentStore, teamStore, specStore)
 	if err != nil {
 		return nil, err
 	}
