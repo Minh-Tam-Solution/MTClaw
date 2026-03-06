@@ -51,7 +51,7 @@ func NewInstanceLoader(
 	}
 }
 
-// RegisterFactory registers a factory for a channel type (e.g., "telegram", "discord").
+// RegisterFactory registers a factory for a channel type (e.g., "telegram", "zalo_oa").
 func (l *InstanceLoader) RegisterFactory(channelType string, factory ChannelFactory) {
 	l.factories[channelType] = factory
 }

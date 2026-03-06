@@ -198,38 +198,11 @@ func seedChannelInstances(ctx context.Context, stores *store.Stores, cfg *config
 	}
 
 	// Other channels: use {type}/default format (no legacy data to preserve).
-	if cfg.Channels.Discord.Token != "" {
-		seeds = append(seeds, seed{
-			name: "discord/default", channelType: "discord", display: "Discord Bot",
-			creds:  map[string]string{"token": cfg.Channels.Discord.Token},
-			config: map[string]interface{}{"dm_policy": cfg.Channels.Discord.DMPolicy, "group_policy": cfg.Channels.Discord.GroupPolicy},
-		})
-	}
-
-	if cfg.Channels.Feishu.AppID != "" && cfg.Channels.Feishu.AppSecret != "" {
-		seeds = append(seeds, seed{
-			name: "feishu/default", channelType: "feishu", display: "Feishu/Lark Bot",
-			creds: map[string]string{
-				"app_id": cfg.Channels.Feishu.AppID, "app_secret": cfg.Channels.Feishu.AppSecret,
-				"encrypt_key": cfg.Channels.Feishu.EncryptKey, "verification_token": cfg.Channels.Feishu.VerificationToken,
-			},
-			config: map[string]interface{}{"dm_policy": cfg.Channels.Feishu.DMPolicy, "domain": cfg.Channels.Feishu.Domain},
-		})
-	}
-
 	if cfg.Channels.Zalo.Token != "" {
 		seeds = append(seeds, seed{
 			name: "zalo_oa/default", channelType: "zalo_oa", display: "Zalo OA",
 			creds:  map[string]string{"token": cfg.Channels.Zalo.Token, "webhook_secret": cfg.Channels.Zalo.WebhookSecret},
 			config: map[string]interface{}{"dm_policy": cfg.Channels.Zalo.DMPolicy},
-		})
-	}
-
-	if cfg.Channels.WhatsApp.BridgeURL != "" {
-		seeds = append(seeds, seed{
-			name: "whatsapp/default", channelType: "whatsapp", display: "WhatsApp",
-			creds:  map[string]string{"bridge_url": cfg.Channels.WhatsApp.BridgeURL},
-			config: map[string]interface{}{"dm_policy": cfg.Channels.WhatsApp.DMPolicy, "group_policy": cfg.Channels.WhatsApp.GroupPolicy},
 		})
 	}
 

@@ -51,6 +51,7 @@ type Config struct {
 	Cron      CronConfig      `json:"cron,omitempty"`
 	Telemetry TelemetryConfig `json:"telemetry,omitempty"`
 	Tailscale TailscaleConfig `json:"tailscale,omitempty"`
+	GitHub    GitHubConfig    `json:"github,omitempty"`
 	Bindings  []AgentBinding  `json:"bindings,omitempty"`
 	mu        sync.RWMutex
 }
@@ -91,10 +92,10 @@ type AgentBinding struct {
 
 // BindingMatch specifies what messages this binding applies to.
 type BindingMatch struct {
-	Channel   string       `json:"channel"`            // "telegram", "discord", "slack", etc.
+	Channel   string       `json:"channel"`            // "telegram", "zalo_oa", etc.
 	AccountID string       `json:"accountId,omitempty"` // bot account ID
 	Peer      *BindingPeer `json:"peer,omitempty"`      // specific DM/group
-	GuildID   string       `json:"guildId,omitempty"`   // Discord guild
+	GuildID   string       `json:"guildId,omitempty"`   // server/guild ID for channel-specific routing
 }
 
 // BindingPeer specifies a specific chat target.
@@ -400,6 +401,7 @@ func (c *Config) ReplaceFrom(src *Config) {
 	c.Cron = src.Cron
 	c.Telemetry = src.Telemetry
 	c.Tailscale = src.Tailscale
+	c.GitHub = src.GitHub
 	c.Bindings = src.Bindings
 }
 

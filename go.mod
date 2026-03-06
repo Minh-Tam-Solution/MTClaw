@@ -46,6 +46,7 @@ require (
 	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
+	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7 // indirect
@@ -61,16 +62,22 @@ require (
 	github.com/dblohm7/wingoes v0.0.0-20240119213807-a09d6be7affa // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
+	github.com/f-amaral/go-async v0.3.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/gaissmai/bart v0.18.0 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250813024750-ebf49471dced // indirect
 	github.com/godbus/dbus/v5 v5.1.1-0.20230522191255-76236955d466 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/hdevalence/ed25519consensus v0.2.0 // indirect
+	github.com/hhrutter/lzw v1.0.0 // indirect
+	github.com/hhrutter/tiff v1.0.1 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
 	github.com/invopop/jsonschema v0.13.0 // indirect
+	github.com/johnfercher/go-tree v1.0.5 // indirect
+	github.com/johnfercher/maroto/v2 v2.3.3 // indirect
 	github.com/jsimonetti/rtnetlink v1.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -82,7 +89,10 @@ require (
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/termenv v0.16.0 // indirect
+	github.com/pdfcpu/pdfcpu v0.6.0 // indirect
+	github.com/phpdave11/gofpdf v1.4.3 // indirect
 	github.com/pires/go-proxyproto v0.8.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus-community/pro-bing v0.4.0 // indirect
 	github.com/safchain/ethtool v0.3.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
@@ -103,6 +113,7 @@ require (
 	golang.org/x/term v0.39.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	golang.zx2c4.com/wireguard/windows v0.5.3 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gvisor.dev/gvisor v0.0.0-20250205023644-9414b50a5633 // indirect
 )

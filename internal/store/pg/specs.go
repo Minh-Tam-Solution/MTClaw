@@ -34,14 +34,14 @@ func (s *PGSpecStore) CreateSpec(ctx context.Context, spec *store.GovernanceSpec
 		`INSERT INTO governance_specs (id, owner_id, spec_id, spec_version, title,
 			narrative, acceptance_criteria, bdd_scenarios, risks, technical_requirements,
 			dependencies, priority, estimated_effort, status, tier, soul_author,
-			trace_id, content_hash, created_at, updated_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
+			channel, trace_id, content_hash, created_at, updated_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)`,
 		spec.ID, spec.OwnerID, spec.SpecID, spec.SpecVersion, spec.Title,
 		jsonOrEmpty(spec.Narrative), jsonOrEmpty(spec.AcceptanceCriteria),
 		jsonOrNull(spec.BDDScenarios), jsonOrNull(spec.Risks), jsonOrNull(spec.TechnicalRequirements),
 		jsonOrNull(spec.Dependencies), spec.Priority, nilStr(spec.EstimatedEffort),
 		spec.Status, spec.Tier, spec.SoulAuthor,
-		nilUUID(spec.TraceID), nilStr(spec.ContentHash), spec.CreatedAt, spec.UpdatedAt,
+		nilStr(spec.Channel), nilUUID(spec.TraceID), nilStr(spec.ContentHash), spec.CreatedAt, spec.UpdatedAt,
 	)
 	return err
 }
@@ -49,19 +49,19 @@ func (s *PGSpecStore) CreateSpec(ctx context.Context, spec *store.GovernanceSpec
 func (s *PGSpecStore) GetSpec(ctx context.Context, specID string) (*store.GovernanceSpec, error) {
 	var d store.GovernanceSpec
 	var traceID *uuid.UUID
-	var estimatedEffort, contentHash *string
+	var estimatedEffort, contentHash, channel *string
 	var bddScenarios, risks, techReqs, deps *[]byte
 
 	err := s.db.QueryRowContext(ctx,
 		`SELECT id, owner_id, spec_id, spec_version, title,
 			narrative, acceptance_criteria, bdd_scenarios, risks, technical_requirements,
 			dependencies, priority, estimated_effort, status, tier, soul_author,
-			trace_id, content_hash, created_at, updated_at
+			channel, trace_id, content_hash, created_at, updated_at
 		 FROM governance_specs WHERE spec_id = $1`, specID,
 	).Scan(&d.ID, &d.OwnerID, &d.SpecID, &d.SpecVersion, &d.Title,
 		&d.Narrative, &d.AcceptanceCriteria, &bddScenarios, &risks, &techReqs,
 		&deps, &d.Priority, &estimatedEffort, &d.Status, &d.Tier, &d.SoulAuthor,
-		&traceID, &contentHash, &d.CreatedAt, &d.UpdatedAt)
+		&channel, &traceID, &contentHash, &d.CreatedAt, &d.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +69,7 @@ func (s *PGSpecStore) GetSpec(ctx context.Context, specID string) (*store.Govern
 	d.TraceID = traceID
 	d.EstimatedEffort = derefStr(estimatedEffort)
 	d.ContentHash = derefStr(contentHash)
+	d.Channel = derefStr(channel)
 	d.BDDScenarios = derefBytes(bddScenarios)
 	d.Risks = derefBytes(risks)
 	d.TechnicalRequirements = derefBytes(techReqs)
@@ -105,7 +106,7 @@ func (s *PGSpecStore) ListSpecs(ctx context.Context, opts store.SpecListOpts) ([
 	q := `SELECT id, owner_id, spec_id, spec_version, title,
 		narrative, acceptance_criteria, bdd_scenarios, risks, technical_requirements,
 		dependencies, priority, estimated_effort, status, tier, soul_author,
-		trace_id, content_hash, created_at, updated_at
+		channel, trace_id, content_hash, created_at, updated_at
 		FROM governance_specs` + where
 
 	limit := opts.Limit
@@ -124,19 +125,20 @@ func (s *PGSpecStore) ListSpecs(ctx context.Context, opts store.SpecListOpts) ([
 	for rows.Next() {
 		var d store.GovernanceSpec
 		var traceID *uuid.UUID
-		var estimatedEffort, contentHash *string
+		var estimatedEffort, contentHash, channel *string
 		var bddScenarios, risks, techReqs, deps *[]byte
 
 		if err := rows.Scan(&d.ID, &d.OwnerID, &d.SpecID, &d.SpecVersion, &d.Title,
 			&d.Narrative, &d.AcceptanceCriteria, &bddScenarios, &risks, &techReqs,
 			&deps, &d.Priority, &estimatedEffort, &d.Status, &d.Tier, &d.SoulAuthor,
-			&traceID, &contentHash, &d.CreatedAt, &d.UpdatedAt); err != nil {
+			&channel, &traceID, &contentHash, &d.CreatedAt, &d.UpdatedAt); err != nil {
 			continue
 		}
 
 		d.TraceID = traceID
 		d.EstimatedEffort = derefStr(estimatedEffort)
 		d.ContentHash = derefStr(contentHash)
+		d.Channel = derefStr(channel)
 		d.BDDScenarios = derefBytes(bddScenarios)
 		d.Risks = derefBytes(risks)
 		d.TechnicalRequirements = derefBytes(techReqs)

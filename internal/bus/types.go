@@ -2,7 +2,7 @@ package bus
 
 import "context"
 
-// InboundMessage represents a message received from a channel (Telegram, Discord, etc.)
+// InboundMessage represents a message received from a channel (Telegram, Zalo, etc.)
 type InboundMessage struct {
 	Channel      string            `json:"channel"`
 	SenderID     string            `json:"sender_id"`
@@ -14,16 +14,19 @@ type InboundMessage struct {
 	AgentID      string            `json:"agent_id,omitempty"`    // target agent (for multi-agent routing)
 	UserID       string            `json:"user_id,omitempty"`     // external user ID for per-user scoping (memory, bootstrap)
 	HistoryLimit int               `json:"history_limit,omitempty"` // max turns to keep in context (0=unlimited, from channel config)
+	ServiceURL   string            `json:"service_url,omitempty"`  // MS Teams: Bot Framework service URL for reply routing
 	Metadata     map[string]string `json:"metadata,omitempty"`
 }
 
 // OutboundMessage represents a message to be sent to a channel.
 type OutboundMessage struct {
-	Channel  string            `json:"channel"`
-	ChatID   string            `json:"chat_id"`
-	Content  string            `json:"content"`
-	Media    []MediaAttachment `json:"media,omitempty"`    // optional media attachments
-	Metadata map[string]string `json:"metadata,omitempty"` // channel-specific metadata
+	Channel    string            `json:"channel"`
+	ChatID     string            `json:"chat_id"`
+	Content    string            `json:"content"`
+	Format     string            `json:"format,omitempty"`     // channel-specific format hint (e.g. "adaptive_card" for MS Teams)
+	ServiceURL string            `json:"service_url,omitempty"` // MS Teams: Bot Framework service URL for reply routing
+	Media      []MediaAttachment `json:"media,omitempty"`      // optional media attachments
+	Metadata   map[string]string `json:"metadata,omitempty"`   // channel-specific metadata
 }
 
 // MediaAttachment represents a media file to be sent with a message.

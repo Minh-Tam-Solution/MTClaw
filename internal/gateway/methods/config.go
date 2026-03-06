@@ -190,7 +190,7 @@ func (m *ConfigMethods) handleSchema(_ context.Context, client *gateway.Client, 
 			},
 			"channels": map[string]interface{}{
 				"type":        "object",
-				"description": "Channel configuration (telegram, discord, slack, etc.)",
+				"description": "Channel configuration (telegram, zalo, etc.)",
 			},
 			"providers": map[string]interface{}{
 				"type":        "object",

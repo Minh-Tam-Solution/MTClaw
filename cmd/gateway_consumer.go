@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,12 +16,14 @@ import (
 	"github.com/nextlevelbuilder/goclaw/internal/channels"
 	"github.com/nextlevelbuilder/goclaw/internal/config"
 	"github.com/nextlevelbuilder/goclaw/internal/cost"
+	"github.com/nextlevelbuilder/goclaw/internal/evidence"
 	"github.com/nextlevelbuilder/goclaw/internal/governance"
 	"github.com/nextlevelbuilder/goclaw/internal/rag"
 	"github.com/nextlevelbuilder/goclaw/internal/routing"
 	"github.com/nextlevelbuilder/goclaw/internal/scheduler"
 	"github.com/nextlevelbuilder/goclaw/internal/sessions"
 	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/nextlevelbuilder/goclaw/internal/tools"
 )
 
 // makeSchedulerRunFunc creates the RunFunc for the scheduler.
@@ -42,11 +44,11 @@ func makeSchedulerRunFunc(agents *agent.Router, cfg *config.Config) scheduler.Ru
 	}
 }
 
-// consumeInboundMessages reads inbound messages from channels (Telegram, Discord, etc.)
+// consumeInboundMessages reads inbound messages from channels (Telegram, Zalo, MSTeams, etc.)
 // and routes them through the scheduler/agent loop, then publishes the response back.
 // Also handles subagent announcements: routes them through the parent agent's session
 // (matching TS subagent-announce.ts pattern) so the agent can reformulate for the user.
-func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents *agent.Router, cfg *config.Config, sched *scheduler.Scheduler, channelMgr *channels.Manager, teamStore store.TeamStore, tracingStore store.TracingStore, ragClient *rag.Client, specStore store.SpecStore) {
+func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents *agent.Router, cfg *config.Config, sched *scheduler.Scheduler, channelMgr *channels.Manager, teamStore store.TeamStore, tracingStore store.TracingStore, ragClient *rag.Client, specStore store.SpecStore, ghClient *tools.GitHubClient, prGateStore store.PRGateStore, evidenceLinker *evidence.Linker) {
 	slog.Info("inbound message consumer started")
 
 	// Inbound message deduplication (matching TS src/infra/dedupe.ts + inbound-dedupe.ts).
@@ -85,6 +87,23 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 		if _, err := agents.Get(agentID); err != nil {
 			slog.Warn("inbound: agent not found", "agent", agentID, "channel", msg.Channel)
 			return
+		}
+
+		// --- Sprint 12: Design-First Gate (CTO Governance Audit GAP 6) ---
+		// Blocks code tasks to @coder when no approved spec exists.
+		// CTO Decision 3: ad-hoc questions pass through.
+		if specStore != nil {
+			if pass, reason := governance.DesignFirstGate(ctx, agentID, msg.Content, specStore); !pass {
+				slog.Info("governance: design-first gate blocked",
+					"agent", agentID, "channel", msg.Channel)
+				msgBus.PublishOutbound(bus.OutboundMessage{
+					Channel:  msg.Channel,
+					ChatID:   msg.ChatID,
+					Content:  reason,
+					Metadata: msg.Metadata,
+				})
+				return
+			}
 		}
 
 		// --- Sprint 6: Tenant cost guardrails (US-039, CTO-9: PostgreSQL-only) ---
@@ -134,7 +153,7 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 		// context files, memory, traces, and seeding. Individual senderID is
 		// preserved in the InboundMessage for pairing/dedup/mention gate.
 		// Format: "group:{channel}:{chatID}" — e.g., "group:telegram:-1002541239372"
-		// For Discord: use guild_id so all channels in the same server share
+		// For group channels: use chatID so all participants in the same group share
 		// context files, memory, and seeding (session key stays per-channel).
 		userID := msg.UserID
 		if peerKind == string(sessions.PeerGroup) && msg.ChatID != "" {
@@ -294,10 +313,12 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 		if mention.TeamName != "" {
 			traceTags = append(traceTags, "team:"+mention.TeamName)
 		}
-		// Sprint 7 Layer C: Append retrieval evidence to trace tags
+		// Sprint 8 CTO-22: Store RAG evidence in trace metadata JSONB (not tags).
+		var traceMetadata map[string]any
 		if len(ragInjection.Evidence) > 0 {
-			evidenceJSON, _ := json.Marshal(ragInjection.Evidence)
-			traceTags = append(traceTags, "rag_evidence:"+string(evidenceJSON))
+			traceMetadata = map[string]any{
+				"rag_evidence": ragInjection.Evidence,
+			}
 		}
 
 		// Schedule through main lane (per-session concurrency controlled by maxConcurrent)
@@ -319,6 +340,7 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 			SkillFilter:       skillFilter,
 			TraceName:         traceName,
 			TraceTags:         traceTags,
+			TraceMetadata:     traceMetadata,
 		}, scheduler.ScheduleOpts{
 			MaxConcurrent: maxConcurrent,
 		})
@@ -335,11 +357,19 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 			}
 		}
 
-		// Capture command and agent for spec processing in goroutine.
+		// Capture command, agent, and tenantID for spec processing in goroutine.
 		msgCommand := msg.Metadata["command"]
+		specTenantID := userID // CTO-19: owner_id for governance_specs
+
+		// Sprint 8: Capture PR metadata before goroutine (CTO-24: inbound metadata, not outMeta).
+		prMode := msg.Metadata["mode"]
+		prRepo := msg.Metadata["repo"]
+		prNum, _ := strconv.Atoi(msg.Metadata["pr_number"])
+		prSHA := msg.Metadata["head_sha"]
+		prURL := msg.Metadata["pr_url"]
 
 		// Handle result asynchronously to not block the flush callback.
-		go func(channel, chatID, session, rID, command, agentKey string, meta map[string]string) {
+		go func(channel, chatID, session, rID, command, agentKey, tenantID, prMode, prRepo, prSHA, prURL string, prNum int, meta map[string]string) {
 			outcome := <-outCh
 
 			// Clean up run tracking (in case HandleAgentEvent didn't fire for terminal events)
@@ -388,20 +418,87 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 			}
 
 			// Sprint 7: Spec Factory processing — detect spec JSON in /spec output.
+			// CTO-19: tenantID → spec.OwnerID; CTO-20: traceID from RunResult for spec↔trace link.
 			if command == "spec" && specStore != nil {
-				specID := governance.ProcessSpecOutput(ctx, outcome.Result.Content, specStore, agentKey, nil)
-				if specID != "" {
+				var tracePtr *uuid.UUID
+				if outcome.Result.TraceID != uuid.Nil {
+					tracePtr = &outcome.Result.TraceID
+				}
+				specResult := governance.ProcessSpecOutput(ctx, outcome.Result.Content, specStore, agentKey, tenantID, tracePtr, channel)
+				if specResult.Rejected {
+					// Sprint 12: Quality gate rejection — send feedback to user.
+					rejMsg := governance.FormatRejectionMessage(specResult.Quality)
+					slog.Info("inbound: spec rejected by quality gate",
+						"score", specResult.Quality.Score, "agent", agentKey, "channel", channel)
+					msgBus.PublishOutbound(bus.OutboundMessage{
+						Channel:  msg.Channel,
+						ChatID:   msg.ChatID,
+						Content:  rejMsg,
+						Metadata: msg.Metadata,
+					})
+				} else if specResult.SpecID != "" {
 					slog.Info("inbound: spec created from /spec command",
-						"spec_id", specID, "agent", agentKey, "channel", channel)
+						"spec_id", specResult.SpecID, "agent", agentKey, "channel", channel,
+						"trace_id", outcome.Result.TraceID, "quality_score", specResult.Quality.Score)
+				}
+			}
+
+			// Sprint 8: PR Gate ENFORCE — post review to GitHub + persist evaluation.
+			// ghClient constructed once at consumer startup (CTO-23), nil-safe check.
+			if command == "review" && prMode == "enforce" {
+				// Post review comment to GitHub PR
+				if ghClient != nil {
+					if err := ghClient.PostComment(ctx, prRepo, prNum, outcome.Result.Content); err != nil {
+						slog.Error("pr_gate: post comment failed", "repo", prRepo, "pr", prNum, "error", err)
+					}
+
+					// Parse verdict and set commit status.
+				// CTO-48: "pending" verdict → GitHub "pending" status (not "success").
+				verdict := governance.ParsePRVerdict(outcome.Result.Content)
+				switch verdict {
+				case "fail":
+					ghClient.SetCommitStatus(ctx, prRepo, prSHA, "failure", "PR Gate: policy violation found")
+				case "pass":
+					ghClient.SetCommitStatus(ctx, prRepo, prSHA, "success", "PR Gate: all checks passed")
+				default: // "pending" — ambiguous, needs human review
+					ghClient.SetCommitStatus(ctx, prRepo, prSHA, "pending", "PR Gate: review pending — no explicit verdict")
+					slog.Warn("pr_gate: ambiguous verdict, set pending",
+						"repo", prRepo, "pr", prNum, "verdict", verdict)
+				}
+				}
+
+				// Persist evaluation for audit trail
+				if prGateStore != nil {
+					var tracePtr *uuid.UUID
+					if outcome.Result.TraceID != uuid.Nil {
+						tracePtr = &outcome.Result.TraceID
+					}
+					evalID := governance.ProcessPRReview(ctx, prGateStore, outcome.Result.Content,
+						agentKey, tenantID, prURL, prRepo, prSHA, prMode, channel, prNum, tracePtr)
+					if evalID != "" {
+						slog.Info("pr_gate: evaluation persisted",
+							"eval_id", evalID, "repo", prRepo, "pr", prNum, "channel", channel)
+
+						// Sprint 11 (ADR-009): auto-link spec → pr_gate if /spec was used in same session within 48h.
+						if evidenceLinker != nil {
+							evalUUID, _ := uuid.Parse(evalID)
+							if evalUUID != uuid.Nil {
+								if err := evidenceLinker.AutoLinkSpecToPR(ctx, tenantID, session, evalUUID); err != nil {
+									slog.Warn("evidence: auto-link failed", "eval_id", evalID, "error", err)
+								}
+							}
+						}
+					}
 				}
 			}
 
 			// Publish response back to the channel
 			outMsg := bus.OutboundMessage{
-				Channel:  channel,
-				ChatID:   chatID,
-				Content:  outcome.Result.Content,
-				Metadata: meta,
+				Channel:    channel,
+				ChatID:     chatID,
+				Content:    outcome.Result.Content,
+				ServiceURL: msg.ServiceURL,
+				Metadata:   meta,
 			}
 
 			// Convert media results from agent run to outbound media attachments
@@ -419,7 +516,7 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 			}
 
 			msgBus.PublishOutbound(outMsg)
-		}(msg.Channel, msg.ChatID, sessionKey, runID, msgCommand, agentID, outMeta)
+		}(msg.Channel, msg.ChatID, sessionKey, runID, msgCommand, agentID, specTenantID, prMode, prRepo, prSHA, prURL, prNum, outMeta)
 	}
 
 	// Inbound debounce: merge rapid messages from the same sender before processing.

@@ -257,8 +257,9 @@ type RunRequest struct {
 	LocalKey         string    // composite key with topic/thread suffix for routing (e.g. "-100123:topic:42")
 	ParentTraceID    uuid.UUID // if set, reuse parent trace instead of creating new (announce runs)
 	ParentRootSpanID uuid.UUID // if set, nest announce agent span under this parent span
-	TraceName        string    // override trace name (default: "chat <agentID>")
-	TraceTags        []string  // additional tags for the trace (e.g. "cron")
+	TraceName        string              // override trace name (default: "chat <agentID>")
+	TraceTags        []string            // additional tags for the trace (e.g. "cron")
+	TraceMetadata    map[string]any      // Sprint 8 CTO-22: structured metadata for trace record (e.g. RAG evidence)
 }
 
 // RunResult is the output of a completed agent run.
@@ -269,6 +270,7 @@ type RunResult struct {
 	Usage        *providers.Usage `json:"usage,omitempty"`
 	Media        []MediaResult    `json:"media,omitempty"`         // media files from tool results (MEDIA: prefix)
 	Deliverables []string         `json:"deliverables,omitempty"`  // actual content from tool outputs (for team task results)
+	TraceID      uuid.UUID        `json:"traceId,omitempty"`       // Sprint 7 CTO-20: trace ID for spec↔trace link
 }
 
 // MediaResult represents a media file produced by a tool during the agent run.
@@ -307,6 +309,11 @@ func (l *Loop) Run(ctx context.Context, req RunRequest) (*RunResult, error) {
 		if req.TraceName != "" {
 			traceName = req.TraceName
 		}
+		// Sprint 8 CTO-22: Convert structured metadata map to JSON for trace record.
+		var traceMetadataJSON json.RawMessage
+		if len(req.TraceMetadata) > 0 {
+			traceMetadataJSON, _ = json.Marshal(req.TraceMetadata)
+		}
 		trace := &store.TraceData{
 			ID:           traceID,
 			RunID:        req.RunID,
@@ -319,6 +326,7 @@ func (l *Loop) Run(ctx context.Context, req RunRequest) (*RunResult, error) {
 			StartTime:    now,
 			CreatedAt:    now,
 			Tags:         req.TraceTags,
+			Metadata:     traceMetadataJSON,
 		}
 		if l.agentUUID != uuid.Nil {
 			trace.AgentID = &l.agentUUID
@@ -379,6 +387,10 @@ func (l *Loop) Run(ctx context.Context, req RunRequest) (*RunResult, error) {
 	if !isChildTrace && l.traceCollector != nil && traceID != uuid.Nil {
 		l.traceCollector.FinishTrace(ctx, traceID, store.TraceStatusCompleted, "", truncateStr(result.Content, 500))
 	}
+
+	// Sprint 7 CTO-20: Expose traceID in result for spec↔trace bidirectional link.
+	result.TraceID = traceID
+
 	return result, nil
 }
 

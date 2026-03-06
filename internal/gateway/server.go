@@ -42,7 +42,10 @@ type Server struct {
 	providersHandler        *httpapi.ProvidersHandler        // managed mode: provider CRUD API
 	delegationsHandler      *httpapi.DelegationsHandler      // managed mode: delegation history API
 	builtinToolsHandler     *httpapi.BuiltinToolsHandler     // managed mode: builtin tool management API
+	webhookGitHubHandler    *httpapi.WebhookGitHubHandler    // Sprint 8: GitHub PR Gate webhook
+	evidenceExportHandler   *httpapi.EvidenceExportHandler   // Sprint 8: Evidence export API
 	agentStore         store.AgentStore             // managed mode: for context injection in tools_invoke
+	extraMuxHandlers   []func(*http.ServeMux)        // Sprint 10+: extension webhook handlers
 
 	upgrader    websocket.Upgrader
 	rateLimiter *RateLimiter
@@ -185,6 +188,21 @@ func (s *Server) BuildMux() *http.ServeMux {
 		s.builtinToolsHandler.RegisterRoutes(mux)
 	}
 
+	// Sprint 8: GitHub PR Gate webhook
+	if s.webhookGitHubHandler != nil {
+		s.webhookGitHubHandler.RegisterRoutes(mux)
+	}
+
+	// Sprint 8: Evidence export API
+	if s.evidenceExportHandler != nil {
+		s.evidenceExportHandler.RegisterRoutes(mux)
+	}
+
+	// Sprint 10+: extension webhook handlers (e.g. MS Teams)
+	for _, h := range s.extraMuxHandlers {
+		h(mux)
+	}
+
 	s.mux = mux
 	return mux
 }
@@ -278,6 +296,22 @@ func (s *Server) SetDelegationsHandler(h *httpapi.DelegationsHandler) { s.delega
 // SetBuiltinToolsHandler sets the managed-mode builtin tool management handler.
 func (s *Server) SetBuiltinToolsHandler(h *httpapi.BuiltinToolsHandler) {
 	s.builtinToolsHandler = h
+}
+
+// SetWebhookGitHubHandler sets the GitHub PR Gate webhook handler.
+func (s *Server) SetWebhookGitHubHandler(h *httpapi.WebhookGitHubHandler) {
+	s.webhookGitHubHandler = h
+}
+
+// AddMuxHandler registers an additional HTTP route handler on the gateway mux.
+// Must be called before BuildMux(). Used by channel extensions (e.g. MS Teams webhook).
+func (s *Server) AddMuxHandler(fn func(*http.ServeMux)) {
+	s.extraMuxHandlers = append(s.extraMuxHandlers, fn)
+}
+
+// SetEvidenceExportHandler sets the evidence export handler.
+func (s *Server) SetEvidenceExportHandler(h *httpapi.EvidenceExportHandler) {
+	s.evidenceExportHandler = h
 }
 
 // SetAgentStore sets the agent store for context injection in tools_invoke.

@@ -104,10 +104,6 @@ func runOnboard() {
 		telegramToken    string
 		zaloToken        string
 		zaloDMPolicy     = "pairing"
-		feishuAppID      string
-		feishuSecret     string
-		feishuDomain     = "lark"
-		feishuConnMode   = "websocket"
 
 		selectedFeatures []string
 		embProvider      string
@@ -139,13 +135,6 @@ func runOnboard() {
 		selectedChannels = append(selectedChannels, "zalo")
 		zaloToken = cfg.Channels.Zalo.Token
 		zaloDMPolicy = cfg.Channels.Zalo.DMPolicy
-	}
-	if cfg.Channels.Feishu.Enabled {
-		selectedChannels = append(selectedChannels, "feishu")
-		feishuAppID = cfg.Channels.Feishu.AppID
-		feishuSecret = cfg.Channels.Feishu.AppSecret
-		feishuDomain = cfg.Channels.Feishu.Domain
-		feishuConnMode = cfg.Channels.Feishu.ConnectionMode
 	}
 	if cfg.Agents.Defaults.Memory != nil && (cfg.Agents.Defaults.Memory.Enabled == nil || *cfg.Agents.Defaults.Memory.Enabled) {
 		selectedFeatures = append(selectedFeatures, "memory")
@@ -260,7 +249,6 @@ func runOnboard() {
 	selectedChannels, err = promptMultiSelect("Step 2 · Channels (select at least 1)", "Enter numbers to toggle channels", []SelectOption[string]{
 		{"Telegram", "telegram"},
 		{"Zalo OA", "zalo"},
-		{"Feishu / Lark", "feishu"},
 	}, selectedChannels)
 	if err != nil {
 		fmt.Println("Cancelled.")
@@ -299,13 +287,6 @@ func runOnboard() {
 
 	if hasChannel("zalo") {
 		if err := promptZaloConfig(&zaloToken, &zaloDMPolicy); err != nil {
-			fmt.Println("Cancelled.")
-			return
-		}
-	}
-
-	if hasChannel("feishu") {
-		if err := promptFeishuConfig(&feishuAppID, &feishuSecret, &feishuDomain, &feishuConnMode); err != nil {
 			fmt.Println("Cancelled.")
 			return
 		}
@@ -385,7 +366,7 @@ func runOnboard() {
 	}
 
 	if len(selectedChannels) == 0 {
-		errors = append(errors, "At least one channel must be selected (Telegram, Zalo, or Feishu)")
+		errors = append(errors, "At least one channel must be selected (Telegram or Zalo)")
 	}
 
 	if hasChannel("telegram") && telegramToken == "" {
@@ -393,9 +374,6 @@ func runOnboard() {
 	}
 	if hasChannel("zalo") && zaloToken == "" {
 		errors = append(errors, "Zalo bot token is required")
-	}
-	if hasChannel("feishu") && (feishuAppID == "" || feishuSecret == "") {
-		errors = append(errors, "Feishu App ID and App Secret are required")
 	}
 
 	if dbMode == "managed" && postgresDSN == "" {
@@ -468,14 +446,6 @@ func runOnboard() {
 	if cfg.Channels.Zalo.Enabled {
 		cfg.Channels.Zalo.Token = zaloToken
 		cfg.Channels.Zalo.DMPolicy = zaloDMPolicy
-	}
-
-	cfg.Channels.Feishu.Enabled = hasChannel("feishu")
-	if cfg.Channels.Feishu.Enabled {
-		cfg.Channels.Feishu.AppID = feishuAppID
-		cfg.Channels.Feishu.AppSecret = feishuSecret
-		cfg.Channels.Feishu.Domain = feishuDomain
-		cfg.Channels.Feishu.ConnectionMode = feishuConnMode
 	}
 
 	// Features
@@ -592,7 +562,6 @@ func runOnboard() {
 	savedGwToken := cfg.Gateway.Token
 	savedTgToken := cfg.Channels.Telegram.Token
 	savedZaloToken := cfg.Channels.Zalo.Token
-	savedFeishuAppSecret := cfg.Channels.Feishu.AppSecret
 	savedTtsOpenAIKey := cfg.Tts.OpenAI.APIKey
 	savedTtsElevenLabsKey := cfg.Tts.ElevenLabs.APIKey
 	savedTtsMiniMaxKey := cfg.Tts.MiniMax.APIKey
@@ -601,7 +570,6 @@ func runOnboard() {
 	cfg.Gateway.Token = ""
 	cfg.Channels.Telegram.Token = ""
 	cfg.Channels.Zalo.Token = ""
-	cfg.Channels.Feishu.AppSecret = ""
 	cfg.Tts.OpenAI.APIKey = ""
 	cfg.Tts.ElevenLabs.APIKey = ""
 	cfg.Tts.MiniMax.APIKey = ""
@@ -612,7 +580,6 @@ func runOnboard() {
 	cfg.Gateway.Token = savedGwToken
 	cfg.Channels.Telegram.Token = savedTgToken
 	cfg.Channels.Zalo.Token = savedZaloToken
-	cfg.Channels.Feishu.AppSecret = savedFeishuAppSecret
 	cfg.Tts.OpenAI.APIKey = savedTtsOpenAIKey
 	cfg.Tts.ElevenLabs.APIKey = savedTtsElevenLabsKey
 	cfg.Tts.MiniMax.APIKey = savedTtsMiniMaxKey
@@ -649,9 +616,6 @@ func runOnboard() {
 	}
 	if cfg.Channels.Zalo.Enabled {
 		fmt.Println("  Zalo:      enabled")
-	}
-	if cfg.Channels.Feishu.Enabled {
-		fmt.Printf("  Feishu:    enabled (%s, %s)\n", cfg.Channels.Feishu.Domain, cfg.Channels.Feishu.ConnectionMode)
 	}
 	if cfg.Agents.Defaults.Memory != nil && (cfg.Agents.Defaults.Memory.Enabled == nil || *cfg.Agents.Defaults.Memory.Enabled) {
 		embProv := cfg.Agents.Defaults.Memory.EmbeddingProvider

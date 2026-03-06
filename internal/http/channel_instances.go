@@ -266,7 +266,7 @@ func maskInstanceHTTP(inst store.ChannelInstanceData) map[string]interface{} {
 // isValidChannelType checks if the channel type is supported.
 func isValidChannelType(ct string) bool {
 	switch ct {
-	case "telegram", "discord", "whatsapp", "zalo_oa", "zalo_personal", "feishu":
+	case "telegram", "zalo_oa", "zalo_personal":
 		return true
 	}
 	return false

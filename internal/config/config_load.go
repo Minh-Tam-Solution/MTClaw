@@ -111,13 +111,16 @@ func (c *Config) applyEnvOverrides() {
 	envStr("GOCLAW_BFLOW_BASE_URL", &c.Providers.BflowAI.APIBase)
 	envStr("GOCLAW_GATEWAY_TOKEN", &c.Gateway.Token)
 	envStr("GOCLAW_TELEGRAM_TOKEN", &c.Channels.Telegram.Token)
-	envStr("GOCLAW_DISCORD_TOKEN", &c.Channels.Discord.Token)
 	envStr("GOCLAW_ZALO_TOKEN", &c.Channels.Zalo.Token)
-	envStr("GOCLAW_LARK_APP_ID", &c.Channels.Feishu.AppID)
-	envStr("GOCLAW_LARK_APP_SECRET", &c.Channels.Feishu.AppSecret)
-	envStr("GOCLAW_LARK_ENCRYPT_KEY", &c.Channels.Feishu.EncryptKey)
-	envStr("GOCLAW_LARK_VERIFICATION_TOKEN", &c.Channels.Feishu.VerificationToken)
-	envStr("GOCLAW_WHATSAPP_BRIDGE_URL", &c.Channels.WhatsApp.BridgeURL)
+
+	// GitHub PR Gate (Sprint 8)
+	envStr("GITHUB_WEBHOOK_SECRET", &c.GitHub.WebhookSecret)
+	envStr("GITHUB_APP_TOKEN", &c.GitHub.AppToken)
+
+	// MS Teams Bot Framework (Sprint 10)
+	envStr("MSTEAMS_APP_ID", &c.Channels.MSTeams.AppID)
+	envStr("MSTEAMS_APP_PASSWORD", &c.Channels.MSTeams.AppPassword)
+	envStr("MSTEAMS_TENANT_ID", &c.Channels.MSTeams.TenantID)
 
 	// TTS secrets
 	envStr("GOCLAW_TTS_OPENAI_API_KEY", &c.Tts.OpenAI.APIKey)
@@ -129,17 +132,11 @@ func (c *Config) applyEnvOverrides() {
 	if c.Channels.Telegram.Token != "" {
 		c.Channels.Telegram.Enabled = true
 	}
-	if c.Channels.Discord.Token != "" {
-		c.Channels.Discord.Enabled = true
-	}
 	if c.Channels.Zalo.Token != "" {
 		c.Channels.Zalo.Enabled = true
 	}
-	if c.Channels.Feishu.AppID != "" && c.Channels.Feishu.AppSecret != "" {
-		c.Channels.Feishu.Enabled = true
-	}
-	if c.Channels.WhatsApp.BridgeURL != "" {
-		c.Channels.WhatsApp.Enabled = true
+	if c.Channels.MSTeams.AppID != "" && c.Channels.MSTeams.AppPassword != "" && c.Channels.MSTeams.TenantID != "" {
+		c.Channels.MSTeams.Enabled = true
 	}
 
 	// Allow overriding default provider/model

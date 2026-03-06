@@ -3,11 +3,19 @@ package config
 // ChannelsConfig contains per-channel configuration.
 type ChannelsConfig struct {
 	Telegram TelegramConfig `json:"telegram"`
-	Discord  DiscordConfig  `json:"discord"`
-	Slack    SlackConfig    `json:"slack"`
-	WhatsApp WhatsAppConfig `json:"whatsapp"`
 	Zalo     ZaloConfig     `json:"zalo"`
-	Feishu   FeishuConfig   `json:"feishu"`
+	MSTeams  MSTeamsConfig  `json:"msteams"`
+}
+
+// MSTeamsConfig holds MS Teams Bot Framework channel configuration.
+// Populated from MSTEAMS_APP_ID, MSTEAMS_APP_PASSWORD, MSTEAMS_TENANT_ID env vars.
+// AppPassword is masked in config_secrets.go — never logged or persisted.
+type MSTeamsConfig struct {
+	Enabled     bool   `json:"enabled"`
+	AppID       string `json:"app_id"`                  // Azure AD App (client) ID
+	AppPassword string `json:"app_password"`            // Azure AD App secret (high-value credential)
+	TenantID    string `json:"tenant_id"`               // Azure tenant ID — MUST NOT be "common"
+	WebhookPath string `json:"webhook_path,omitempty"` // default "/v1/channels/msteams/webhook"
 }
 
 type TelegramConfig struct {
@@ -63,34 +71,6 @@ type TelegramTopicConfig struct {
 	SystemPrompt   string              `json:"system_prompt,omitempty"`
 }
 
-type DiscordConfig struct {
-	Enabled        bool                `json:"enabled"`
-	Token          string              `json:"token"`
-	AllowFrom      FlexibleStringSlice `json:"allow_from"`
-	DMPolicy       string              `json:"dm_policy,omitempty"`       // "open" (default), "allowlist", "disabled"
-	GroupPolicy    string              `json:"group_policy,omitempty"`    // "open" (default), "allowlist", "disabled"
-	RequireMention *bool               `json:"require_mention,omitempty"` // require @bot mention in groups (default true)
-	HistoryLimit   int                 `json:"history_limit,omitempty"`   // max pending group messages for context (default 50, 0=disabled)
-}
-
-type SlackConfig struct {
-	Enabled        bool                `json:"enabled"`
-	BotToken       string              `json:"bot_token"`
-	AppToken       string              `json:"app_token"`
-	AllowFrom      FlexibleStringSlice `json:"allow_from"`
-	DMPolicy       string              `json:"dm_policy,omitempty"`       // "open" (default), "allowlist", "disabled"
-	GroupPolicy    string              `json:"group_policy,omitempty"`    // "open" (default), "allowlist", "disabled"
-	RequireMention bool               `json:"require_mention,omitempty"` // only respond to @bot in channels (default true)
-}
-
-type WhatsAppConfig struct {
-	Enabled     bool                `json:"enabled"`
-	BridgeURL   string              `json:"bridge_url"`
-	AllowFrom   FlexibleStringSlice `json:"allow_from"`
-	DMPolicy    string              `json:"dm_policy,omitempty"`    // "open" (default), "allowlist", "disabled"
-	GroupPolicy string              `json:"group_policy,omitempty"` // "open" (default), "allowlist", "disabled"
-}
-
 type ZaloConfig struct {
 	Enabled       bool                `json:"enabled"`
 	Token         string              `json:"token"`
@@ -101,27 +81,11 @@ type ZaloConfig struct {
 	MediaMaxMB    int                 `json:"media_max_mb,omitempty"` // default 5
 }
 
-type FeishuConfig struct {
-	Enabled           bool                `json:"enabled"`
-	AppID             string              `json:"app_id"`
-	AppSecret         string              `json:"app_secret"`
-	EncryptKey        string              `json:"encrypt_key,omitempty"`
-	VerificationToken string              `json:"verification_token,omitempty"`
-	Domain            string              `json:"domain,omitempty"`             // "lark" (default/global), "feishu" (China), or custom URL
-	ConnectionMode    string              `json:"connection_mode,omitempty"`    // "websocket" (default), "webhook"
-	WebhookPort       int                 `json:"webhook_port,omitempty"`       // default 3000
-	WebhookPath       string              `json:"webhook_path,omitempty"`       // default "/feishu/events"
-	AllowFrom         FlexibleStringSlice `json:"allow_from"`
-	DMPolicy          string              `json:"dm_policy,omitempty"`          // "pairing" (default)
-	GroupPolicy       string              `json:"group_policy,omitempty"`       // "open" (default)
-	GroupAllowFrom    FlexibleStringSlice `json:"group_allow_from,omitempty"`
-	RequireMention    *bool               `json:"require_mention,omitempty"`    // default true (groups)
-	TopicSessionMode  string              `json:"topic_session_mode,omitempty"` // "disabled" (default)
-	TextChunkLimit    int                 `json:"text_chunk_limit,omitempty"`   // default 4000
-	MediaMaxMB        int                 `json:"media_max_mb,omitempty"`       // default 30
-	RenderMode        string              `json:"render_mode,omitempty"`        // "auto", "raw", "card"
-	Streaming         *bool               `json:"streaming,omitempty"`          // default true
-	HistoryLimit      int                 `json:"history_limit,omitempty"`
+// GitHubConfig configures the GitHub webhook integration for PR Gate ENFORCE (Sprint 8).
+type GitHubConfig struct {
+	WebhookSecret string `json:"webhook_secret,omitempty"` // HMAC-SHA256 verification
+	AppToken      string `json:"app_token,omitempty"`      // PAT or GitHub App installation token
+	WebhookPath   string `json:"webhook_path,omitempty"`   // default "/github/webhook"
 }
 
 // ProvidersConfig maps provider name to its config.

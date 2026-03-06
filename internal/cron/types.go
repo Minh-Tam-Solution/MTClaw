@@ -28,7 +28,7 @@ type Payload struct {
 	Message string `json:"message"`           // content to process
 	Command string `json:"command,omitempty"` // optional shell command
 	Deliver bool   `json:"deliver"`           // true = direct chat, false = agent processing
-	Channel string `json:"channel,omitempty"` // target channel (telegram, discord, etc.)
+	Channel string `json:"channel,omitempty"` // target channel (telegram, zalo, etc.)
 	To      string `json:"to,omitempty"`      // target chat ID / recipient
 }
 

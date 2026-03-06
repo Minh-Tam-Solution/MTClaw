@@ -1,5 +1,5 @@
 // Package channels provides the channel abstraction layer for multi-platform messaging.
-// Channels connect external platforms (Telegram, Discord, Slack, etc.) to the agent runtime
+// Channels connect external platforms (Telegram, Zalo, etc.) to the agent runtime
 // via the message bus.
 //
 // Adapted from PicoClaw's pkg/channels with GoClaw-specific additions:
@@ -49,7 +49,7 @@ const (
 
 // Channel defines the interface that all channel implementations must satisfy.
 type Channel interface {
-	// Name returns the channel identifier (e.g., "telegram", "discord", "slack").
+	// Name returns the channel identifier (e.g., "telegram", "zalo_oa").
 	Name() string
 
 	// Start begins listening for messages. Should be non-blocking after setup.

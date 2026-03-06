@@ -132,4 +132,8 @@ const (
 	MethodBrowserScreenshot = "browser.screenshot"
 
 	MethodHeartbeat = "heartbeat"
+
+	// Sprint 11: Evidence chain API (ADR-009).
+	MethodEvidenceChain = "evidence.chain"
+	MethodEvidenceLink  = "evidence.link"
 )

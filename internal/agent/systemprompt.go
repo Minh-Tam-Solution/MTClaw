@@ -23,7 +23,7 @@ type SystemPromptConfig struct {
 	AgentID       string
 	Model         string
 	Workspace     string
-	Channel       string                 // runtime channel (telegram, discord, etc.)
+	Channel       string                 // runtime channel (telegram, zalo, etc.)
 	OwnerIDs      []string               // owner sender IDs
 	Mode          PromptMode             // full or minimal
 	ToolNames     []string               // registered tool names
@@ -58,7 +58,7 @@ var coreToolSummaries = map[string]string{
 	"browser":          "Browse web pages interactively",
 	"tts":              "Convert text to speech audio",
 	"edit":             "Edit a file by replacing exact text matches",
-	"message":          "Send a message to a channel (Telegram, Discord, etc.)",
+	"message":          "Send a message to a channel (Telegram, Zalo, etc.)",
 	"sessions_list":    "List sessions for this agent",
 	"session_status":   "Show session status (model, tokens, compaction count)",
 	"sessions_history": "Fetch message history for a session",

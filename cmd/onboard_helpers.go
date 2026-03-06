@@ -54,11 +54,6 @@ func onboardWriteEnvFile(path string, cfg *config.Config, primaryKey, primaryEnv
 	if cfg.Channels.Zalo.Enabled && cfg.Channels.Zalo.Token != "" {
 		lines = append(lines, fmt.Sprintf("export GOCLAW_ZALO_TOKEN=%s", cfg.Channels.Zalo.Token))
 	}
-	if cfg.Channels.Feishu.Enabled && cfg.Channels.Feishu.AppSecret != "" {
-		lines = append(lines, fmt.Sprintf("export GOCLAW_FEISHU_APP_ID=%s", cfg.Channels.Feishu.AppID))
-		lines = append(lines, fmt.Sprintf("export GOCLAW_FEISHU_APP_SECRET=%s", cfg.Channels.Feishu.AppSecret))
-	}
-
 	// Database (managed mode)
 	if cfg.Database.PostgresDSN != "" {
 		lines = append(lines, fmt.Sprintf("export GOCLAW_POSTGRES_DSN=%s", cfg.Database.PostgresDSN))

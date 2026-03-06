@@ -69,13 +69,13 @@ func TestToolContextKeys_AsyncCB(t *testing.T) {
 
 func TestToolContextKeys_MultipleValues(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithToolChannel(ctx, "slack")
+	ctx = WithToolChannel(ctx, "telegram")
 	ctx = WithToolChatID(ctx, "C123")
 	ctx = WithToolPeerKind(ctx, "direct")
 	ctx = WithToolSandboxKey(ctx, "sandbox-1")
 
-	if v := ToolChannelFromCtx(ctx); v != "slack" {
-		t.Errorf("channel: expected slack, got %q", v)
+	if v := ToolChannelFromCtx(ctx); v != "telegram" {
+		t.Errorf("channel: expected telegram, got %q", v)
 	}
 	if v := ToolChatIDFromCtx(ctx); v != "C123" {
 		t.Errorf("chatID: expected C123, got %q", v)

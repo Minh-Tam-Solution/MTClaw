@@ -65,7 +65,7 @@ func builtinToolSeedData() []store.BuiltinToolDef {
 		{Name: "sessions_send", DisplayName: "Send to Session", Description: "Send a message to a chat session", Category: "sessions", Enabled: true},
 
 		// messaging
-		{Name: "message", DisplayName: "Message", Description: "Send messages to connected channels (Telegram, Discord, etc.)", Category: "messaging", Enabled: true},
+		{Name: "message", DisplayName: "Message", Description: "Send messages to connected channels (Telegram, Zalo, MSTeams, etc.)", Category: "messaging", Enabled: true},
 
 		// scheduling
 		{Name: "cron", DisplayName: "Cron Scheduler", Description: "Schedule recurring tasks with cron expressions", Category: "scheduling", Enabled: true,

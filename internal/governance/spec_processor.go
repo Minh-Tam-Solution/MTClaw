@@ -18,16 +18,16 @@ import (
 
 // ProcessSpecOutput detects spec JSON in agent output and persists to governance_specs.
 // Called after PM SOUL generates a /spec response.
-// Returns the created spec ID or empty string if no spec detected.
-func ProcessSpecOutput(ctx context.Context, output string, specStore store.SpecStore, agentKey string, traceID *uuid.UUID) string {
+// Sprint 12 (CTO Decision D2): returns SpecResult struct instead of string.
+func ProcessSpecOutput(ctx context.Context, output string, specStore store.SpecStore, agentKey string, tenantID string, traceID *uuid.UUID, channel string) SpecResult {
 	if specStore == nil || output == "" {
-		return ""
+		return SpecResult{}
 	}
 
 	spec, err := ParseSpecJSON(output)
 	if err != nil {
 		slog.Debug("governance: no spec JSON detected in output", "error", err)
-		return ""
+		return SpecResult{}
 	}
 
 	// Generate next spec ID (SPEC-YYYY-NNNN).
@@ -35,22 +35,35 @@ func ProcessSpecOutput(ctx context.Context, output string, specStore store.SpecS
 	specID, err := specStore.NextSpecID(ctx, time.Now().Year())
 	if err != nil {
 		slog.Warn("governance: failed to generate spec ID", "error", err)
-		return ""
+		return SpecResult{}
 	}
 
 	spec.SpecID = specID
+	spec.OwnerID = tenantID // CTO-19: MUST set before CreateSpec (NOT NULL constraint)
 	spec.SoulAuthor = agentKey
+	spec.Channel = channel // CTO-40: populate channel column from migration 000016
 	spec.TraceID = traceID
 	spec.ContentHash = sha256Hex(output)
 	spec.Status = store.SpecStatusDraft
 
-	if err := specStore.CreateSpec(ctx, spec); err != nil {
-		slog.Warn("governance: failed to create spec", "spec_id", specID, "error", err)
-		return ""
+	// Sprint 12: Spec quality gate (CTO Governance Audit GAP 1).
+	// Evaluate quality AFTER all fields populated, BEFORE CreateSpec.
+	quality := EvaluateSpecQuality(spec)
+	if !quality.Pass {
+		slog.Warn("governance: spec quality below threshold",
+			"score", quality.Score, "reasons", quality.Reasons,
+			"title", spec.Title, "author", agentKey)
+		return SpecResult{Rejected: true, Quality: quality}
 	}
 
-	slog.Info("governance: spec created", "spec_id", specID, "title", spec.Title, "author", agentKey)
-	return specID
+	if err := specStore.CreateSpec(ctx, spec); err != nil {
+		slog.Warn("governance: failed to create spec", "spec_id", specID, "error", err)
+		return SpecResult{Quality: quality}
+	}
+
+	slog.Info("governance: spec created", "spec_id", specID, "title", spec.Title,
+		"author", agentKey, "quality_score", quality.Score)
+	return SpecResult{SpecID: specID, Quality: quality}
 }
 
 // ParseSpecJSON extracts spec JSON from agent output text.
@@ -142,7 +155,10 @@ func extractJSONBlock(text string) string {
 	if start < 0 {
 		return ""
 	}
-	// Find matching closing brace (simple nesting counter)
+	// Find matching closing brace (simple nesting counter).
+	// CTO-21: This does not respect string boundaries — e.g. {"desc": "use } brace"}
+	// would truncate at the wrong }. Low risk for LLM-generated spec JSON which rarely
+	// contains literal braces in string values. Fenced code blocks (above) are preferred.
 	depth := 0
 	for i := start; i < len(text); i++ {
 		switch text[i] {

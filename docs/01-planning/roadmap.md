@@ -1,33 +1,33 @@
 # Product Roadmap — MTClaw
 
 **SDLC Stage**: 01-Planning
-**Version**: 2.3.0
-**Date**: 2026-03-04 (updated Sprint 6 COMPLETE, Sprint 7 planning)
-**Author**: [@pm]
+**Version**: 2.7.0
+**Date**: 2026-03-22 (Sprint 10 COMPLETE pending CTO review; Sprint 11 plan filed — Hardening; Sprint 12 OaaS + Dogfooding added)
+**Author**: [@pm] + [@architect]
 **Framework**: SDLC Enterprise Framework 6.1.1
 **Tier**: STANDARD
-**Duration**: 10 sprints (5 days each) ≈ 20 weeks
+**Duration**: 12 sprints (5 days each) ≈ 24 weeks
 
 ---
 
 ## Big Picture
 
 ```
-                        MTClaw 10-Sprint Roadmap (v2.2)
-                        ===============================
+                        MTClaw 12-Sprint Roadmap (v2.7)
+                        ================================
 
-   Phase 1: Foundation + First Rails          Phase 2: Governance    Phase 3: Scale
-   ─────────────────────────────────          ────────────────────    ──────────────
-   Sprint 1  Sprint 2  Sprint 3  Sprint 4  Sprint 5 │ Sprint 6  Sprint 7  Sprint 8 │ Sprint 9  Sprint 10
-   ────────  ────────  ────────  ────────  ──────── │ ────────  ────────  ──────── │ ────────  ──────────
-   Init +    Reqs +    Arch +    Core +    MTS      │ NQH +     Spec     PR Gate  │ Full 3    OaaS
-   GoClaw    Design    RLS       /spec     Pilot    │ Rail #3   Full     ENFORCE  │ Rails     Prep
-   16 SOULs  API Spec  Tenant    Telegram  PR Gate  │ Zalo      BDD      G4       │ Audit     Multi-
-   G0.1      G0.2      G2        (proto)   G3 warn  │ RAG       Risk     Valid    │ Comply    Tenant
-   ────────  ────────  ────────  ────────  ──────── │ ────────  ────────  ──────── │ ────────  ──────────
-   ✅ DONE   ✅ DONE   ✅ DONE   ✅ DONE   ✅ DONE   │ ✅ DONE   → NEXT              │
-                       9.2/10   9.0/10               │ 8.0/10                       │
-   ◄───────── MTS Internal (10 users) ──────────────►│◄── NQH Expansion (150) ────►│◄── Revenue ──►
+   Phase 1: Foundation + First Rails          Phase 2: Governance         Phase 3: Scale
+   ─────────────────────────────────          ─────────────────────        ─────────────────────────────────────
+   Sprint 1  Sprint 2  Sprint 3  Sprint 4  Sprint 5 │ Sprint 6  Sprint 7  Sprint 8 │ Sprint 9  Sprint 10  Sprint 11  Sprint 12
+   ────────  ────────  ────────  ────────  ──────── │ ────────  ────────  ──────── │ ────────  ──────────  ─────────  ─────────
+   Init +    Reqs +    Arch +    Core +    MTS      │ NQH +     Spec     PR Gate  │ Channel   MS Teams    Hardening  OaaS +
+   GoClaw    Design    RLS       /spec     Pilot    │ Rail #3   Full     ENFORCE  │ Cleanup   Extension   Pen Test   Dogfood
+   16 SOULs  API Spec  Tenant    Telegram  PR Gate  │ Zalo      BDD      G4       │ SOUL x17  NQH Corp    Audit PDF  Self-Dev
+   G0.1      G0.2      G2        (proto)   G3 warn  │ RAG       Risk     Valid    │ ADR-006   ADR-007     ADR-008/9  G5
+   ────────  ────────  ────────  ────────  ──────── │ ────────  ────────  ──────── │ ────────  ──────────  ─────────  ─────────
+   ✅ DONE   ✅ DONE   ✅ DONE   ✅ DONE   ✅ DONE  │ ✅ DONE  ✅ DONE  ✅ DONE  │ ✅ DONE  ✅ DONE    → NEXT     Planned
+                       9.2/10   9.0/10              │ 8.0/10   8.0/10   8.5/10   │ 9.0/10   pending
+   ◄───────── MTS Internal (10 users) ─────────────►│◄── NQH Expansion (150) ─────►│◄────────── Revenue ───────────────────►
 ```
 
 ---
@@ -85,21 +85,13 @@
 | 5 | G2 gate proposal | P0 | ✅ APPROVED |
 
 **CTO Architecture Review (G2)**: 9.2/10 — 3 issues, none blocking
-- ISSUE-A (LOW): ADR-004 DB seeding path — **FIXED** (SeedToStore note added)
+- ISSUE-A (LOW): ADR-004 DB seeding path — **FIXED**
 - ISSUE-B (LOW): token_usage table timing — DEFERRED (use traces fields until Sprint 5)
 - ISSUE-C (MEDIUM): spans RLS FK chain — **RESOLVED** (spans has direct agent_id column)
 
 **CTO Code Review**: 8.5/10 APPROVED — 1 P1 bug fixed
-- P1 BUG: `HasAnyProvider()` missing BflowAI check — **FIXED** (`config_channels.go`)
+- P1 BUG: `HasAnyProvider()` missing BflowAI check — **FIXED**
 - ISSUE-2: bflowTransport RoundTripper contract — **FIXED** (clone before mutate)
-
-**New deliverable added**: Context Drift & Semantic Blindness Prevention architecture (SAD Section 8)
-- 3-layer system: Context Anchoring + Retrieval Intelligence + Evidence & Explainability
-- Adapted from EndiorBot battle-tested patterns (TS-007, ADR-009, ADR-015)
-- Phased into Sprint 4 (Layer A) → Sprint 6 (Layer B) → Sprint 7 (Layer C)
-
-**Entry Criteria**: G0.2 APPROVED ✅
-**Exit Criteria**: G2 APPROVED ✅ (9.2/10, 2026-03-02)
 
 ---
 
@@ -122,20 +114,6 @@
 | 1 | `make souls-validate` (frontmatter FAIL, char budget WARN) | P1 | ✅ |
 | 1 | IT Admin SOUL seed (migration 000012 — CEO directive) | P1 | ✅ |
 
-**Key Deliverables**:
-- `/spec Create login feature` → "📋 Generating spec..." → PM SOUL → structured JSON
-- Context Anchoring Layer A: session goal + SOUL identity reminder in ExtraPrompt
-- @mention routing: `@reviewer`, `@pm`, `@itadmin` → validated via agents.Get()
-- Evidence: TraceName='spec-factory' + TraceTags=['rail:spec-factory', 'command:spec']
-- IT Admin SOUL: 17th SOUL seeded (migration 000012), mutual delegation with devops
-
-**CTO Review (9.0/10)**: No blockers. Minor: migration header fixed (2→3 links).
-**Reviewer (8.5/10)**: ISSUE-1 fixed (/spec case-sensitive prefix). ISSUE-2 (UTF-8 rune) = tech debt.
-
-**Remaining (not @coder scope)**:
-- US-020: BotFather registration (operational — manual `/newbot`)
-- US-023: SOUL feedback session ([@pm] scope — recruit testers, Day 4-5)
-
 ---
 
 ### Sprint 5 — MTS Pilot + PR Gate WARNING (Rail #2) ✅ COMPLETE
@@ -144,7 +122,6 @@
 **Duration**: 5 days
 **Owner**: [@coder] (implementation) + [@pm] (pilot ops) + [@devops] (deploy)
 **Points**: ~13
-**Entry Criteria**: Sprint 4 complete (CTO 9.0/10), Telegram bot registered
 
 | Day | Deliverable | US | Priority | Points |
 |-----|------------|-----|----------|--------|
@@ -153,21 +130,9 @@
 | 3-4 | Integration tests (tenant isolation, SOUL routing, AI fallback) | US-029 | P1 | 3 |
 | 4 | Token cost tracking verify (CTO ISSUE-B resolution) | US-030 | P1 | 1 |
 | 4-5 | MTS pilot: 10 employees onboard to Telegram bot | US-031 | P0 | 1 |
-| 5 | Sprint 4 feedback incorporation (if blocking UX issues) | US-032 | P1 | 1 |
 | 5 | G3 gate proposal | US-033 | P0 | 1 |
 
-**Scope Adjustment** (from v2.0.0 roadmap):
-- PR Gate Sprint 5 = **Telegram `/review` command** (user pastes PR URL → reviewer SOUL fetches diff → WARNING report in Telegram). GitHub webhook integration deferred to Sprint 8 (ENFORCE mode). Rationale: WARNING mode doesn't need webhook infrastructure — validates review logic before building pipeline. Same reviewer SOUL + SKILL.md reused in Sprint 8.
-- See: [PR Gate Design](../02-design/pr-gate-design.md)
-
-**Key Deliverables**:
-- MTS employees use MTClaw daily; PR Gate reports (WARNING mode via Telegram)
-- Token cost tracked per tenant per SOUL via traces table (ISSUE-B resolution)
-- Deployment: Docker Compose with ai-net bridge to AI-Platform
-- Integration tests: ≥5 scenarios, 70% unit coverage target
-
 **Success Criteria**: 3/10 WAU, PR Gate processes first real PR, cost tracking operational
-**Deferred from Sprint 3**: token_usage table (use traces fields until this sprint validates volume)
 
 ---
 
@@ -176,59 +141,23 @@
 ### Sprint 6 — NQH Tenant + Rail #3 Knowledge + SOUL-Aware RAG ✅ COMPLETE
 
 **Duration**: 5 days
-**Owner**: [@coder] + [@devops] (Zalo) + [@pm] (RAG content curation)
-**Points**: ~17 (delivered ~7 — MTS-focused scope per CEO Option A)
-**Status**: COMPLETE — CTO 8.0/10 APPROVED, 3 fixes applied (CTO-11/12/13)
-**Entry Criteria**: G3 APPROVED, MTS pilot running
+**Status**: COMPLETE — CTO 8.0/10 APPROVED
 
 | Day | Deliverable | Priority | Points |
 |-----|------------|----------|--------|
 | 1 | NQH tenant configuration (owner_id='nqh', RLS verified) | P0 | 2 |
-| 1-2 | Zalo channel integration (OpenClaw extensions/zalo + extensions/zalouser) | P0 | 2 |
+| 1-2 | Zalo channel integration | P0 | 2 |
 | 2-3 | **SOUL-Aware RAG Routing (Context Drift Layer B)** | P0 | 3 |
-| 2-3 | **Team mention routing + charters (EndiorBot pattern adoption)** | P1 | 3 |
-| 3 | RAG collection: engineering (MTS engineering docs) | P1 | 1 |
-| 3-4 | RAG collection: sales + hr-policies | P1 | 2 |
-| 4 | NQH-SOPs RAG (805 docs, already indexed → connect via AI-Platform) | P0 | 1 |
-| 4-5 | Tenant cost guardrail implementation (monthly token + daily request limits) | P1 | 2 |
-| 5 | Cross-tenant isolation regression test (MTS + NQH concurrent) | P0 | 1 |
-
-**Context Drift Layer B — SOUL-Aware RAG Routing**:
-```
-SOUL Role     →  RAG Collection (AI-Platform)    →  Filter
-─────────────────────────────────────────────────────────────
-dev           →  engineering                       →  code, architecture
-sales         →  sales                             →  pricing, competitors
-cs            →  engineering + sales               →  procedures, escalation
-assistant     →  engineering + sales (broad)       →  HR Q&A, general tasks
-nqh-* SOULs   →  nqh-sops (805 docs)             →  department filter
-```
-- Token budget: 2,500 hard cap per retrieval (FR-008)
-- Ranking: role-aware scoring (SOUL domain match boosts relevance)
-- API: `POST /v1/rag/query` with `collection` filter (AI-Platform native)
-
-**Team Routing** (adopted from EndiorBot Sprint 74):
-- `@engineering` → PM as team leader + team context injection (ExtraPrompt)
-- `@business` → assistant as team leader + business team context
-- `@advisory` → CTO as team leader + advisory context
-- `/teams` command for discoverability (CPO CONDITION-1)
-- Team context enhances RAG routing: team membership → collection mapping
-- Resolution order: agent-first (`@pm` → PM directly), team-second (`@engineering` → PM as leader)
-- Reuses existing TeamStore infrastructure (23 methods, 4 seeded teams — no DB changes)
-- See: `docs/08-collaborate/teams/TEAM-*.md` (charters)
-
-**Conditional**: NQH expansion requires CEO approval (Option A = MTS-only; NQH collections deferred)
-**Key Deliverable**: Rail #3 (Knowledge & Answering) operational for MTS; NQH **pilot** (10-20 users) if approved; Team routing active for all tenants
-**CPO OBS-2**: Full NQH rollout (150 users) is Sprint 7-8, NOT Sprint 6. Sprint 6 = NQH pilot only (10-20 HO/management users on Zalo). Scale 15x in one sprint is too aggressive.
+| 2-3 | **Team mention routing + charters** | P1 | 3 |
+| 3-4 | RAG collections: engineering + sales + NQH-SOPs | P1 | 4 |
+| 4-5 | Tenant cost guardrail + cross-tenant isolation regression | P1 | 3 |
 
 ---
 
-### Sprint 7 — Rail #1 Spec Factory Full + Retrieval Evidence ← NEXT
+### Sprint 7 — Rail #1 Spec Factory Full + Retrieval Evidence ✅ COMPLETE
 
 **Duration**: 5 days
-**Owner**: [@coder] + [@pm] (spec validation)
-**Points**: ~13
-**Entry Criteria**: Rail #3 RAG operational ✅, SOUL-Aware routing working ✅
+**Status**: COMPLETE — CTO 8.0/10 APPROVED
 
 | Day | Deliverable | Priority | Points |
 |-----|------------|----------|--------|
@@ -236,124 +165,175 @@ nqh-* SOULs   →  nqh-sops (805 docs)             →  department filter
 | 2-3 | Evidence vault link (spec → trace → bidirectional query) | P0 | 2 |
 | 3 | **Retrieval Evidence logging (Context Drift Layer C)** | P0 | 2 |
 | 3-4 | Spec Telegram commands: /spec-list, /spec-detail | P1 | 2 |
-| 4-5 | Gateway consumer refactoring (CTO-14: extract 5 modules) | P1 | 2 |
-| 4-5 | SOUL drift detection (checksum monitoring, ADR-004) | P1 | 2 |
-
-**Scope adjustment** (vs roadmap v2.1):
-- SOUL behavioral test suite (80+ tests) DEFERRED to Sprint 8. CTO-14 refactoring is prerequisite for testability — behavioral tests more effective after module extraction.
-- CTO-14 refactoring ADDED (P2 from Sprint 6 review): extract gateway_consumer.go from 993 → ~600 lines.
-
-**Context Drift Layer C — Evidence & Explainability**:
-- RetrievalEvidence logged per RAG call: `{query, collection, results, ranking_reason, soul_role, token_count}`
-- Ranking reason enum: `exact_match | semantic_similar | soul_domain_boost | fallback`
-- Enables audit trail for RAG quality + debugging retrieval drift
-- Adapted from EndiorBot ADR-015 (Retrieval Explainability)
-- Reference: SDLC Orchestrator `SpecValidationResult` pattern (metadata in parent entity)
-
-**Spec Factory v1.0** (reference: SDLC Orchestrator `GovernanceSpecification` + SDLC Framework `spec-frontmatter-schema.json`):
-- spec_id: `SPEC-YYYY-NNNN` format (Framework compliant)
-- BDD: `{scenario, given, when, then}` structured objects (Framework `GIVEN/WHEN/THEN` standard)
-- Risk: `{description, probability, impact, mitigation}` matrix
-- Status lifecycle: `draft → review → approved → deprecated` (4 states, matches Orchestrator)
-- Evidence: `trace_id` FK to traces table (lighter than Orchestrator's S3 vault — appropriate for MTClaw scale)
-
-**Key Deliverable**: `/spec` produces `SPEC-2026-NNNN` with BDD, risk, evidence link
-**SOUL Drift**: Checksum-based detection per ADR-004 + version field tracking
-**CTO-14**: gateway_consumer.go refactored into 5 focused modules
-
-**Handoff**: `docs/04-build/SPRINT-007-CODER-HANDOFF.md`
+| 4-5 | Gateway consumer refactoring (CTO-14: 5 modules) + SOUL drift detection | P1 | 4 |
 
 ---
 
-### Sprint 8 — Rail #2 PR Gate ENFORCE + G4
+### Sprint 8 — Rail #2 PR Gate ENFORCE + G4 ✅ COMPLETE
 
-**Gate**: G4 (Validation Ready)
+**Gate**: G4 (Validation Ready) — **[@cto] APPROVED 2026-03-17**
 **Duration**: 5 days
-**Owner**: [@coder] + [@cto] (PR Gate rules) + [@pm] (G4 proposal)
-**Points**: ~13
-**Entry Criteria**: Spec Factory full, 3 RAG collections operational, SOUL drift detection active
+**Status**: COMPLETE — **CTO 8.5/10 APPROVED** (2026-03-04)
 
-| Day | Deliverable | Priority | Points |
-|-----|------------|----------|--------|
-| 1-2 | PR Gate → ENFORCE mode (block merge on policy violation) | P0 | 3 |
-| 2-3 | 3 Rails integration test (all 3 running together) | P0 | 2 |
-| 3 | Context Drift full validation (Layer A+B+C end-to-end test) | P0 | 2 |
-| 3-4 | **SOUL behavioral test suite (16 SOULs × 5+ tests)** (deferred from Sprint 7) | P1 | 2 |
-| 4 | Evidence export for audit (JSON + CSV) | P1 | 2 |
-| 5 | G4 gate proposal (Validation Ready) | P0 | 2 |
-
-**Key Deliverable**: All 3 Rails running, PR Gate blocks non-compliant merges
-**Context Drift Validation**: Full E2E — SOUL identity retained after 50+ turns, RAG returns domain-correct results, evidence logged for every retrieval
-**Success Criteria**: 7/10 MTS WAU, evidence capture 100% for gated actions, 80% unit test coverage target met
-**PR Gate Rules** (CTO tuned from WARNING data in Sprint 5-7):
-- BLOCK: missing spec reference, no test coverage, security violations
-- WARN: low coverage (<60%), missing docstrings, large diff (>500 lines)
+| Deliverable | Status | CTO Verdict |
+|-------------|--------|-------------|
+| PR Gate ENFORCE (GitHub webhook + HMAC + commit status) | ✅ | EXCELLENT |
+| pr_gate_evaluations table + RLS (migration 000015) | ✅ | GOOD |
+| Context Drift E2E validation (5 tests, 16 subtests) | ✅ | EXCELLENT |
+| SOUL behavioral suite — 5 critical SOULs × 5 tests | ✅ | EXCELLENT |
+| Evidence export API (JSON + CSV, bearer auth) | ✅ | GOOD |
 
 ---
 
-## Phase 3: Scale (Sprint 9-10+)
+## Phase 3: Scale (Sprint 9-12)
 
-### Sprint 9 — Full 3 Rails Governance + Hardening
+### Sprint 9 — Channel Rationalization + SOUL Suite Complete ✅ COMPLETE
 
 **Duration**: 5 days
-**Owner**: [@coder] + [@tester] (pen test) + [@pm] (audit reports)
+**Status**: COMPLETE — CTO 9.0/10 APPROVED
+
+| ID | Task | Priority | Points |
+|----|------|----------|--------|
+| T9-01 | Channel removal core: feishu/discord/whatsapp (~2,836 LOC) | P0 | 3 |
+| T9-02 | Channel removal periphery: onboard/agent/tools/managed mode | P0 | 2 |
+| T9-03 | SOUL behavioral tests: 12 governance SOULs × 5 = 60 tests (85 total) | P0 | 2 |
+| T9-04 | MS Teams scaffold + ADR-007 draft | P1 | 1 |
+| T9-05 | G4 gate proposal | P0 | 1 |
+
+**Test count at close**: 350 PASS
+
+---
+
+### Sprint 10 — MS Teams Extension + NQH Corporate Rollout ✅ COMPLETE
+
+**Gate**: None (mid-phase)
+**Status**: COMPLETE — CTO review pending
+**Owner**: [@coder] + [@devops] (Azure AD) + [@pm] (NQH comms)
 **Points**: ~12
-**Entry Criteria**: G4 APPROVED, all 3 Rails running, PR Gate in ENFORCE mode
+**ADR**: ADR-007 APPROVED [@cto] 2026-03-17
+**Detailed plan**: [SPRINT-010 plan](../04-build/sprints/SPRINT-010-MSTeams-NQH-Corporate.md)
+**Completion**: [SPRINT-010 completion](../04-build/SPRINT-010-COMPLETION.md)
 
-| Day | Deliverable | Priority | Points |
-|-----|------------|----------|--------|
-| 1-2 | Full audit trail export (compliance reporting — JSON + CSV + PDF) | P0 | 3 |
-| 2-3 | Cross-rail evidence linking (spec → PR → test → deploy traceability) | P1 | 2 |
-| 3 | SOUL quality regression suite (automated weekly, 16 SOULs × 5+ tests) | P1 | 2 |
-| 3-4 | Performance tuning (cost query optimization, RAG latency <3s p95) | P2 | 2 |
-| 4-5 | Security penetration test (tenant isolation, RLS bypass attempts) | P1 | 2 |
-| 5 | Post-mortem: Sprint 1-9 lessons + Phase 3 planning | P1 | 1 |
+| Deliverable | Status | Notes |
+|------------|--------|-------|
+| `extensions/msteams/` — 7 files | ✅ | Full JWKS impl (CTO-35) |
+| Bot Framework JWT verification (OpenID → JWKS → `rsa.PublicKey`, 24h cache) | ✅ | `globalJWKSCache` + kid-miss refresh |
+| Bot Framework token acquisition (`client_credentials` OAuth2, 10s timeout) | ✅ | CTO-39 |
+| Adaptive Cards: `SpecCard()` + `PRReviewCard()` | ✅ | CTO-36 |
+| Migration 000016 (`channel` column in governance tables) | ✅ | CTO-37 |
+| `MSTEAMS_APP_PASSWORD` masking via `maskNonEmpty()` | ✅ | CTO-38 |
+| CTO-33: Discord residuals removed | ✅ | Sprint 9 carryover |
+| 16 unit tests — 366 total PASS | ✅ | |
 
-**Key Deliverables**:
-- Complete governance trail: every spec, PR review, and knowledge query is auditable
-- Cross-rail linking: `SPEC-2026-001 → PR #42 → 95% coverage → deployed v1.2`
-- Pen test: attempt RLS bypass via SQL injection, cross-tenant API calls, SOUL impersonation
+**Pending**: Azure AD live credentials ([@devops]) — unit tests use mock credentials, PASS.
 
 ---
 
-### Sprint 10+ — OaaS Preparation
+### Sprint 11 — Hardening: Evidence Chain + Pen Test + Audit Trail → NEXT
 
 **Duration**: 5 days
-**Gate**: G5 (Scale Ready)
-**Owner**: [@coder] + [@pm] (pricing) + [@ceo] (strategy)
+**Gate**: None (hardening sprint) — G5 structure filed
+**Status**: PLANNED — pending CTO Sprint 10 review
+**Owner**: [@coder] + [@tester] (pen test) + [@pm] (G4 close-out)
 **Points**: ~12
-**Entry Criteria**: Sprint 9 audit trail complete, pen test passed
+**Entry Criteria**: CTO Sprint 10 score; G4 WAU ≥7/10 (closes 2026-03-31); @cpo+@ceo G4 co-sign; Azure AD provisioned
+**Detailed plan**: [SPRINT-011 plan](../04-build/sprints/SPRINT-011-Hardening.md)
+**New ADRs**: ADR-008 (PDF Library: maroto), ADR-009 (Evidence Linking: junction table)
 
-| Day | Deliverable | Priority | Points |
-|-----|------------|----------|--------|
-| 1-2 | Multi-tenant self-service (tenant registration API + admin panel) | P0 | 3 |
-| 2-3 | Pricing model implementation (token usage billing per tenant) | P1 | 2 |
-| 3-4 | External tenant onboarding flow (<30 min time to first value) | P1 | 3 |
-| 4 | SOUL marketplace design (industry-specific personas: F&B, retail, tech) | P2 | 2 |
-| 4-5 | Documentation: tenant admin guide, API reference, deployment guide | P1 | 2 |
+| ID | Task | Priority | Points | Owner |
+|----|------|----------|--------|-------|
+| T11-00 | Azure AD live E2E verification (carry from Sprint 10) | P0 | 0 | [@devops] |
+| T11-01 | Cross-rail evidence linking: `evidence_links` table (ADR-009) + auto-link `/spec`→`/review` + chain API | P0 | 3 | [@coder] |
+| T11-02 | Security pen test: 6 vectors (RLS bypass, cross-tenant, SOUL injection, JWT forge, drift bypass, token exhaustion) | P1 | 3 | [@tester]+[@coder] |
+| T11-03 | Audit trail PDF export: `maroto` v2 (ADR-008), `GET /spec/{id}/audit-trail.pdf`, SOC2/ISO27001 format | P1 | 3 | [@coder] |
+| T11-04 | Performance baseline: RAG p95, DB EXPLAIN, API latency documented | P2 | 1 | [@coder] |
+| T11-05 | Post-mortem Sprint 1-11 + G5 gate proposal structure | P1 | 2 | [@pm] |
 
-**Key Deliverables**:
-- Self-service: new tenant signs up → RLS auto-configured → 16 default SOULs cloned → Telegram/Zalo connected
-- Pricing: token-based (per 1K tokens) + monthly cap per tier
-- SOUL marketplace: tenants can browse/activate industry-specific SOULs beyond the 16 defaults
-- **G5 proposal**: Scale readiness for OaaS commercialization
+**[@pm] parallel**: G4 WAU final measurement (2026-03-31) + @cpo/@ceo co-sign drive (Day 2)
+
+**Architecture decisions ([@architect])**:
+- **Evidence linking**: `evidence_links` junction table (Option B) — N:M, extends to test_run + deploy in Sprint 12. NOT `spec_id FK` on pr_gate_evaluations (would lock to 1:N).
+- **PDF**: `johnfercher/maroto` v2 (MIT, no CGO) — rejected puppeteer (external binary) and unipdf (commercial).
+- **Pen test PT-03** (SOUL injection): manual inspection; automation via SOUL drift checksum in Sprint 12.
+
+**Test count target**: 366 → ≥400 (+pen test ~15 + evidence ~12 + PDF ~7)
+
+**Key outputs**:
+- `docs/05-test/SECURITY-PENTEST-SPRINT11.md` — 6 vectors + CVSS scores
+- `docs/05-test/PERFORMANCE-BASELINE-SPRINT11.md` — p95 baselines
+- `docs/09-govern/01-CTO-Reports/POST-MORTEM-SPRINT-1-11.md`
+- `docs/08-collaborate/G5-GATE-PROPOSAL-STRUCTURE.md`
+- `docs/09-govern/01-CTO-Reports/G4-WAU-TRACKING.md` — Day 14 row closed
+
+---
+
+### Sprint 12 — OaaS Preparation + MTClaw Dogfooding (Planned)
+
+**Duration**: 5 days
+**Gate**: G5 (Scale Ready — OaaS)
+**Status**: PLANNED
+**Owner**: [@coder] + [@pm] (pricing/docs) + [@architect] (self-dev design)
+**Points**: ~12
+**Entry Criteria**: Sprint 11 COMPLETE (CTO score); G4 fully co-signed; G5 structure approved [@cto]; Azure AD live for NQH
+
+| ID | Task | Priority | Points | Notes |
+|----|------|----------|--------|-------|
+| T12-01 | Multi-tenant self-service: registration API + admin panel (new tenant → working bot <30 min) | P0 | 3 | OaaS core |
+| T12-02 | **MTClaw self-development tools: file system tools + code execution sandbox** | P1 | 3 | Dogfooding: MTClaw builds MTClaw via Telegram |
+| T12-03 | Pricing model: token-based tiers (Starter/Growth/Enterprise) | P1 | 2 | Revenue enabler |
+| T12-04 | SOUL marketplace design: F&B, retail, tech industry personas | P2 | 2 | OaaS differentiator |
+| T12-05 | Tenant admin guide + API reference + G5 gate proposal | P1 | 2 | Gate + docs |
+
+**T12-02 — MTClaw Dogfooding Architecture** ([@architect]):
+
+```
+Sprint 12 target state:
+  Developer sends message in Telegram: "@coder implement auth.go"
+        ↓
+  MTClaw @coder SOUL receives task
+        ↓
+  file_read("/home/nqh/shared/MTClaw/cmd/gateway.go") → context
+  file_write("/home/nqh/shared/MTClaw/extensions/auth/auth.go") → creates file
+        ↓
+  code_exec("go build ./...") → returns build result
+  code_exec("go test ./extensions/auth/... -v") → returns test output
+        ↓
+  Response: "auth.go created. Build: ✅ 0 errors. Tests: 3/3 PASS."
+```
+
+**Required capabilities** (not in Sprint 11):
+- `file_read` / `file_write` tools (scoped to MTClaw repo path)
+- `code_exec` tool (runs in Docker sandbox, isolated from host)
+- `git_status` / `git_commit` tools (scoped to MTClaw repo)
+
+**Security**: code_exec runs in ephemeral Docker container, no host filesystem access except repo bind mount.
+
+**Gate G5 criteria** (full proposal filed T12-05):
+- Multi-tenant: new tenant → working bot <30 min
+- WAU ≥15/10 for MTS + NQH combined
+- Pen test Sprint 11: all 6 vectors PASS
+- Evidence chain: spec → PR → test → deploy linkable
+- Pricing model defined + approved [@ceo]
+- Legal: terms of service draft reviewed
 
 ---
 
 ## Sprint-by-Sprint Summary
 
-| Sprint | Phase | Goal | Gate | Rails | Users | Context Drift |
-|--------|-------|------|------|-------|-------|---------------|
-| 1 ✅ | Foundation | Init + GoClaw + 16 SOULs | G0.1 ✅ | 0 | 0 | — |
-| 2 ✅ | Foundation | Requirements + Design | G0.2 ✅ | 0 | 0 | — |
-| 3 ✅ | Foundation | Architecture + RLS | G2 ✅ (9.2/10) | 0 | 0 | Design |
-| 4 ✅ | First Rails | /spec + Context Anchoring + @mention | — (9.0/10) | 1 | ~3 | Layer A |
-| **5** | **First Rails** | **MTS Pilot + PR Gate WARNING** | **G3** | **2** | **10** | **—** |
-| 6 | Governance | NQH pilot + Knowledge/RAG + Team routing | — | 3 | 10+20 | Layer B + Teams |
-| 7 | Governance | Spec Factory full + NQH rollout | — | 3 | ~80 | Layer C |
-| 8 | Governance | PR Gate ENFORCE + G4 | G4 | 3 | ~160 | Validate |
-| 9 | Scale | Full governance + hardening | — | 3 | ~160 | — |
-| 10+ | Scale | OaaS preparation | G5 | 3 | Expand | — |
+| Sprint | Phase | Goal | Gate | Tests | Users | Channels |
+|--------|-------|------|------|-------|-------|----------|
+| 1 ✅ | Foundation | Init + GoClaw + 16 SOULs | G0.1 ✅ | — | 0 | — |
+| 2 ✅ | Foundation | Requirements + Design | G0.2 ✅ | — | 0 | — |
+| 3 ✅ | Foundation | Architecture + RLS | G2 ✅ (9.2/10) | — | 0 | — |
+| 4 ✅ | First Rails | /spec + Context Anchoring + @mention | — (9.0/10) | — | ~3 | Telegram |
+| 5 ✅ | First Rails | MTS Pilot + PR Gate WARNING | G3 ✅ | — | 10 | Telegram |
+| 6 ✅ | Governance | NQH pilot + Knowledge/RAG + Team routing | — (8.0/10) | — | 30 | Telegram + Zalo |
+| 7 ✅ | Governance | Spec Factory full + Retrieval Evidence | — (8.0/10) | — | ~80 | Telegram + Zalo |
+| 8 ✅ | Governance | PR Gate ENFORCE + G4 | G4 ✅ [@cto] | 290 | ~160 | Telegram + Zalo |
+| 9 ✅ | Scale | Channel cleanup + SOUL x17 + MS Teams scaffold | — (9.0/10) | 350 | ~160 | Telegram + Zalo |
+| 10 ✅ | Scale | MS Teams + NQH corporate rollout | — (pending CTO) | 366 | ~200 | + Teams |
+| **11 →** | **Scale** | **Hardening + pen test + audit trail PDF** | **—** | **≥400** | **~200** | **3 channels** |
+| 12 📋 | Scale | OaaS prep + MTClaw self-development (dogfooding) | G5 | TBD | Expand | Multi-channel |
 
 ---
 
@@ -368,9 +348,10 @@ Sprint 1 ─┐
            │                Sprint 6 ──► Sprint 7 ──► Sprint 8
            │                (NQH+RAG)    (spec full)  (PR Gate)
            │                                              │
-           │                                              ▼
-           │                                Sprint 9 ──► Sprint 10+
-           │                                (audit)      (OaaS)
+           │                                   ┌──────────┤
+           │                                   ▼          ▼
+           │                              Sprint 9 ──► Sprint 10 ──► Sprint 11 ──► Sprint 12
+           │                              (cleanup)    (MSTeams)     (hardening)   (OaaS+dogfood)
            │
            └──► Critical path: Sprint 3 (RLS) blocks ALL feature sprints
 ```
@@ -384,9 +365,9 @@ Sprint 1 ─┐
 | G0.1 | 1 | Problem Definition | [@cto], [@cpo] | ✅ APPROVED (CTO 8.5/10, CPO 8/10) |
 | G0.2 | 2 | Requirements Ready | [@cto], [@cpo] | ✅ APPROVED (CTO 9/10, CPO 8.5/10) |
 | G2 | 3 | Architecture Ready | [@cto] | ✅ APPROVED (9.2/10, 3 issues none blocking) |
-| **G3** | **5** | **Build Ready (MTS Pilot)** | **[@cto], [@cpo]** | ⏳ Pending |
-| G4 | 8 | Validation Ready (3 Rails) | [@cto], [@cpo], [@ceo] | ⏳ Pending |
-| G5 | 10 | Scale Ready (OaaS) | [@ceo] | ⏳ Pending |
+| G3 | 5 | Build Ready (MTS Pilot) | [@cto], [@cpo] | ✅ APPROVED |
+| **G4** | **8→9** | **Validation Ready (3 Rails)** | **[@cto], [@cpo], [@ceo]** | **[@cto] ✅ 2026-03-17 — [@cpo]+[@ceo] co-sign pending** |
+| G5 | 12 | Scale Ready (OaaS) | [@cto], [@cpo], [@ceo] | ⏳ Structure filed Sprint 11 |
 
 ---
 
@@ -397,9 +378,14 @@ Sprint 1 ─┐
 | 1-2 | [@pm] | [@researcher] | Gate reviews | ✅ Complete |
 | 3 | [@architect] | [@coder] | G2 gate | ✅ Complete (9.2/10) |
 | 4 | [@coder] | [@pm] | Sprint review | ✅ Complete (9.0/10) |
-| **5** | **[@coder]** | **[@pm] (pilot)** | **PR Gate design** | **← Next** |
-| 6-8 | [@coder] | [@devops] (infra) + [@pm] (RAG content) | Gate reviews | Planned |
-| 9-10 | [@coder] | [@pm] (OaaS) + [@tester] (pen test) | Final approval | Planned |
+| 5 | [@coder] | [@pm] (pilot) | PR Gate design | ✅ Complete |
+| 6 | [@coder] | [@devops] + [@pm] | Sprint review | ✅ Complete (8.0/10) |
+| 7 | [@coder] | [@pm] | Sprint review | ✅ Complete (8.0/10) |
+| 8 | [@coder] | [@pm] (G4) | Sprint review | ✅ Complete (8.5/10) |
+| 9 | [@coder] | [@pm] (G4 + ADR-007) | ADR-006 APPROVED | ✅ Complete (9.0/10) |
+| 10 | [@coder] | [@devops] (Azure AD) + [@pm] | MS Teams review | ✅ Complete (pending score) |
+| **11** | **[@coder]** | **[@tester] (pen test) + [@pm] (G4 close)** | **Hardening review** | **← NEXT** |
+| 12 | [@coder] | [@architect] (dogfood design) + [@pm] (OaaS) | G5 gate | 📋 Planned |
 
 ---
 
@@ -407,32 +393,46 @@ Sprint 1 ─┐
 
 | # | Risk | Prob | Impact | Mitigation | Sprint | Status |
 |---|------|------|--------|------------|--------|--------|
-| R1 | RLS breaks existing GoClaw queries | Med | High | Test all 55 endpoints after migration | 3 | Design verified (spans has direct agent_id) |
-| R2 | Go competency gap delays implementation | Med | Med | AI Codex + CTO review gate (ADR-001) | 3-5 | Active |
-| R3 | Bflow AI-Platform latency >5s | Low | Med | Fallback design in ADR-005, graceful degradation | 4 | Active |
-| R4 | MTS adoption <30% WAU by Sprint 5 | Med | High | SOUL feedback session Sprint 4, iterate | 4-5 | Active |
-| R5 | SOUL context exceeds LLM context window | Low | High | 2,000 char budget per SOUL.md (CTO-3) | 3 | Mitigated (make souls-validate) |
-| R6 | NQH CEO approval delayed | Med | Med | Phase 2 deferred, Phase 1 continues | 6 | ✅ Resolved (CEO Option A: MTS-only) |
-| R7 | PR Gate false positives (ENFORCE blocks valid PRs) | Med | Med | WARNING mode first (Sprint 5), tune rules | 5-8 | Active |
-| R8 | RAG accuracy below threshold (sales pricing wrong) | Med | High | Manual curation Phase 1, auto-ingest Phase 2 | 6 | Active |
-| R9 | Context drift in long conversations (SOUL role confusion) | Med | High | 3-layer prevention (FR-008): anchoring + RAG routing + evidence | 4-7 | **NEW** (designed Sprint 3) |
-| R10 | AI-Platform single point of failure | Low | High | Graceful degradation (ADR-005), no direct Ollama fallback | 4+ | Active |
-| R11 | token_usage table deferred → cost visibility gap | Low | Med | Use traces.total_input_tokens until Sprint 5 validates volume (CTO ISSUE-B) | 3-5 | Active |
-| R14 | Team mention conflicts with agent key | Low | Low | Agent-first resolution: `@pm` → agent directly, `@engineering` → team leader (EndiorBot pattern) | 6 | NEW |
+| R1 | RLS breaks existing GoClaw queries | Med | High | Test all 55 endpoints after migration | 3 | ✅ Resolved |
+| R2 | Go competency gap delays implementation | Med | Med | AI Codex + CTO review gate (ADR-001) | 3-5 | ✅ Mitigated |
+| R3 | Bflow AI-Platform latency >5s | Low | Med | Fallback design in ADR-005 | 4 | Active |
+| R4 | MTS adoption <30% WAU by Sprint 5 | Med | High | SOUL feedback, iterate | 4-5 | Active |
+| R5 | SOUL context exceeds LLM context window | Low | High | 2,000 char budget (CTO-3) | 3 | ✅ Mitigated |
+| R6 | NQH CEO approval delayed | Med | Med | CEO Option A: MTS-only | 6 | ✅ Resolved |
+| R7 | PR Gate false positives | Med | Med | WARNING mode first, tune rules | 5-8 | Active |
+| R8 | RAG accuracy below threshold | Med | High | Manual curation Phase 1 | 6 | Active |
+| R9 | Context drift in long conversations | Med | High | 3-layer prevention (FR-008) | 4-7 | ✅ Validated Sprint 8 |
+| R10 | AI-Platform single point of failure | Low | High | Graceful degradation (ADR-005) | 4+ | Active |
+| R14 | Team mention conflicts with agent key | Low | Low | Agent-first resolution (EndiorBot pattern) | 6 | ✅ Resolved |
+| R15 | Channel removal breaks hidden dependencies | Med | Med | Phased removal, 290-test regression gate | 9 | ✅ Resolved |
+| R16 | MS Teams Azure AD OAuth2 delays Sprint 10 | Med | Med | Scaffold Sprint 9, mocks Sprint 10 | 10 | ⚠️ Azure AD still pending [@devops] |
+| R17 | G4 WAU <7/10 at 2026-03-31 | Med | High | Intervention plan in G4-WAU-TRACKING.md | 11 | Active — measure Day 5 |
+| R18 | SOUL injection (PT-03) hard to automate | High | Med | Manual Sprint 11; automated checksum Sprint 12 | 11 | NEW |
+| R19 | RAG p95 > 3s baseline | Med | Med | Document in Sprint 11; fix Sprint 12 | 11-12 | NEW |
+| R20 | Dogfooding file tools scope creep | Med | Med | Scope to MTClaw repo only; sandbox code_exec | 12 | NEW |
 
 ---
 
 ## Cross-Sprint: Context Drift Prevention (FR-008)
 
-Context Drift & Semantic Blindness Prevention is a cross-cutting concern phased across Sprint 3-8:
+| Layer | Sprint | What | Status |
+|-------|--------|------|--------|
+| Design | 3 ✅ | 3-layer architecture in SAD Section 8 | ✅ Done |
+| A: Anchoring | 4 ✅ | Session goal + SOUL identity → ExtraPrompt | ✅ Done |
+| B: Retrieval | 6 ✅ | SOUL-Aware RAG routing + role-aware ranking | ✅ Done |
+| C: Evidence | 7 ✅ | RetrievalEvidence logging with ranking_reason | ✅ Done |
+| Validate | 8 ✅ | Full E2E: 5 tests, 16 subtests | ✅ G4 validated |
 
-| Layer | Sprint | What | Reference |
-|-------|--------|------|-----------|
-| Design | 3 ✅ | Architecture: 3-layer system designed in SAD Section 8 | SAD Section 8 |
-| **A: Anchoring** | **4** | Session goal + decision log → ExtraPrompt Section [7] (SOUL.md already in [2-4]) | EndiorBot TS-007, ADR-009 |
-| **B: Retrieval** | **6** | SOUL-Aware RAG routing with collection filter + role-aware ranking | EndiorBot ADR-015 |
-| **C: Evidence** | **7** | RetrievalEvidence logging with ranking_reason enum | EndiorBot ADR-015 |
-| Validate | 8 | Full E2E: identity retention + domain-correct RAG + audit trail | G4 gate |
+---
+
+## Changelog
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 2.7.0 | 2026-03-22 | Sprint 12 expanded: OaaS + MTClaw Dogfooding (file tools + code exec sandbox). Sprint 11 detailed: evidence_links ADR-009, maroto ADR-008, pen test 6 vectors, post-mortem. Roadmap extended to 12 sprints. |
+| 2.6.0 | 2026-03-22 | Sprint 10 COMPLETE (366 tests, 6 CTO issues resolved). Sprint 11 placeholder added. |
+| 2.5.0 | 2026-03-17 | Sprint 9 COMPLETE (9.0/10). Sprint 10 entry criteria set. ADR-007 APPROVED. G4 @cto approved. |
+| 2.4.0 | 2026-03-04 | Sprint 8 COMPLETE (8.5/10). G4 proposal filed Sprint 9. |
 
 ---
 
@@ -441,9 +441,10 @@ Context Drift & Semantic Blindness Prevention is a cross-cutting concern phased 
 - [Product Vision](../00-foundation/product-vision.md)
 - [Requirements](requirements.md) (v1.1.0 — includes FR-008)
 - [API Specification](api-specification.md)
-- [User Journey Map](user-journey-map.md)
 - [System Architecture Document](../02-design/system-architecture-document.md)
-- [G0.1 Gate Proposal](../00-foundation/G0.1-GATE-PROPOSAL.md)
-- [G0.2 Gate Proposal](../00-foundation/G0.2-GATE-PROPOSAL.md)
-- [G2 Gate Approval](../00-foundation/G2-GATE-APPROVAL.md) (9.2/10)
-- [Sprint 3 Architect Handoff](../04-build/SPRINT-003-ARCHITECT-HANDOFF.md)
+- [Sprint 11 Plan](../04-build/sprints/SPRINT-011-Hardening.md) ← NEW v2.7.0
+- [G4 Gate Proposal](../08-collaborate/G4-GATE-PROPOSAL-SPRINT8.md)
+- [G4 WAU Tracking](../09-govern/01-CTO-Reports/G4-WAU-TRACKING.md)
+- [ADR-007 MS Teams](../02-design/01-ADRs/SPEC-0007-ADR-007-MSTeams-Extension.md)
+- [ADR-008 PDF Library](../02-design/01-ADRs/SPEC-0008-ADR-008-PDF-Library.md) ← NEW Sprint 11
+- [ADR-009 Evidence Linking](../02-design/01-ADRs/SPEC-0009-ADR-009-Evidence-Linking-Schema.md) ← NEW Sprint 11

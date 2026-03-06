@@ -20,7 +20,7 @@ func (t *MessageTool) SetMessageBus(b *bus.MessageBus)   { t.msgBus = b }
 
 func (t *MessageTool) Name() string { return "message" }
 func (t *MessageTool) Description() string {
-	return "Send a message to a channel (Telegram, Discord, etc.) or the current chat."
+	return "Send a message to a channel (Telegram, Zalo, etc.) or the current chat."
 }
 
 func (t *MessageTool) Parameters() map[string]interface{} {

@@ -135,7 +135,7 @@ func TestResolveAgentRoute_NoMatch(t *testing.T) {
 		Bindings: []config.AgentBinding{
 			{
 				AgentID: "pm",
-				Match:   config.BindingMatch{Channel: "discord"},
+				Match:   config.BindingMatch{Channel: "zalo"},
 			},
 		},
 	}

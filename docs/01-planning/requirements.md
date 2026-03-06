@@ -1,8 +1,8 @@
 # Requirements — MTClaw
 
 **SDLC Stage**: 01-Planning
-**Version**: 1.1.0
-**Date**: 2026-03-02
+**Version**: 1.2.0
+**Date**: 2026-03-22 (added FR-005 MS Teams acceptance criteria — Sprint 10)
 **Author**: [@pm]
 
 ---
@@ -43,7 +43,20 @@
 ### FR-005: Messaging Channels
 - Phase 1: Telegram (primary — tech-savvy MTS team)
 - Phase 2: Zalo (primary for NQH — most popular app in VN for F&B staff)
-- Channel abstraction layer for future channels
+- Phase 3: MS Teams (NQH HO/management corporate channel — Sprint 10, ADR-007)
+- Channel abstraction layer — extension pattern, zero core coupling
+
+**MS Teams Acceptance Criteria** (Sprint 10 — ADR-007):
+- AC-005-1: Inbound Teams message → JWT verified (Bot Framework OpenID) → `bus.PublishInbound` → SOUL routing → reply via Bot Framework REST API
+- AC-005-2: JWT with wrong `iss` or `aud` → HTTP 401 (no message published)
+- AC-005-3: `TenantID = "common"` → Factory returns error (production protection per [@cto] decision)
+- AC-005-4: `conversationUpdate` (member added) → onboarding message sent, 200 OK, no error
+- AC-005-5: Empty message text → 200 OK, no message published to bus
+- AC-005-6: @mention in channel → reply in-thread (same `conversation.id`)
+- AC-005-7: `/spec` and `/review` commands produce identical governance output on Teams + Telegram
+- AC-005-8: `MSTEAMS_APP_PASSWORD` never appears in logs (masked in all 3 config_secrets functions)
+- AC-005-9: `channel = 'msteams'` written to `governance_specs` + `pr_gate_evaluations` (migration 000016)
+- AC-005-10: Bot Framework token acquired once, cached until 5 min before expiry (no redundant token calls)
 
 ### FR-006: Evidence Audit Trail
 - Every governance action produces evidence record

@@ -116,10 +116,7 @@ func runDoctor() {
 		checkDBChannels(db)
 	} else {
 		checkChannel("Telegram", cfg.Channels.Telegram.Enabled, cfg.Channels.Telegram.Token != "")
-		checkChannel("Discord", cfg.Channels.Discord.Enabled, cfg.Channels.Discord.Token != "")
 		checkChannel("Zalo", cfg.Channels.Zalo.Enabled, cfg.Channels.Zalo.Token != "")
-		checkChannel("Feishu", cfg.Channels.Feishu.Enabled, cfg.Channels.Feishu.AppID != "")
-		checkChannel("WhatsApp", cfg.Channels.WhatsApp.Enabled, cfg.Channels.WhatsApp.BridgeURL != "")
 	}
 
 	// External tools

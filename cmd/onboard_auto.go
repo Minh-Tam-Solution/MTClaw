@@ -237,20 +237,8 @@ func saveCleanConfig(cfgPath string, cfg *config.Config) error {
 				"history_limit":  nonZero(cfg.Channels.Telegram.HistoryLimit, 50),
 			}
 		}
-		if cfg.Channels.Discord.Enabled {
-			channels["discord"] = map[string]interface{}{"enabled": true}
-		}
-		if cfg.Channels.Slack.Enabled {
-			channels["slack"] = map[string]interface{}{"enabled": true}
-		}
-		if cfg.Channels.Feishu.Enabled {
-			channels["feishu"] = map[string]interface{}{"enabled": true}
-		}
 		if cfg.Channels.Zalo.Enabled {
 			channels["zalo"] = map[string]interface{}{"enabled": true}
-		}
-		if cfg.Channels.WhatsApp.Enabled {
-			channels["whatsapp"] = map[string]interface{}{"enabled": true}
 		}
 	}
 

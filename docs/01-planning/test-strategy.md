@@ -1,8 +1,8 @@
 # Test Strategy — MTClaw
 
 **SDLC Stage**: 01-Planning
-**Version**: 1.0.0
-**Date**: 2026-03-02
+**Version**: 1.1.0
+**Date**: 2026-03-22 (added MS Teams channel testing section — Sprint 10)
 **Author**: [@pm], [@cto] (tiered targets)
 
 ---
@@ -40,6 +40,7 @@
 - Database queries (integration test)
 - Bflow AI-Platform responses (integration test)
 - Telegram/Zalo message delivery (E2E test)
+- MS Teams live Bot Framework API (integration/E2E — requires Azure AD credentials)
 
 ## Integration Tests
 
@@ -57,6 +58,11 @@ Scenario-based checklist (not line coverage):
 | PR Gate: WARNING mode evaluation | 5 | P0 |
 | Evidence: Governance action creates audit record | 5 | P0 |
 | Multi-tenant concurrent: 2 tenants simultaneous | 5 | P1 |
+| MS Teams: inbound message → bus publish → SOUL routing | 10 | P0 |
+| MS Teams: JWT verification (valid/expired/wrong iss/wrong aud) | 10 | P0 |
+| MS Teams: channel column written to governance tables | 10 | P1 |
+| MS Teams: `MSTEAMS_APP_PASSWORD` not in logs | 10 | P0 (security) |
+| MS Teams + Telegram: cross-channel /spec produces same output | 10 | P1 |
 
 ## E2E Tests (Critical Paths Only)
 
@@ -65,6 +71,7 @@ Scenario-based checklist (not line coverage):
 | Onboarding | New user → Telegram → first AI response | 4 |
 | Delegation | User → @pm → /spec → JSON output | 4 |
 | Multi-tenant | MTS user + NQH user concurrent | 6 |
+| MS Teams full flow | Teams message → SOUL → Adaptive Card reply | 10 (manual, requires Azure AD) |
 
 ## CI/CD Integration
 
@@ -82,6 +89,10 @@ Per [@cto] directive: Unit tests for RAG client may use mocked HTTP responses (d
 - Documented in test file header
 - Based on real API response format
 - Tagged with `// CI_MOCK_EXCEPTION: Bflow AI-Platform`
+
+**MS Teams exception** (Sprint 10): Unit tests use `httptest.NewServer` mock for Bot Framework token endpoint and API endpoint. This is not a mock — it is a real HTTP server in the test process (Zero Mock Policy compliant). Bot Framework OpenID metadata fetch is bypassed by injecting RSA keys directly into `jwksCache` via `injectTestKey()`. Tagged with `// CI_MOCK_EXCEPTION: Bot Framework live endpoint (Azure AD creds required for E2E)`.
+
+**Test plan location**: `docs/05-test/test-plan-msteams-sprint10.md`
 
 ---
 

@@ -13,13 +13,12 @@ import (
 	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
 	"github.com/nextlevelbuilder/goclaw/internal/bus"
 	"github.com/nextlevelbuilder/goclaw/internal/channels"
-	"github.com/nextlevelbuilder/goclaw/internal/channels/discord"
-	"github.com/nextlevelbuilder/goclaw/internal/channels/feishu"
+	"github.com/nextlevelbuilder/goclaw/extensions/msteams"
 	"github.com/nextlevelbuilder/goclaw/internal/channels/telegram"
-	"github.com/nextlevelbuilder/goclaw/internal/channels/whatsapp"
 	"github.com/nextlevelbuilder/goclaw/internal/channels/zalo"
 	"github.com/nextlevelbuilder/goclaw/internal/config"
 	"github.com/nextlevelbuilder/goclaw/internal/cron"
+	"github.com/nextlevelbuilder/goclaw/internal/evidence"
 	"github.com/nextlevelbuilder/goclaw/internal/gateway"
 	"github.com/nextlevelbuilder/goclaw/internal/gateway/methods"
 	mcpbridge "github.com/nextlevelbuilder/goclaw/internal/mcp"
@@ -36,6 +35,7 @@ import (
 	"github.com/nextlevelbuilder/goclaw/internal/store/pg"
 	"github.com/nextlevelbuilder/goclaw/internal/tools"
 	"github.com/nextlevelbuilder/goclaw/internal/tracing"
+	httpapi "github.com/nextlevelbuilder/goclaw/internal/http"
 	"github.com/nextlevelbuilder/goclaw/pkg/browser"
 	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
 )
@@ -651,6 +651,27 @@ func runGateway() {
 		}
 	}
 
+	// Sprint 8: GitHub PR Gate webhook handler + API client (CTO-23: construct once at startup)
+	var ghClient *tools.GitHubClient
+	if cfg.GitHub.WebhookSecret != "" {
+		webhookHandler := httpapi.NewWebhookGitHubHandler(cfg.GitHub.WebhookSecret, msgBus)
+		server.SetWebhookGitHubHandler(webhookHandler)
+		slog.Info("github webhook handler enabled")
+	}
+	if cfg.GitHub.AppToken != "" {
+		ghClient = tools.NewGitHubClient(cfg.GitHub.AppToken)
+		slog.Info("github API client enabled")
+	}
+
+	// Sprint 8: Evidence export API (uses specStore + prGateStore for audit export)
+	// Sprint 11: PDF audit trail export added via SetEvidenceChain (wired below with chainBuilder)
+	var evidenceHandler *httpapi.EvidenceExportHandler
+	if managedStores != nil && (managedStores.Specs != nil || managedStores.PRGate != nil) {
+		evidenceHandler = httpapi.NewEvidenceExportHandler(managedStores.Specs, managedStores.PRGate, cfg.Gateway.Token)
+		server.SetEvidenceExportHandler(evidenceHandler)
+		slog.Info("evidence export handler enabled")
+	}
+
 	// Register all RPC methods
 	var agentStoreForRPC store.AgentStore
 	if isManaged {
@@ -692,10 +713,8 @@ func runGateway() {
 	if managedStores != nil && managedStores.ChannelInstances != nil {
 		instanceLoader = channels.NewInstanceLoader(managedStores.ChannelInstances, managedStores.Agents, channelMgr, msgBus, pairingStore)
 		instanceLoader.RegisterFactory("telegram", telegram.FactoryWithStores(managedStores.Agents, managedStores.Teams, managedStores.Specs))
-		instanceLoader.RegisterFactory("discord", discord.Factory)
-		instanceLoader.RegisterFactory("feishu", feishu.Factory)
 		instanceLoader.RegisterFactory("zalo_oa", zalo.Factory)
-		instanceLoader.RegisterFactory("whatsapp", whatsapp.Factory)
+		instanceLoader.RegisterFactory("msteams", msteams.Factory)
 		if err := instanceLoader.LoadAll(context.Background()); err != nil {
 			slog.Error("failed to load channel instances from DB", "error", err)
 		}
@@ -713,26 +732,6 @@ func runGateway() {
 		}
 	}
 
-	if cfg.Channels.Discord.Enabled && cfg.Channels.Discord.Token != "" && instanceLoader == nil {
-		dc, err := discord.New(cfg.Channels.Discord, msgBus, nil)
-		if err != nil {
-			slog.Error("failed to initialize discord channel", "error", err)
-		} else {
-			channelMgr.RegisterChannel("discord", dc)
-			slog.Info("discord channel enabled (config)")
-		}
-	}
-
-	if cfg.Channels.WhatsApp.Enabled && cfg.Channels.WhatsApp.BridgeURL != "" && instanceLoader == nil {
-		wa, err := whatsapp.New(cfg.Channels.WhatsApp, msgBus, nil)
-		if err != nil {
-			slog.Error("failed to initialize whatsapp channel", "error", err)
-		} else {
-			channelMgr.RegisterChannel("whatsapp", wa)
-			slog.Info("whatsapp channel enabled (config)")
-		}
-	}
-
 	if cfg.Channels.Zalo.Enabled && cfg.Channels.Zalo.Token != "" && instanceLoader == nil {
 		z, err := zalo.New(cfg.Channels.Zalo, msgBus, pairingStore)
 		if err != nil {
@@ -743,13 +742,14 @@ func runGateway() {
 		}
 	}
 
-	if cfg.Channels.Feishu.Enabled && cfg.Channels.Feishu.AppID != "" && instanceLoader == nil {
-		f, err := feishu.New(cfg.Channels.Feishu, msgBus, pairingStore)
+	if cfg.Channels.MSTeams.Enabled && cfg.Channels.MSTeams.AppID != "" && instanceLoader == nil {
+		ms, err := msteams.New(cfg.Channels.MSTeams, msgBus)
 		if err != nil {
-			slog.Error("failed to initialize feishu channel", "error", err)
+			slog.Error("failed to initialize msteams channel", "error", err)
 		} else {
-			channelMgr.RegisterChannel("feishu", f)
-			slog.Info("feishu/lark channel enabled (config)")
+			channelMgr.RegisterChannel("msteams", ms)
+			server.AddMuxHandler(ms.RegisterRoutes)
+			slog.Info("msteams channel enabled (config)", "webhook_path", cfg.Channels.MSTeams.WebhookPath)
 		}
 	}
 
@@ -779,6 +779,18 @@ func runGateway() {
 	// Register agent teams WS RPC methods (managed mode only)
 	if managedStores != nil && managedStores.Teams != nil {
 		methods.NewTeamsMethods(managedStores.Teams, managedStores.Agents, managedStores.AgentLinks, agentRouter, msgBus).Register(server.Router())
+	}
+
+	// Register evidence chain WS RPC methods (Sprint 11, ADR-009)
+	if managedStores != nil && managedStores.EvidenceLinks != nil && managedStores.Specs != nil {
+		chainBuilder := evidence.NewChainBuilder(managedStores.EvidenceLinks, managedStores.Specs, managedStores.PRGate)
+		methods.NewEvidenceMethods(chainBuilder, managedStores.EvidenceLinks, managedStores.Specs).Register(server.Router())
+
+		// Sprint 11 T11-03: Wire PDF audit trail into evidence export handler.
+		if evidenceHandler != nil {
+			evidenceHandler.SetEvidenceChain(managedStores.EvidenceLinks, chainBuilder)
+			slog.Info("audit trail PDF endpoint enabled")
+		}
 	}
 
 	// Cache invalidation: reload channel instances on changes.
@@ -897,7 +909,17 @@ func runGateway() {
 	if managedStores != nil {
 		consumerSpecStore = managedStores.Specs
 	}
-	go consumeInboundMessages(ctx, msgBus, agentRouter, cfg, sched, channelMgr, consumerTeamStore, consumerTracingStore, ragClient, consumerSpecStore)
+	// Sprint 8: Wire prGateStore for PR Gate evaluation persistence (Rail #2).
+	var consumerPRGateStore store.PRGateStore
+	if managedStores != nil {
+		consumerPRGateStore = managedStores.PRGate
+	}
+	// Sprint 11 (ADR-009): Wire evidence linker for cross-rail auto-linking.
+	var consumerEvidenceLinker *evidence.Linker
+	if managedStores != nil && managedStores.EvidenceLinks != nil {
+		consumerEvidenceLinker = evidence.NewLinker(managedStores.EvidenceLinks)
+	}
+	go consumeInboundMessages(ctx, msgBus, agentRouter, cfg, sched, channelMgr, consumerTeamStore, consumerTracingStore, ragClient, consumerSpecStore, ghClient, consumerPRGateStore, consumerEvidenceLinker)
 
 	go func() {
 		sig := <-sigCh

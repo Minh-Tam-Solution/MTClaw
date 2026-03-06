@@ -29,7 +29,7 @@ func IsDefaultChannelInstance(name string) bool {
 	}
 	// Legacy Telegram default uses bare name "telegram"
 	switch name {
-	case "telegram", "discord", "feishu", "zalo_oa", "whatsapp":
+	case "telegram", "zalo_oa":
 		return true
 	}
 	return false

@@ -34,6 +34,7 @@ type GovernanceSpec struct {
 	Status                string          `json:"status"`
 	Tier                  string          `json:"tier"`
 	SoulAuthor            string          `json:"soul_author"`
+	Channel               string          `json:"channel,omitempty"`
 	TraceID               *uuid.UUID      `json:"trace_id,omitempty"`
 	ContentHash           string          `json:"content_hash,omitempty"`
 	CreatedAt             time.Time       `json:"created_at"`

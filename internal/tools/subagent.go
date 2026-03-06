@@ -118,7 +118,6 @@ func (sm *SubagentManager) CountRunningForParent(parentID string) int {
 var SubagentDenyAlways = []string{
 	"gateway",
 	"agents_list",
-	"whatsapp_login",
 	"session_status",
 	"cron",
 	"memory_search",

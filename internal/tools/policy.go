@@ -32,9 +32,7 @@ var toolGroups = map[string][]string{
 
 // ownerOnlyTools are tools that only the instance owner can execute.
 // Matching TS OWNER_ONLY_TOOL_NAMES.
-var ownerOnlyTools = map[string]bool{
-	"whatsapp_login": true,
-}
+var ownerOnlyTools = map[string]bool{}
 
 // RegisterToolGroup adds or replaces a dynamic tool group.
 // Used by the MCP manager to register "mcp" and "mcp:{serverName}" groups.
@@ -64,7 +62,7 @@ var toolAliases = map[string]string{
 // Subagent deny lists — tools subagents cannot use.
 var subagentDenyList = []string{
 	"exec", // subagents should not shell out — main agent can still exec
-	"gateway", "agents_list", "whatsapp_login", "session_status",
+	"gateway", "agents_list", "session_status",
 	"cron", "memory_search", "memory_get", "sessions_send",
 }
 

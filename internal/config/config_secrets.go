@@ -41,15 +41,11 @@ func (c *Config) MaskedCopy() *Config {
 
 	// Mask channel secrets
 	maskNonEmpty(&cp.Channels.Telegram.Token)
-	maskNonEmpty(&cp.Channels.Discord.Token)
-	maskNonEmpty(&cp.Channels.Slack.BotToken)
-	maskNonEmpty(&cp.Channels.Slack.AppToken)
 	maskNonEmpty(&cp.Channels.Zalo.Token)
 	maskNonEmpty(&cp.Channels.Zalo.WebhookSecret)
-	maskNonEmpty(&cp.Channels.Feishu.AppID)
-	maskNonEmpty(&cp.Channels.Feishu.AppSecret)
-	maskNonEmpty(&cp.Channels.Feishu.EncryptKey)
-	maskNonEmpty(&cp.Channels.Feishu.VerificationToken)
+	maskNonEmpty(&cp.Channels.MSTeams.AppPassword)
+	maskNonEmpty(&cp.GitHub.WebhookSecret)
+	maskNonEmpty(&cp.GitHub.AppToken)
 
 	// Mask TTS API keys
 	maskNonEmpty(&cp.Tts.OpenAI.APIKey)
@@ -89,15 +85,11 @@ func (c *Config) StripSecrets() {
 
 	// Channel secrets
 	c.Channels.Telegram.Token = ""
-	c.Channels.Discord.Token = ""
-	c.Channels.Slack.BotToken = ""
-	c.Channels.Slack.AppToken = ""
 	c.Channels.Zalo.Token = ""
 	c.Channels.Zalo.WebhookSecret = ""
-	c.Channels.Feishu.AppID = ""
-	c.Channels.Feishu.AppSecret = ""
-	c.Channels.Feishu.EncryptKey = ""
-	c.Channels.Feishu.VerificationToken = ""
+	c.Channels.MSTeams.AppPassword = ""
+	c.GitHub.WebhookSecret = ""
+	c.GitHub.AppToken = ""
 
 	// TTS API keys
 	c.Tts.OpenAI.APIKey = ""
@@ -142,15 +134,11 @@ func (c *Config) StripMaskedSecrets() {
 
 	// Channel secrets
 	stripIfMasked(&c.Channels.Telegram.Token)
-	stripIfMasked(&c.Channels.Discord.Token)
-	stripIfMasked(&c.Channels.Slack.BotToken)
-	stripIfMasked(&c.Channels.Slack.AppToken)
 	stripIfMasked(&c.Channels.Zalo.Token)
 	stripIfMasked(&c.Channels.Zalo.WebhookSecret)
-	stripIfMasked(&c.Channels.Feishu.AppID)
-	stripIfMasked(&c.Channels.Feishu.AppSecret)
-	stripIfMasked(&c.Channels.Feishu.EncryptKey)
-	stripIfMasked(&c.Channels.Feishu.VerificationToken)
+	stripIfMasked(&c.Channels.MSTeams.AppPassword)
+	stripIfMasked(&c.GitHub.WebhookSecret)
+	stripIfMasked(&c.GitHub.AppToken)
 
 	// TTS API keys
 	stripIfMasked(&c.Tts.OpenAI.APIKey)

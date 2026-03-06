@@ -19,4 +19,6 @@ type Stores struct {
 	Teams            TeamStore            // nil in standalone mode
 	BuiltinTools     BuiltinToolStore     // nil in standalone mode
 	Specs            SpecStore            // nil in standalone mode — Sprint 7 Rail #1
+	PRGate           PRGateStore          // nil in standalone mode — Sprint 8 Rail #2
+	EvidenceLinks    EvidenceLinkStore    // nil in standalone mode — Sprint 11 ADR-009
 }
