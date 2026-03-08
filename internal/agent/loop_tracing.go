@@ -121,6 +121,78 @@ func (l *Loop) emitLLMSpan(ctx context.Context, start time.Time, iteration int, 
 	collector.EmitSpan(span)
 }
 
+// emitFallbackLLMSpan records an LLM call span with fallback metadata tags.
+// It tags the span with fallback=true, the primary provider name, and the primary error.
+func (l *Loop) emitFallbackLLMSpan(ctx context.Context, start time.Time, iteration int, messages []providers.Message, resp *providers.ChatResponse, callErr error, primaryProvider string, primaryError string) {
+	traceID := tracing.TraceIDFromContext(ctx)
+	collector := tracing.CollectorFromContext(ctx)
+	if collector == nil || traceID == uuid.Nil {
+		return
+	}
+
+	now := time.Now().UTC()
+	dur := int(now.Sub(start).Milliseconds())
+	span := store.SpanData{
+		TraceID:    traceID,
+		SpanType:   store.SpanTypeLLMCall,
+		Name:       fmt.Sprintf("%s/%s #%d [fallback]", l.fallbackProvider.Name(), l.model, iteration),
+		StartTime:  start,
+		EndTime:    &now,
+		DurationMS: dur,
+		Model:      l.model,
+		Provider:   l.fallbackProvider.Name(),
+		Status:     store.SpanStatusCompleted,
+		Level:      store.SpanLevelDefault,
+		CreatedAt:  now,
+	}
+	if parentID := tracing.ParentSpanIDFromContext(ctx); parentID != uuid.Nil {
+		span.ParentSpanID = &parentID
+	}
+	if l.agentUUID != uuid.Nil {
+		span.AgentID = &l.agentUUID
+	}
+
+	// Fallback metadata: tag with primary provider and error for observability
+	meta := map[string]string{
+		"fallback":         "true",
+		"primary_provider": primaryProvider,
+		"primary_error":    primaryError,
+	}
+	if b, err := json.Marshal(meta); err == nil {
+		span.Metadata = b
+	}
+
+	if callErr != nil {
+		span.Status = store.SpanStatusError
+		span.Error = callErr.Error()
+	} else if resp != nil {
+		if resp.Usage != nil {
+			span.InputTokens = resp.Usage.PromptTokens
+			span.OutputTokens = resp.Usage.CompletionTokens
+		}
+		span.FinishReason = resp.FinishReason
+		verbose := collector.Verbose()
+		if verbose {
+			preview := resp.Content
+			if resp.Thinking != "" {
+				preview = "<thinking>\n" + resp.Thinking + "\n</thinking>\n" + resp.Content
+			}
+			span.OutputPreview = truncateStr(preview, 100000)
+		} else {
+			span.OutputPreview = truncateStr(resp.Content, 500)
+		}
+	}
+
+	// Verbose mode: serialize full messages as InputPreview
+	if collector.Verbose() && len(messages) > 0 {
+		if b, err := json.Marshal(messages); err == nil {
+			span.InputPreview = truncateStr(string(b), 100000)
+		}
+	}
+
+	collector.EmitSpan(span)
+}
+
 // emitToolSpan records a tool call span if tracing is active.
 // result is the full tool execution result, which may contain Usage from inner LLM calls.
 func (l *Loop) emitToolSpan(ctx context.Context, start time.Time, toolName, toolCallID, input string, result *tools.Result) {

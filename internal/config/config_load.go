@@ -224,6 +224,23 @@ func (c *Config) applyEnvOverrides() {
 		ensureSandbox()
 		c.Agents.Defaults.Sandbox.NetworkEnabled = v == "true" || v == "1"
 	}
+
+	// Claude CLI provider (fallback via Claude Max subscription)
+	envStr("MTCLAW_CLAUDE_PATH", &c.Providers.ClaudeCLI.Path)
+	envStr("MTCLAW_CLAUDE_MODEL", &c.Providers.ClaudeCLI.Model)
+	if v := os.Getenv("MTCLAW_CLAUDE_TIMEOUT"); v != "" {
+		if sec, err := strconv.Atoi(v); err == nil && sec > 0 {
+			c.Providers.ClaudeCLI.Timeout = sec
+		}
+	}
+	if v := os.Getenv("MTCLAW_CLAUDE_ENABLED"); v != "" {
+		c.Providers.ClaudeCLI.Enabled = v == "true" || v == "1"
+	}
+
+	// Provider fallback chain (comma-separated, e.g. "bflow-ai-platform,claude-cli")
+	if v := os.Getenv("MTCLAW_PROVIDER_CHAIN"); v != "" {
+		c.ProviderChain.Chain = strings.Split(v, ",")
+	}
 }
 
 // applyContextPruningDefaults auto-enables context pruning when the Anthropic

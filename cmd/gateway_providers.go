@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
@@ -84,6 +85,20 @@ func registerProviders(registry *providers.Registry, cfg *config.Config) {
 	if cfg.Providers.BflowAI.APIKey != "" {
 		registry.Register(providers.NewBflowAIProvider(cfg.Providers.BflowAI.APIKey, cfg.Providers.BflowAI.APIBase, "", ""))
 		slog.Info("registered provider", "name", "bflow-ai-platform")
+	}
+
+	if cfg.Providers.ClaudeCLI.Enabled {
+		timeout := 120
+		if cfg.Providers.ClaudeCLI.Timeout > 0 {
+			timeout = cfg.Providers.ClaudeCLI.Timeout
+		}
+		registry.Register(providers.NewClaudeCLIProvider(providers.ClaudeCLIConfig{
+			Path:    cfg.Providers.ClaudeCLI.Path,
+			Model:   cfg.Providers.ClaudeCLI.Model,
+			Timeout: time.Duration(timeout) * time.Second,
+			Enabled: true,
+		}))
+		slog.Info("registered provider", "name", "claude-cli")
 	}
 }
 

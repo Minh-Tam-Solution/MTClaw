@@ -42,7 +42,8 @@ func (f *FlexibleStringSlice) UnmarshalJSON(data []byte) error {
 type Config struct {
 	Agents    AgentsConfig    `json:"agents"`
 	Channels  ChannelsConfig  `json:"channels"`
-	Providers ProvidersConfig `json:"providers"`
+	Providers      ProvidersConfig      `json:"providers"`
+	ProviderChain  ProviderChainConfig  `json:"provider_chain,omitempty"`
 	Gateway   GatewayConfig   `json:"gateway"`
 	Tools     ToolsConfig     `json:"tools"`
 	Sessions  SessionsConfig  `json:"sessions"`

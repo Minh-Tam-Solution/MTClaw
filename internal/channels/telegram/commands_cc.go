@@ -214,14 +214,22 @@ func (c *Channel) ccSessions(ctx context.Context, send func(string), tenantID st
 		return
 	}
 
-	if len(sessions) == 0 {
+	// Filter to active sessions only; stopped sessions are historical.
+	var active []*claudecode.BridgeSession
+	for _, s := range sessions {
+		if s.Status != claudecode.SessionStateStopped {
+			active = append(active, s)
+		}
+	}
+
+	if len(active) == 0 {
 		send("No active sessions. Use /cc launch to start one.")
 		return
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Active sessions (%d):\n\n", len(sessions)))
-	for i, s := range sessions {
+	sb.WriteString(fmt.Sprintf("Active sessions (%d):\n\n", len(active)))
+	for i, s := range active {
 		status := string(s.Status)
 		roleInfo := ""
 		if s.AgentRole != "" {

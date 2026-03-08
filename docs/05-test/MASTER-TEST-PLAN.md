@@ -1,16 +1,16 @@
 # Master Test Plan — MTClaw
 
 **SDLC Stage**: 05-Test
-**Version**: 4.0.0
-**Date**: 2026-03-07
+**Version**: 5.0.0
+**Date**: 2026-03-08
 **Author**: [@tester], [@cto] (tiered targets)
-**Coverage**: Sprint 1-23 cumulative (includes Claude Code Bridge A-D + Intelligence Upgrade)
+**Coverage**: Sprint 1-25 cumulative (includes Claude Code Bridge A-D + Intelligence Upgrade + Provider Fallback)
 
 ---
 
 ## 1. Scope
 
-This plan covers all automated testing for MTClaw gateway across Sprint 1-23, organized by test tier (Unit, Integration, E2E, Security, Performance).
+This plan covers all automated testing for MTClaw gateway across Sprint 1-25, organized by test tier (Unit, Integration, E2E, Security, Performance).
 
 ### Sprint Feature Map
 
@@ -38,6 +38,8 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-23, or
 | **21** | **Role-Aware Defaults: role->RiskMode defaults (UX only), --allowedTools** | **P1** |
 | **22** | **Agent Teams Research Spike: ADR-012 NO-GO decision (no production code)** | **P2** |
 | **23** | **Provider Persona Projection: capability matrix, Cursor POC adapter, ADR-013** | **P1** |
+| **24** | **Provider Fallback Chain: Claude CLI provider, fallback logic, env/config, doctor** | **P0** |
+| **25** | **Fallback Deploy + Observability: Docker npm install, OAuth volume, fallback tracing metadata, OTEL propagation** | **P0** |
 
 ---
 
@@ -108,6 +110,8 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-23, or
 | **claudecode** | **skills_generator_test.go** | SDLCFrameworkSkill (under budget/content), InstallSkills (create/idempotent/skip user/force) | 20A | **PASS** |
 | **claudecode** | **claudemd_generator_test.go** | DetectProjectProfile (Go/TS/Python/Makefile/Docker), GenerateClaudeMD content, InitProject (create/skip user/force) | 20B | **PASS** |
 | **claudecode** | **provider_cursor_test.go** | CursorProjectionAdapter (name/launch nil/hooks unsupported/parse unsupported/capabilities/transcript empty), CursorRule FormatMDC (with/without alwaysApply), GenerateCursorRules (create/idempotent/skip user/force/filtered/invalid), ProjectionInfo, Registry integration | 23 | **PASS** |
+| **providers** | **claude_cli_test.go** | Name, DefaultModel (custom/fallback), Timeout (default/custom), buildCLIPrompt (simple/system/empty), parseCLIResponse (valid/maxTokens/rawText/empty/multiBlock), filterEnv (strips/preserves), ChatEmptyPrompt, ChatStreamDelegatesToChat | 24 | **PASS** |
+| **agent** | **fallback_test.go** | FallbackProviderWired, NoFallbackByDefault, IsRetryableError_Triggers (500/429/400), LoopConfigPreservesBothProviders, StubChatResponse | 25 | **PASS** |
 
 ### 2.2 Integration Tests
 
@@ -164,6 +168,13 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-23, or
 | **INT-049** | **Bridge role defaults: executor role starts at patch, advisor at read** | **21** | **P1** | **PASS** |
 | **INT-050** | **Bridge Cursor projection: GenerateCursorRules creates .cursor/rules/*.mdc files** | **23** | **P1** | **PASS** |
 | **INT-051** | **Bridge provider registry: CursorProjectionAdapter registered, replaces StubAdapter** | **23** | **P1** | **PASS** |
+| **INT-052** | **Claude CLI provider: subprocess execution + JSON parsing** | **24** | **P0** | **PASS** |
+| **INT-053** | **Claude CLI filterEnv: ANTHROPIC_API_KEY + CLAUDE_API_KEY stripped from subprocess** | **24** | **P0** | **PASS** |
+| **INT-054** | **Fallback chain: resolver picks first non-primary provider from MTCLAW_PROVIDER_CHAIN** | **24** | **P0** | **PASS** |
+| **INT-055** | **Fallback guard: iteration=1 + tools blocks fallback (CTO-R2-1)** | **24** | **P0** | **PASS** |
+| **INT-056** | **Fallback tracing: 2-span pattern — primary fail span + fallback success span** | **25** | **P0** | **PASS** |
+| **INT-057** | **OTEL metadata propagation: fallback=true + primary_provider + primary_error in mtclaw.meta.*** | **25** | **P1** | **PASS** |
+| **INT-058** | **Doctor: Claude CLI binary check + OAuth dir check + provider chain display** | **25** | **P1** | **PASS** |
 
 ### 2.3 E2E Tests
 
@@ -188,6 +199,8 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-23, or
 | **E2E-017** | **Bridge SOUL launch** | **/cc launch myproject --as coder -> session shows AgentRole=coder, PersonaSource=agent_file** | **18** | **MANUAL** |
 | **E2E-018** | **Bridge install-agents** | **mtclaw bridge install-agents <path> -> .claude/agents/ created with 17 SOUL files** | **18** | **MANUAL** |
 | **E2E-019** | **Bridge Cursor projection** | **mtclaw bridge install-agents --provider cursor -> .cursor/rules/*.mdc created** | **23** | **NEW** |
+| **E2E-020** | **Fallback deploy** | **docker compose build -> claude --version in container -> mtclaw doctor shows Claude CLI** | **25** | **MANUAL** |
+| **E2E-021** | **Fallback E2E** | **Primary fails (429/500) -> fallback to claude-cli -> user gets response via Telegram** | **25** | **MANUAL** |
 
 ### 2.4 Security Tests
 
@@ -213,6 +226,8 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-23, or
 | **SEC-018** | **Bridge context injection** | **SetContext sanitizes via CheckInputSafe before storing (CTO-118)** | **20B** | **PASS** |
 | **SEC-019** | **Bridge context length** | **SetContext enforces per-field (500) and total (2000) char caps (CTO-120)** | **20B** | **PASS** |
 | **SEC-020** | **Bridge agent file override** | **Agent file permissionMode cannot bypass bridge D2 capability model** | **21** | **PASS (structural)** |
+| **SEC-021** | **Claude CLI env isolation** | **ANTHROPIC_API_KEY + CLAUDE_API_KEY stripped from subprocess env (forces OAuth billing)** | **24** | **PASS** |
+| **SEC-022** | **Docker read-only + Claude CLI** | **Container read_only:true, tmpfs without noexec, cap_drop:ALL, no-new-privileges** | **25** | **PASS (structural)** |
 
 ### 2.5 Performance Baseline (Sprint 11)
 
@@ -251,6 +266,8 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-23, or
 | **21** | **495** | **49** | **18** | **20** | **582** | **+10** |
 | **22** | **495** | **49** | **18** | **20** | **582** | **+0** |
 | **23** | **512** | **51** | **19** | **20** | **602** | **+20** |
+| **24** | **529** | **55** | **19** | **21** | **624** | **+22** |
+| **25** | **534** | **58** | **21** | **22** | **635** | **+11** |
 
 ### 3.2 Traceability: Sprint 8-23 Features -> Tests
 
@@ -280,6 +297,8 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-23, or
 | **Role-Aware Defaults (S21)** | bridge_policy +8, provider +2, session_manager +3 | INT-049 | - | SEC-020 |
 | **Agent Teams Spike (S22)** | (no production code — ADR-012 only) | - | - | - |
 | **Provider Projection (S23)** | provider_cursor (17), provider registry +1 | INT-050, INT-051 | E2E-019 | - |
+| **Provider Fallback Chain (S24)** | claude_cli_test (17) | INT-052..055 | - | SEC-021 |
+| **Fallback Deploy + Observability (S25)** | fallback_test (5) | INT-056..058 | E2E-020, E2E-021 | SEC-022 |
 
 ### 3.3 Claude Code Bridge — 240 Unit Tests Breakdown
 
@@ -339,7 +358,9 @@ go test ./internal/claudecode/... -race -count=1 -timeout=120s
 | Bot Framework JWKS | RSA keys injected directly via injectTestKey() | `CI_MOCK_EXCEPTION: Bot Framework live endpoint` |
 | Bridge tmux calls | tmux binary not available in CI containers | `CI_MOCK_EXCEPTION: tmux binary` |
 
-All exceptions use `httptest.NewServer` (real HTTP servers in test process), not mock objects. Bridge tests use `nil` tmux (no process spawning) to test all logic layers above tmux.
+| Claude CLI binary | claude binary not available in CI; fallback_test uses stubProvider test double | `CI_MOCK_EXCEPTION: Claude CLI binary` |
+
+All exceptions use `httptest.NewServer` (real HTTP servers in test process), not mock objects. Bridge tests use `nil` tmux (no process spawning) to test all logic layers above tmux. Fallback tests use `stubProvider` (implements full Provider interface) to test wiring and retryable error classification without requiring the `claude` binary.
 
 ---
 
@@ -352,6 +373,8 @@ All exceptions use `httptest.NewServer` (real HTTP servers in test process), not
 | E2E-011..016: Bridge manual tests | Requires live Telegram + tmux + Claude Code | @ceo | Medium (unit tests cover all logic) |
 | E2E-017..018: SOUL launch manual tests | Requires live Telegram + tmux + Claude Code + SOUL files | @ceo | Medium (unit tests cover strategy resolution) |
 | E2E-019: Cursor projection | Requires Cursor IDE installed | @devops | Low (unit tests cover file generation) |
+| E2E-020: Fallback deploy | Docker build + claude login required | @devops | Medium (unit tests cover all logic) |
+| E2E-021: Fallback E2E via Telegram | Requires primary provider failure (429/500) | @ceo | Medium (unit + structural tests cover chain) |
 
 ---
 
@@ -373,6 +396,9 @@ All exceptions use `httptest.NewServer` (real HTTP servers in test process), not
 | **Agent file overrides bridge governance** | **Low** | **High** | **D2 is the only security boundary — VerifyBridgeOverridesAgentFile documents invariant (SEC-020)** |
 | **Experimental Agent Teams API instability** | **Medium** | **Medium** | **ADR-012 NO-GO decision — deferred until API exits experimental** |
 | **Provider parity illusion** | **Medium** | **Low** | **ADR-013: per-provider projection, not unified abstraction** |
+| **Claude CLI npm on Alpine** | **Low** | **Medium** | **npm install in Dockerfile (not host binary mount); validated by E2E-020** |
+| **OAuth token expiry in container** | **Low** | **Medium** | **Named Docker volume (claude-oauth) persists token; doctor warns if missing** |
+| **Fallback fires excessively** | **Low** | **Medium** | **2-span tracing + OTEL metadata enables Grafana alerting (Sprint 26 backlog)** |
 
 ---
 
@@ -698,6 +724,74 @@ Step 5: Create a user file and verify it's preserved:
 Expected: custom.md not overwritten (skipped)
 ```
 
+### TEST-M12: Fallback Docker Deploy (E2E-020)
+
+**Goal**: Verify Claude CLI installs and runs inside Alpine container.
+
+```
+Step 1: Build with Claude CLI enabled:
+  ENABLE_CLAUDE_CLI=true docker compose build --no-cache mtclaw
+
+Step 2: Start container:
+  docker compose up -d mtclaw
+
+Step 3: Verify claude binary:
+  docker compose exec mtclaw claude --version
+Expected: @anthropic-ai/claude-code/2.x.x
+
+Step 4: Verify doctor output:
+  docker compose exec mtclaw ./mtclaw doctor
+Expected:
+  Claude CLI (fallback):
+    Binary:      /usr/local/bin/claude (or /usr/bin/claude)
+    Version:     2.x.x
+    Model:       sonnet
+    Timeout:     120s
+    OAuth:       /app/.claude (OK)
+  Provider Chain: bflow-ai-platform → claude-cli
+
+Step 5: Verify OAuth persistence across restart:
+  docker compose exec mtclaw claude login
+  docker compose restart mtclaw
+  docker compose exec mtclaw ls /app/.claude/
+Expected: OAuth config files persist (claude-oauth volume)
+```
+
+### TEST-M13: Fallback E2E via Telegram (E2E-021)
+
+**Goal**: Verify fallback activates on primary provider failure.
+
+```
+Prerequisites: Container running with Claude CLI enabled + logged in
+
+Step 1: Send a message to Telegram bot
+Expected: Normal response from bflow-ai-platform (primary)
+
+Step 2: Simulate primary failure by temporarily stopping bflow gateway:
+  docker compose stop bflow-ai-gateway-staging
+  (or set MTCLAW_BFLOW_BASE_URL to invalid host)
+
+Step 3: Send another message to Telegram bot
+Expected:
+  - Response arrives (from claude-cli fallback)
+  - slog shows: "primary provider failed, trying fallback"
+  - slog shows: "fallback provider succeeded"
+
+Step 4: Check traces in dashboard or OTEL:
+  - Primary fail span visible (status=error, provider=bflow-ai-platform)
+  - Fallback success span visible (status=completed, provider=claude-cli)
+  - Fallback span metadata: fallback=true, primary_provider=bflow-ai-platform
+
+Step 5: Restore primary:
+  docker compose start bflow-ai-gateway-staging
+  Send another message
+Expected: Response from bflow-ai-platform again (primary restored)
+
+Step 6: Record latency:
+  Primary response time: ___ms
+  Fallback response time: ___ms (expected: higher due to claude CLI subprocess)
+```
+
 ### Test Result Tracking
 
 | Test ID | Description | Tester | Date | Result | Notes |
@@ -713,9 +807,11 @@ Expected: custom.md not overwritten (skipped)
 | TEST-M09 | Permission approval | | | | |
 | TEST-M10 | SOUL-aware launch | | | | |
 | TEST-M11 | Install agents CLI | | | | |
+| TEST-M12 | Fallback Docker deploy | | | | |
+| TEST-M13 | Fallback E2E Telegram | | | | |
 
 ---
 
-**Next review**: After manual E2E validation
+**Next review**: After Sprint 25 deploy verification (E2E-020, E2E-021)
 **Owner**: [@tester]
-**Approved by**: [@cto] (pending)
+**Approved by**: [@cto] (pending Sprint 25 deploy sign-off)

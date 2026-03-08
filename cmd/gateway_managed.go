@@ -107,6 +107,7 @@ func wireManagedExtras(
 		TeamStore:              stores.Teams,
 		BuiltinToolStore:       stores.BuiltinTools,
 		GroupWriterCache:       groupWriterCache,
+		ProviderChain:          appCfg.ProviderChain.Chain,
 		OnEvent: func(event agent.AgentEvent) {
 			msgBus.Broadcast(bus.Event{
 				Name:    protocol.EventAgent,

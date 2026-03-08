@@ -88,6 +88,9 @@ type Loop struct {
 	sandboxContainerDir   string
 	sandboxWorkspaceAccess string
 
+	// Fallback provider for provider chain (nil = no fallback)
+	fallbackProvider providers.Provider
+
 	// Event callback for broadcasting agent events (run.started, chunk, tool.call, etc.)
 	onEvent func(event AgentEvent)
 
@@ -173,6 +176,9 @@ type LoopConfig struct {
 	// Thinking level: "off", "low", "medium", "high" (from agent other_config)
 	ThinkingLevel string
 
+	// Fallback provider for provider chain (nil = no fallback)
+	FallbackProvider providers.Provider
+
 	// Group writer cache for system prompt injection (managed mode)
 	GroupWriterCache *store.GroupWriterCache
 }
@@ -234,6 +240,7 @@ func NewLoop(cfg LoopConfig) *Loop {
 		maxMessageChars:       cfg.MaxMessageChars,
 		builtinToolSettings:   cfg.BuiltinToolSettings,
 		thinkingLevel:         cfg.ThinkingLevel,
+		fallbackProvider:      cfg.FallbackProvider,
 		groupWriterCache:      cfg.GroupWriterCache,
 	}
 }
@@ -638,12 +645,58 @@ func (l *Loop) runLoop(ctx context.Context, req RunRequest) (*RunResult, error) 
 			resp, err = l.provider.Chat(ctx, chatReq)
 		}
 
+		// Provider fallback chain (CTO-adjusted): on retryable error, try fallback provider.
+		// Guard: only fallback text-only when iteration > 1 (tools already ran).
+		// At iteration=1 with tools, propagate error — don't give wrong text-only answer (CTO-R2-1).
+		usedFallback := false
+		if err != nil && l.fallbackProvider != nil && providers.IsRetryableError(err) {
+			canFallback := true
+			if iteration == 1 && len(chatReq.Tools) > 0 {
+				canFallback = false // tools needed but not yet executed
+			}
+			if canFallback {
+				primaryErr := err
+				primaryProviderName := l.provider.Name()
+				slog.Warn("primary provider failed, trying fallback",
+					"agent", l.id, "iteration", iteration, "error", primaryErr.Error(),
+					"fallback", l.fallbackProvider.Name())
+
+				// Emit span for primary failure (so it's visible in traces)
+				l.emitLLMSpan(ctx, llmSpanStart, iteration, messages, nil, primaryErr)
+
+				fallbackReq := chatReq
+				fallbackReq.Tools = nil // CTO-501: always strip tools on fallback
+				// Always use Chat (not ChatStream) for fallback — single response (CTO-500/502)
+				fallbackStart := time.Now().UTC()
+				resp, err = l.fallbackProvider.Chat(ctx, fallbackReq)
+				if err == nil {
+					usedFallback = true
+					slog.Info("fallback provider succeeded",
+						"agent", l.id, "provider", l.fallbackProvider.Name())
+					// Emit fallback span with metadata (primary_provider, primary_error)
+					l.emitFallbackLLMSpan(ctx, fallbackStart, iteration, messages, resp, nil, primaryProviderName, primaryErr.Error())
+					// Emit fallback content as chunk if streaming was requested
+					if req.Stream && resp.Content != "" {
+						l.emit(AgentEvent{
+							Type:    protocol.ChatEventChunk,
+							AgentID: l.id,
+							RunID:   req.RunID,
+							Payload: map[string]string{"content": resp.Content},
+						})
+					}
+				}
+			}
+		}
+
 		if err != nil {
 			l.emitLLMSpan(ctx, llmSpanStart, iteration, messages, nil, err)
 			return nil, fmt.Errorf("LLM call failed (iteration %d): %w", iteration, err)
 		}
 
-		l.emitLLMSpan(ctx, llmSpanStart, iteration, messages, resp, nil)
+		// Only emit primary span if fallback was NOT used (fallback already emitted both spans)
+		if !usedFallback {
+			l.emitLLMSpan(ctx, llmSpanStart, iteration, messages, resp, nil)
+		}
 
 		if resp.Usage != nil {
 			totalUsage.PromptTokens += resp.Usage.PromptTokens

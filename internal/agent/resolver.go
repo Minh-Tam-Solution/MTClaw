@@ -37,6 +37,9 @@ type ResolverDeps struct {
 	ContextFileLoader ContextFileLoaderFunc
 	BootstrapCleanup  BootstrapCleanupFunc
 
+	// Provider fallback chain (ordered provider names for fallback)
+	ProviderChain []string
+
 	// Security
 	InjectionAction string // "log", "warn", "block", "off"
 	MaxMessageChars int
@@ -102,6 +105,23 @@ func NewManagedResolver(deps ResolverDeps) ResolverFunc {
 
 		if provider == nil {
 			return nil, fmt.Errorf("no provider available for agent %s", agentKey)
+		}
+
+		// Resolve fallback provider from chain (skip primary provider)
+		var fallbackProvider providers.Provider
+		if len(deps.ProviderChain) > 0 {
+			primaryName := provider.Name()
+			for _, name := range deps.ProviderChain {
+				if name == primaryName {
+					continue
+				}
+				if fp, err := deps.ProviderReg.Get(name); err == nil {
+					fallbackProvider = fp
+					slog.Debug("resolved fallback provider",
+						"agent", agentKey, "primary", primaryName, "fallback", name)
+					break
+				}
+			}
 		}
 
 		// Load bootstrap files from DB
@@ -266,6 +286,7 @@ func NewManagedResolver(deps ResolverDeps) ResolverFunc {
 			AgentUUID:         ag.ID,
 			AgentType:         ag.AgentType,
 			Provider:          provider,
+			FallbackProvider:  fallbackProvider,
 			Model:             ag.Model,
 			ContextWindow:     contextWindow,
 			MaxIterations:     maxIter,

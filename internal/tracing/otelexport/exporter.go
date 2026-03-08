@@ -2,6 +2,7 @@ package otelexport
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
@@ -167,6 +168,16 @@ func (e *Exporter) exportSpan(ctx context.Context, s store.SpanData) {
 			preview = preview[:500] + "..."
 		}
 		attrs = append(attrs, attribute.String("mtclaw.output_preview", preview))
+	}
+
+	// Propagate metadata as OTel attributes (e.g. fallback=true, primary_provider, primary_error)
+	if len(s.Metadata) > 0 {
+		var metaMap map[string]any
+		if json.Unmarshal(s.Metadata, &metaMap) == nil {
+			for k, v := range metaMap {
+				attrs = append(attrs, attribute.String("mtclaw.meta."+k, fmt.Sprintf("%v", v)))
+			}
+		}
 	}
 
 	// Create parent context if parent span exists

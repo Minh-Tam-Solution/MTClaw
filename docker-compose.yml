@@ -15,6 +15,7 @@ services:
       dockerfile: Dockerfile
       args:
         ENABLE_OTEL: "false"
+        ENABLE_CLAUDE_CLI: "${ENABLE_CLAUDE_CLI:-false}"
     ports:
       - "${MTCLAW_PORT:-18790}:18790"
     env_file:
@@ -52,18 +53,25 @@ services:
       - MTCLAW_LARK_VERIFICATION_TOKEN=${MTCLAW_LARK_VERIFICATION_TOKEN:-}
       - MTCLAW_ZALO_TOKEN=${MTCLAW_ZALO_TOKEN:-}
       - MTCLAW_WHATSAPP_BRIDGE_URL=${MTCLAW_WHATSAPP_BRIDGE_URL:-}
+      # Claude CLI fallback provider (Sprint 24 — ADR-014)
+      - MTCLAW_CLAUDE_ENABLED=${MTCLAW_CLAUDE_ENABLED:-false}
+      - MTCLAW_CLAUDE_PATH=${MTCLAW_CLAUDE_PATH:-claude}
+      - MTCLAW_CLAUDE_MODEL=${MTCLAW_CLAUDE_MODEL:-sonnet}
+      - MTCLAW_CLAUDE_TIMEOUT=${MTCLAW_CLAUDE_TIMEOUT:-120}
+      - MTCLAW_PROVIDER_CHAIN=${MTCLAW_PROVIDER_CHAIN:-}
       # Debug
       - MTCLAW_TRACE_VERBOSE=${MTCLAW_TRACE_VERBOSE:-0}
     volumes:
       - mtclaw-data:/app/data
       - mtclaw-workspace:/app/workspace  # standalone mode workspace
+      - claude-oauth:/app/.claude         # Claude CLI OAuth token persistence
     security_opt:
       - no-new-privileges:true
     cap_drop:
       - ALL
     read_only: true
     tmpfs:
-      - /tmp:rw,noexec,nosuid,size=256m
+      - /tmp:rw,nosuid,size=256m  # noexec removed — Claude CLI subprocess needs it
     deploy:
       resources:
         limits:
@@ -75,3 +83,4 @@ services:
 volumes:
   mtclaw-data:
   mtclaw-workspace:
+  claude-oauth:

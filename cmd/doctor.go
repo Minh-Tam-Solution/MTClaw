@@ -119,6 +119,57 @@ func runDoctor() {
 		checkChannel("Zalo", cfg.Channels.Zalo.Enabled, cfg.Channels.Zalo.Token != "")
 	}
 
+	// Claude CLI (fallback provider)
+	if cfg.Providers.ClaudeCLI.Enabled {
+		fmt.Println()
+		fmt.Println("  Claude CLI (fallback):")
+		cliPath := cfg.Providers.ClaudeCLI.Path
+		if cliPath == "" {
+			cliPath = "claude"
+		}
+		if path, err := exec.LookPath(cliPath); err != nil {
+			fmt.Printf("    %-12s NOT FOUND (%s)\n", "Binary:", cliPath)
+		} else {
+			fmt.Printf("    %-12s %s\n", "Binary:", path)
+			// Check version
+			out, err := exec.Command(path, "--version").Output()
+			if err != nil {
+				fmt.Printf("    %-12s UNKNOWN (--version failed)\n", "Version:")
+			} else {
+				fmt.Printf("    %-12s %s\n", "Version:", strings.TrimSpace(string(out)))
+			}
+		}
+		model := cfg.Providers.ClaudeCLI.Model
+		if model == "" {
+			model = "sonnet"
+		}
+		fmt.Printf("    %-12s %s\n", "Model:", model)
+		timeout := cfg.Providers.ClaudeCLI.Timeout
+		if timeout <= 0 {
+			timeout = 120
+		}
+		fmt.Printf("    %-12s %ds\n", "Timeout:", timeout)
+		// Check OAuth token persistence (claude login state)
+		home := os.Getenv("HOME")
+		if home == "" {
+			home = "/app"
+		}
+		oauthDir := home + "/.claude"
+		if info, err := os.Stat(oauthDir); err != nil {
+			fmt.Printf("    %-12s NOT FOUND (%s) — run: claude login\n", "OAuth:", oauthDir)
+		} else if !info.IsDir() {
+			fmt.Printf("    %-12s NOT A DIRECTORY (%s)\n", "OAuth:", oauthDir)
+		} else {
+			fmt.Printf("    %-12s %s (OK)\n", "OAuth:", oauthDir)
+		}
+	}
+
+	// Provider chain
+	if len(cfg.ProviderChain.Chain) > 0 {
+		fmt.Println()
+		fmt.Printf("  Provider Chain: %s\n", strings.Join(cfg.ProviderChain.Chain, " → "))
+	}
+
 	// External tools
 	fmt.Println()
 	fmt.Println("  External Tools:")

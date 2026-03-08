@@ -104,6 +104,21 @@ type ProvidersConfig struct {
 	DashScope  ProviderConfig `json:"dashscope"`
 	Bailian    ProviderConfig `json:"bailian"`
 	BflowAI    ProviderConfig `json:"bflow_ai"`
+	ClaudeCLI  ClaudeCLIProviderConfig `json:"claude_cli,omitempty"`
+}
+
+// ClaudeCLIProviderConfig configures the Claude CLI fallback provider.
+// Uses Claude Max subscription (OAuth) — NOT API key billing.
+type ClaudeCLIProviderConfig struct {
+	Enabled bool   `json:"enabled,omitempty"`
+	Path    string `json:"path,omitempty"`    // path to claude binary (default: "claude")
+	Model   string `json:"model,omitempty"`   // model name (default: "sonnet")
+	Timeout int    `json:"timeout,omitempty"` // subprocess timeout in seconds (default: 120)
+}
+
+// ProviderChainConfig configures the provider fallback chain.
+type ProviderChainConfig struct {
+	Chain []string `json:"chain,omitempty"` // ordered list of provider names for fallback
 }
 
 type ProviderConfig struct {
@@ -127,7 +142,8 @@ func (c *Config) HasAnyProvider() bool {
 		p.Perplexity.APIKey != "" ||
 		p.DashScope.APIKey != "" ||
 		p.Bailian.APIKey != "" ||
-		p.BflowAI.APIKey != ""
+		p.BflowAI.APIKey != "" ||
+		p.ClaudeCLI.Enabled
 }
 
 // GatewayConfig controls the gateway server.

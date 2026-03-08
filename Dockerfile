@@ -33,12 +33,19 @@ RUN set -eux; \
 FROM alpine:3.22
 
 ARG ENABLE_SANDBOX=false
+ARG ENABLE_CLAUDE_CLI=false
 
 # Install ca-certificates + wget (healthcheck) + optionally docker-cli (sandbox)
+# + optionally nodejs+npm+claude-cli (fallback provider via Claude Max subscription)
 RUN set -eux; \
     apk add --no-cache ca-certificates wget; \
     if [ "$ENABLE_SANDBOX" = "true" ]; then \
         apk add --no-cache docker-cli; \
+    fi; \
+    if [ "$ENABLE_CLAUDE_CLI" = "true" ]; then \
+        apk add --no-cache nodejs npm; \
+        npm install -g @anthropic-ai/claude-code; \
+        npm cache clean --force; \
     fi
 
 # Non-root user
@@ -52,11 +59,13 @@ COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
 # Create data directories (owned by mtclaw user)
-RUN mkdir -p /app/workspace /app/data /app/sessions /app/skills /app/tsnet-state /app/.mtclaw \
+# /app/.claude/ stores OAuth token for Claude CLI fallback provider
+RUN mkdir -p /app/workspace /app/data /app/sessions /app/skills /app/tsnet-state /app/.mtclaw /app/.claude \
     && chown -R mtclaw:mtclaw /app
 
 # Default environment
-ENV MTCLAW_CONFIG=/app/config.json \
+ENV HOME=/app \
+    MTCLAW_CONFIG=/app/config.json \
     MTCLAW_WORKSPACE=/app/workspace \
     MTCLAW_DATA_DIR=/app/data \
     MTCLAW_SESSIONS_STORAGE=/app/sessions \

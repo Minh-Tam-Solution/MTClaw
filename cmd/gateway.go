@@ -757,11 +757,32 @@ func runGateway() {
 
 	// Wire Claude Code Bridge (ADR-010, CTO I2) — inject into all Telegram channels.
 	if cfg.Bridge.Enabled {
-		bridgeCfg := claudecode.BridgeConfig{
-			Enabled:       cfg.Bridge.Enabled,
-			HookPort:      cfg.Bridge.HookPort,
-			AuditDir:      cfg.Bridge.AuditDir,
-			StandaloneDir: cfg.Bridge.StandaloneDir,
+		bridgeCfg := claudecode.DefaultBridgeConfig()
+		bridgeCfg.Enabled = cfg.Bridge.Enabled
+		bridgeCfg.HookPort = cfg.Bridge.HookPort
+		if cfg.Bridge.AuditDir != "" {
+			bridgeCfg.AuditDir = cfg.Bridge.AuditDir
+		}
+		if cfg.Bridge.StandaloneDir != "" {
+			bridgeCfg.StandaloneDir = cfg.Bridge.StandaloneDir
+		}
+		// Apply admission overrides from config.json if present.
+		if adm := cfg.Bridge.Admission; len(adm) > 0 {
+			if v, ok := adm["max_sessions_per_agent"].(float64); ok && v > 0 {
+				bridgeCfg.Admission.MaxSessionsPerAgent = int(v)
+			}
+			if v, ok := adm["max_total_sessions"].(float64); ok && v > 0 {
+				bridgeCfg.Admission.MaxTotalSessions = int(v)
+			}
+			if v, ok := adm["max_cpu_percent"].(float64); ok && v > 0 {
+				bridgeCfg.Admission.MaxCPUPercent = v
+			}
+			if v, ok := adm["max_memory_percent"].(float64); ok && v > 0 {
+				bridgeCfg.Admission.MaxMemoryPercent = v
+			}
+			if v, ok := adm["per_tenant_session_cap"].(float64); ok && v > 0 {
+				bridgeCfg.Admission.PerTenantSessionCap = int(v)
+			}
 		}
 		tmuxBridge, err := claudecode.NewTmuxBridge()
 		if err != nil {
