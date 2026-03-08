@@ -67,7 +67,7 @@ type Service struct {
 }
 
 // NewService creates a new pairing service.
-// storePath is the path to the JSON file for persistence (e.g., ~/.goclaw/data/pairing.json).
+// storePath is the path to the JSON file for persistence (e.g., ~/.mtclaw/data/pairing.json).
 func NewService(storePath string) *Service {
 	s := &Service{
 		storePath: storePath,

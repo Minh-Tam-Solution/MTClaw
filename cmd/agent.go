@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 )
 
 func agentCmd() *cobra.Command {
@@ -211,7 +211,7 @@ func runAgentAdd() {
 	}
 
 	// Step 5: Workspace
-	defaultWS := fmt.Sprintf("~/.goclaw/workspace-%s", agentID)
+	defaultWS := fmt.Sprintf("~/.mtclaw/workspace-%s", agentID)
 	workspace, err := promptString("Workspace directory", "", defaultWS)
 	if err != nil {
 		fmt.Println("Cancelled.")

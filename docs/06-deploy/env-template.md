@@ -122,7 +122,7 @@ TENANT_DAILY_REQUEST_LIMIT=5000
 ## Security Checklist
 
 - [ ] `.env` is in `.gitignore` (never commit secrets)
-- [ ] `POSTGRES_PASSWORD` is unique and strong (not the default `goclaw`)
+- [ ] `POSTGRES_PASSWORD` is unique and strong (not the default `mtclaw`)
 - [ ] `GOCLAW_ENCRYPTION_KEY` generated fresh (`openssl rand -hex 32`)
 - [ ] `GOCLAW_BFLOW_API_KEY` is the correct key for this environment
 - [ ] `GOCLAW_TELEGRAM_TOKEN` matches the intended bot

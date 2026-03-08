@@ -83,7 +83,7 @@ Sprint 5 bridges prototype → production pilot. Three parallel tracks:
 **So that** the Telegram bot is accessible 24/7 for pilot users.
 
 **Acceptance Criteria**:
-- Given Docker Compose → `goclaw` container starts successfully
+- Given Docker Compose → `mtclaw` container starts successfully
 - Given ai-net bridge → Bflow AI-Platform reachable at `http://ai-platform:8120`
 - Given Telegram token → bot appears online and responds to `/start`
 - Given PostgreSQL → all 12 migrations applied, 17 agents queryable
@@ -226,7 +226,7 @@ Sprint 5 bridges prototype → production pilot. Three parallel tracks:
 | R4 | MTS adoption <30% WAU | Med | High | Onboarding guide + daily nudge + quick wins |
 | R7 | PR Gate false positives | Med | Med | WARNING mode = no blocking, collect data |
 | R12 | web_fetch can't access private GitHub repos | High | Med | Test with public repos; PAT for Sprint 8 |
-| R13 | MTS VPS Docker resources insufficient | Low | Med | Monitor RAM/CPU; goclaw has 1G limit |
+| R13 | MTS VPS Docker resources insufficient | Low | Med | Monitor RAM/CPU; mtclaw has 1G limit |
 | R14 | Sprint 4 feedback reveals blocking UX | Med | High | Day 1 review + hotfix before pilot |
 
 ---

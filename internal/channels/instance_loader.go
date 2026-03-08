@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // ChannelFactory creates a Channel from DB instance data.

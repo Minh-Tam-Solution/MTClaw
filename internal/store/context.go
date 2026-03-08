@@ -10,21 +10,21 @@ type contextKey string
 
 const (
 	// UserIDKey is the context key for the external user ID (TEXT, free-form).
-	UserIDKey contextKey = "goclaw_user_id"
+	UserIDKey contextKey = "mtclaw_user_id"
 	// AgentIDKey is the context key for the agent UUID (managed mode).
-	AgentIDKey contextKey = "goclaw_agent_id"
+	AgentIDKey contextKey = "mtclaw_agent_id"
 	// AgentTypeKey is the context key for the agent type ("open" or "predefined").
-	AgentTypeKey contextKey = "goclaw_agent_type"
+	AgentTypeKey contextKey = "mtclaw_agent_type"
 	// SenderIDKey is the original individual sender's ID (not group-scoped).
 	// In group chats, UserIDKey is group-scoped but SenderIDKey preserves
 	// the actual person who sent the message.
-	SenderIDKey contextKey = "goclaw_sender_id"
+	SenderIDKey contextKey = "mtclaw_sender_id"
 	// TenantIDKey is the context key for RLS tenant isolation (maps to agents.owner_id).
 	// Set by tenant middleware; used by SET LOCAL app.tenant_id in transactions.
-	TenantIDKey contextKey = "goclaw_tenant_id"
+	TenantIDKey contextKey = "mtclaw_tenant_id"
 	// AgentKeyKey is the context key for the agent's string key (e.g. "pm", "dev", "assistant").
 	// Set after agent resolution; used for structured logging and OTEL attributes.
-	AgentKeyKey contextKey = "goclaw_agent_key"
+	AgentKeyKey contextKey = "mtclaw_agent_key"
 )
 
 // WithUserID returns a new context with the given user ID.

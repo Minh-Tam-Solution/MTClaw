@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // BuildTeamContext generates the team context prompt for team-routed messages.

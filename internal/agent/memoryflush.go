@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
 )
 
 // Default memory flush prompts matching TS memory-flush.ts.

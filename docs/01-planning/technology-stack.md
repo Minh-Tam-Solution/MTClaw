@@ -160,7 +160,7 @@ GoClaw channel abstraction (`internal/channels/`) supports multiple channels via
 | pgvector | pgvector-go | MIT |
 
 **License compliance**: All dependencies are MIT/BSD/Apache 2.0. No AGPL/GPL contamination.
-**Verified**: Sprint 1 license verification (`docs/00-foundation/goclaw-license-verification.md`)
+**Verified**: Sprint 1 license verification (`docs/00-foundation/mtclaw-license-verification.md`)
 
 ---
 
@@ -182,4 +182,4 @@ GoClaw channel abstraction (`internal/channels/`) supports multiple channels via
 - [ADR-002: Three-System Architecture](../02-design/01-ADRs/SPEC-0002-ADR-002-Three-System-Architecture.md)
 - [ADR-003: Observability Architecture](../02-design/01-ADRs/SPEC-0003-ADR-003-Observability-Architecture.md)
 - [Business Case — Cost Analysis](../00-foundation/business-case.md)
-- [GoClaw License Verification](../00-foundation/goclaw-license-verification.md)
+- [GoClaw License Verification](../00-foundation/mtclaw-license-verification.md)

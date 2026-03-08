@@ -234,7 +234,7 @@ import (
     "log/slog"
     "net/http"
 
-    "github.com/nextlevelbuilder/goclaw/internal/bus"
+    "github.com/Minh-Tam-Solution/MTClaw/internal/bus"
 )
 
 // Activity is a Bot Framework Activity message (subset of fields we use).
@@ -556,9 +556,9 @@ import (
     "log/slog"
     "net/http"
 
-    "github.com/nextlevelbuilder/goclaw/internal/bus"
-    "github.com/nextlevelbuilder/goclaw/internal/channels"
-    "github.com/nextlevelbuilder/goclaw/internal/store"
+    "github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+    "github.com/Minh-Tam-Solution/MTClaw/internal/channels"
+    "github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // MSTeamsChannel implements channels.Channel for Microsoft Teams via Bot Framework.
@@ -650,9 +650,9 @@ import (
     "encoding/json"
     "fmt"
 
-    "github.com/nextlevelbuilder/goclaw/internal/bus"
-    "github.com/nextlevelbuilder/goclaw/internal/channels"
-    "github.com/nextlevelbuilder/goclaw/internal/store"
+    "github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+    "github.com/Minh-Tam-Solution/MTClaw/internal/channels"
+    "github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // Config is the MS Teams channel configuration (read from MSTeamsConfig via JSON).
@@ -703,7 +703,7 @@ var Factory channels.ChannelFactory = func(
 ```go
 import (
     // existing imports...
-    "github.com/nextlevelbuilder/goclaw/extensions/msteams"
+    "github.com/Minh-Tam-Solution/MTClaw/extensions/msteams"
 )
 
 // In loadManagedChannels:

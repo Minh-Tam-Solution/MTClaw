@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/sessions"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sessions"
 )
 
 func agentChatCmd() *cobra.Command {
@@ -26,10 +26,10 @@ func agentChatCmd() *cobra.Command {
 Falls back to standalone mode if the gateway is not running.
 
 Examples:
-  goclaw agent chat                          # Interactive REPL
-  goclaw agent chat --name coder             # Chat with "coder" agent
-  goclaw agent chat -m "What time is it?"    # One-shot message
-  goclaw agent chat -s my-session            # Continue a session`,
+  mtclaw agent chat                          # Interactive REPL
+  mtclaw agent chat --name coder             # Chat with "coder" agent
+  mtclaw agent chat -m "What time is it?"    # One-shot message
+  mtclaw agent chat -s my-session            # Continue a session`,
 		Run: func(cmd *cobra.Command, args []string) {
 			runAgentChat(agentName, message, sessionKey)
 		},

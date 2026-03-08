@@ -11,8 +11,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // protectedFileSet defines files that require group file writer permission in group chats.

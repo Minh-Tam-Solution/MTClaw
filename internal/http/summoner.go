@@ -10,11 +10,11 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 // Summoning event type constants.

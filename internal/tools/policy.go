@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
 )
 
 // Tool groups map group names to tool names (matching TS tool-policy.ts TOOL_GROUPS).
@@ -19,9 +19,9 @@ var toolGroups = map[string][]string{
 	"automation": {"cron", "gateway"},
 	"messaging":  {"message", "create_forum_topic"},
 	"nodes":      {"nodes"},
-	// Composite group: all goclaw native tools (excludes provider plugins).
-	// Matching TS group:goclaw.
-	"goclaw": {
+	// Composite group: all mtclaw native tools (excludes provider plugins).
+	// Matching TS group:mtclaw.
+	"mtclaw": {
 		"browser", "canvas", "nodes", "cron", "message", "gateway",
 		"agents_list", "sessions_list", "sessions_history", "sessions_send",
 		"sessions_spawn", "session_status",

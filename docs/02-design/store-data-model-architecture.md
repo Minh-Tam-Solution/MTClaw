@@ -42,7 +42,7 @@ The `Stores` struct is the top-level container holding all storage backends. In 
 
 ### Standalone AgentStore (FileAgentStore)
 
-In standalone mode, `FileAgentStore` provides per-user context files and profiles without PostgreSQL. It combines filesystem storage (agent-level files like SOUL.md) with SQLite (`~/.goclaw/data/agents.db`) for per-user data:
+In standalone mode, `FileAgentStore` provides per-user context files and profiles without PostgreSQL. It combines filesystem storage (agent-level files like SOUL.md) with SQLite (`~/.mtclaw/data/agents.db`) for per-user data:
 
 | Data | Storage |
 |------|---------|
@@ -52,7 +52,7 @@ In standalone mode, `FileAgentStore` provides per-user context files and profile
 | User profiles | SQLite `user_profiles` |
 | Group file writers | SQLite `group_file_writers` |
 
-Agent UUIDs use UUID v5 (deterministic): `uuid.NewSHA1(namespace, "goclaw-standalone:{agentKey}")` -- stable across restarts without database sequences.
+Agent UUIDs use UUID v5 (deterministic): `uuid.NewSHA1(namespace, "mtclaw-standalone:{agentKey}")` -- stable across restarts without database sequences.
 
 ---
 
@@ -500,10 +500,10 @@ flowchart TD
 
 | Key | Type | Purpose |
 |-----|------|---------|
-| `goclaw_user_id` | string | External user ID (e.g., Telegram user ID) |
-| `goclaw_agent_id` | uuid.UUID | Agent UUID (managed mode) |
-| `goclaw_agent_type` | string | Agent type: `"open"` or `"predefined"` |
-| `goclaw_sender_id` | string | Original individual sender ID (in group chats, `user_id` is group-scoped but `sender_id` preserves the actual person) |
+| `mtclaw_user_id` | string | External user ID (e.g., Telegram user ID) |
+| `mtclaw_agent_id` | uuid.UUID | Agent UUID (managed mode) |
+| `mtclaw_agent_type` | string | Agent type: `"open"` or `"predefined"` |
+| `mtclaw_sender_id` | string | Original individual sender ID (in group chats, `user_id` is group-scoped but `sender_id` preserves the actual person) |
 
 ### Tool Context Keys
 

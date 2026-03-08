@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // isMemoryPath checks if a path refers to a memory file (MEMORY.md, memory.md, memory/*).

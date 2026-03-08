@@ -12,14 +12,14 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/nextlevelbuilder/goclaw/internal/agent"
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	httpapi "github.com/nextlevelbuilder/goclaw/internal/http"
-	"github.com/nextlevelbuilder/goclaw/internal/permissions"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/tools"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/agent"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	httpapi "github.com/Minh-Tam-Solution/MTClaw/internal/http"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/permissions"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tools"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 // Server is the main gateway server handling WebSocket and HTTP connections.

@@ -26,7 +26,7 @@ type StoreConfig struct {
 	// Mode: "standalone" (default) or "managed".
 	Mode string
 
-	// SkillsStorageDir is the directory for skill file content (default: ~/.goclaw/skills-store/).
+	// SkillsStorageDir is the directory for skill file content (default: ~/.mtclaw/skills-store/).
 	SkillsStorageDir string
 
 	// SessionsDir is the directory for file-based session storage (standalone mode).
@@ -41,7 +41,7 @@ type StoreConfig struct {
 	// PairingStorePath is the file path for pairing data persistence (standalone mode).
 	PairingStorePath string
 
-	// GlobalSkillsDir is the global skills directory (e.g. ~/.goclaw/skills).
+	// GlobalSkillsDir is the global skills directory (e.g. ~/.mtclaw/skills).
 	GlobalSkillsDir string
 
 	// BuiltinSkillsDir is the builtin skills directory (bundled with binary).

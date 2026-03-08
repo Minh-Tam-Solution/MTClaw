@@ -12,10 +12,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/channels"
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/channels"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // msteamsCreds maps the credentials JSON from the channel_instances table.

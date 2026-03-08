@@ -3,9 +3,9 @@ package methods
 import (
 	"context"
 
-	"github.com/nextlevelbuilder/goclaw/internal/channels"
-	"github.com/nextlevelbuilder/goclaw/internal/gateway"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/channels"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/gateway"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 // ChannelsMethods handles channels.list, channels.status, channels.toggle.

@@ -13,7 +13,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
 )
 
 // InternalChannels are system channels excluded from outbound dispatch.

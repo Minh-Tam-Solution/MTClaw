@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nextlevelbuilder/goclaw/internal/cron"
-	"github.com/nextlevelbuilder/goclaw/internal/sandbox"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/cron"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sandbox"
 )
 
 // FlexibleStringSlice accepts both ["str"] and [123] in JSON.
@@ -51,25 +51,36 @@ type Config struct {
 	Cron      CronConfig      `json:"cron,omitempty"`
 	Telemetry TelemetryConfig `json:"telemetry,omitempty"`
 	Tailscale TailscaleConfig `json:"tailscale,omitempty"`
-	GitHub    GitHubConfig    `json:"github,omitempty"`
-	Bindings  []AgentBinding  `json:"bindings,omitempty"`
+	GitHub    GitHubConfig           `json:"github,omitempty"`
+	Bridge    BridgeConfig `json:"bridge,omitempty"`
+	Bindings  []AgentBinding         `json:"bindings,omitempty"`
 	mu        sync.RWMutex
+}
+
+// BridgeConfig configures the Claude Code terminal bridge.
+// Parsed here to avoid import cycle; claudecode package defines its own matching type.
+type BridgeConfig struct {
+	Enabled       bool                   `json:"enabled"`
+	HookPort      int                    `json:"hook_port,omitempty"`
+	Admission     map[string]interface{} `json:"admission,omitempty"`
+	AuditDir      string                 `json:"audit_dir,omitempty"`
+	StandaloneDir string                 `json:"standalone_dir,omitempty"`
 }
 
 // TailscaleConfig configures the optional Tailscale tsnet listener.
 // Requires building with -tags tsnet. Auth key from env only (never persisted).
 type TailscaleConfig struct {
-	Hostname  string `json:"hostname"`            // Tailscale machine name (e.g. "goclaw-gateway")
-	StateDir  string `json:"state_dir,omitempty"` // persistent state directory (default: os.UserConfigDir/tsnet-goclaw)
-	AuthKey   string `json:"-"`                   // from env GOCLAW_TSNET_AUTH_KEY only
+	Hostname  string `json:"hostname"`            // Tailscale machine name (e.g. "mtclaw-gateway")
+	StateDir  string `json:"state_dir,omitempty"` // persistent state directory (default: os.UserConfigDir/tsnet-mtclaw)
+	AuthKey   string `json:"-"`                   // from env MTCLAW_TSNET_AUTH_KEY only
 	Ephemeral bool   `json:"ephemeral,omitempty"` // remove node on exit (default false)
 	EnableTLS bool   `json:"enable_tls,omitempty"` // use ListenTLS for auto HTTPS certs
 }
 
 // DatabaseConfig configures Postgres for managed mode.
-// PostgresDSN is NEVER read from config.json (secret) — only from env GOCLAW_POSTGRES_DSN.
+// PostgresDSN is NEVER read from config.json (secret) — only from env MTCLAW_POSTGRES_DSN.
 type DatabaseConfig struct {
-	PostgresDSN string `json:"-"`              // from env GOCLAW_POSTGRES_DSN only
+	PostgresDSN string `json:"-"`              // from env MTCLAW_POSTGRES_DSN only
 	Mode        string `json:"mode,omitempty"` // "standalone" (default) or "managed"
 }
 
@@ -80,7 +91,7 @@ func (c *Config) IsManagedMode() bool {
 
 // SkillsConfig configures the skills storage system.
 type SkillsConfig struct {
-	StorageDir string `json:"storage_dir,omitempty"` // directory for skill content (default: ~/.goclaw/skills-store/)
+	StorageDir string `json:"storage_dir,omitempty"` // directory for skill content (default: ~/.mtclaw/skills-store/)
 }
 
 // AgentBinding maps a channel/peer pattern to a specific agent.
@@ -216,7 +227,7 @@ type MemoryConfig struct {
 // Matching TS agents.defaults.sandbox.
 type SandboxConfig struct {
 	Mode            string            `json:"mode,omitempty"`             // "off" (default), "non-main", "all"
-	Image           string            `json:"image,omitempty"`            // Docker image (default: "goclaw-sandbox:bookworm-slim")
+	Image           string            `json:"image,omitempty"`            // Docker image (default: "mtclaw-sandbox:bookworm-slim")
 	WorkspaceAccess string            `json:"workspace_access,omitempty"` // "none", "ro", "rw" (default)
 	Scope           string            `json:"scope,omitempty"`            // "session" (default), "agent", "shared"
 	MemoryMB        int               `json:"memory_mb,omitempty"`        // memory limit in MB (default 512)
@@ -327,7 +338,7 @@ type TelemetryConfig struct {
 	Endpoint    string            `json:"endpoint,omitempty"`     // OTLP endpoint (e.g. "localhost:4317", "https://otel.example.com:4318")
 	Protocol    string            `json:"protocol,omitempty"`     // "grpc" (default) or "http"
 	Insecure    bool              `json:"insecure,omitempty"`     // skip TLS verification (default false, set true for local dev)
-	ServiceName string            `json:"service_name,omitempty"` // OTEL service name (default "goclaw-gateway")
+	ServiceName string            `json:"service_name,omitempty"` // OTEL service name (default "mtclaw-gateway")
 	Headers     map[string]string `json:"headers,omitempty"`      // extra headers (e.g. auth tokens for cloud backends)
 }
 
@@ -402,6 +413,7 @@ func (c *Config) ReplaceFrom(src *Config) {
 	c.Telemetry = src.Telemetry
 	c.Tailscale = src.Tailscale
 	c.GitHub = src.GitHub
+	c.Bridge = src.Bridge
 	c.Bindings = src.Bindings
 }
 

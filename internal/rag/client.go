@@ -43,12 +43,12 @@ type Client struct {
 }
 
 // NewClient creates a RAG client using Bflow AI-Platform credentials.
-// If baseURL is empty, defaults to GOCLAW_BFLOW_BASE_URL env or http://ai-platform:8120.
-// If apiKey is empty, reads from GOCLAW_BFLOW_API_KEY env.
+// If baseURL is empty, defaults to MTCLAW_BFLOW_BASE_URL env or http://ai-platform:8120.
+// If apiKey is empty, reads from MTCLAW_BFLOW_API_KEY env.
 // If tenantID is empty, reads from BFLOW_TENANT_ID env.
 func NewClient(baseURL, apiKey, tenantID string) *Client {
 	if baseURL == "" {
-		baseURL = os.Getenv("GOCLAW_BFLOW_BASE_URL")
+		baseURL = os.Getenv("MTCLAW_BFLOW_BASE_URL")
 	}
 	if baseURL == "" {
 		baseURL = "http://ai-platform:8120"
@@ -56,7 +56,7 @@ func NewClient(baseURL, apiKey, tenantID string) *Client {
 	baseURL = strings.TrimRight(baseURL, "/")
 
 	if apiKey == "" {
-		apiKey = os.Getenv("GOCLAW_BFLOW_API_KEY")
+		apiKey = os.Getenv("MTCLAW_BFLOW_API_KEY")
 	}
 	if tenantID == "" {
 		tenantID = os.Getenv("BFLOW_TENANT_ID")

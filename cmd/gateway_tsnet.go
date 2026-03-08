@@ -11,7 +11,7 @@ import (
 
 	"tailscale.com/tsnet"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 )
 
 // initTailscale starts an additional Tailscale listener alongside the main gateway.
@@ -19,7 +19,7 @@ import (
 func initTailscale(ctx context.Context, cfg *config.Config, mux http.Handler) func() {
 	tc := cfg.Tailscale
 	if tc.Hostname == "" {
-		slog.Debug("Tailscale available but not configured (set GOCLAW_TSNET_HOSTNAME to enable)")
+		slog.Debug("Tailscale available but not configured (set MTCLAW_TSNET_HOSTNAME to enable)")
 		return nil
 	}
 

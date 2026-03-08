@@ -152,7 +152,7 @@ Generate a JSON specification following this schema:
 
 **Validation**:
 - [ ] File created at correct path
-- [ ] `goclaw skills list` (or equivalent) shows spec-factory
+- [ ] `mtclaw skills list` (or equivalent) shows spec-factory
 - [ ] Frontmatter parsed correctly (name + description)
 
 ---

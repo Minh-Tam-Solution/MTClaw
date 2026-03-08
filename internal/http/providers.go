@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // ProvidersHandler handles LLM provider CRUD endpoints (managed mode).

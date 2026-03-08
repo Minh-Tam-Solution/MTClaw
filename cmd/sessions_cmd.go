@@ -9,11 +9,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/sessions"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/store/file"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sessions"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store/file"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 func sessionsCmd() *cobra.Command {

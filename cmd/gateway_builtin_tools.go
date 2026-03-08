@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"log/slog"
 
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/tools"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tools"
 )
 
 // builtinToolSeedData returns the canonical list of built-in tools to seed into the database.

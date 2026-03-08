@@ -6,10 +6,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
-// Version is set at build time via -ldflags "-X github.com/nextlevelbuilder/goclaw/cmd.Version=v1.0.0"
+// Version is set at build time via -ldflags "-X github.com/Minh-Tam-Solution/MTClaw/cmd.Version=v1.0.0"
 var Version = "dev"
 
 var (
@@ -27,7 +27,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default: config.json or $GOCLAW_CONFIG)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default: config.json or $MTCLAW_CONFIG)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable debug logging")
 
 	rootCmd.AddCommand(onboardCmd())
@@ -43,6 +43,7 @@ func init() {
 	rootCmd.AddCommand(sessionsCmd())
 	rootCmd.AddCommand(migrateCmd())
 	rootCmd.AddCommand(upgradeCmd())
+	rootCmd.AddCommand(bridgeCmd())
 }
 
 func versionCmd() *cobra.Command {
@@ -59,7 +60,7 @@ func resolveConfigPath() string {
 	if cfgFile != "" {
 		return cfgFile
 	}
-	if v := os.Getenv("GOCLAW_CONFIG"); v != "" {
+	if v := os.Getenv("MTCLAW_CONFIG"); v != "" {
 		return v
 	}
 	return "config.json"

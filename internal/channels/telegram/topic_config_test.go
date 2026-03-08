@@ -3,7 +3,7 @@ package telegram
 import (
 	"testing"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 )
 
 func boolPtr(b bool) *bool { return &b }

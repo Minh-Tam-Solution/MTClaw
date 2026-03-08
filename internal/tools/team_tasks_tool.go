@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 // TeamTasksTool exposes the shared team task list to agents.

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 )
 
 // providerPriority defines the order in which providers are auto-detected
@@ -19,7 +19,7 @@ var providerPriority = []string{
 	"bflow-ai-platform",
 }
 
-// canAutoOnboard returns true if any GOCLAW_*_API_KEY env var is set,
+// canAutoOnboard returns true if any MTCLAW_*_API_KEY env var is set,
 // indicating the user wants non-interactive configuration (e.g. Docker).
 func canAutoOnboard() bool {
 	for _, name := range providerPriority {
@@ -42,8 +42,8 @@ func runAutoOnboard(cfgPath string) bool {
 	cfg := config.Default()
 	cfg.ApplyEnvOverrides()
 
-	// 1. Resolve provider: respect GOCLAW_PROVIDER if set, otherwise auto-detect.
-	provider := cfg.Agents.Defaults.Provider // may be set by GOCLAW_PROVIDER via ApplyEnvOverrides
+	// 1. Resolve provider: respect MTCLAW_PROVIDER if set, otherwise auto-detect.
+	provider := cfg.Agents.Defaults.Provider // may be set by MTCLAW_PROVIDER via ApplyEnvOverrides
 	apiKey := ""
 	if provider != "" {
 		apiKey = resolveProviderAPIKey(cfg, provider)
@@ -58,7 +58,7 @@ func runAutoOnboard(cfgPath string) bool {
 	}
 	cfg.Agents.Defaults.Provider = provider
 
-	// Use model hint if no model override set via GOCLAW_MODEL
+	// Use model hint if no model override set via MTCLAW_MODEL
 	if cfg.Agents.Defaults.Model == "" || cfg.Agents.Defaults.Model == config.Default().Agents.Defaults.Model {
 		if pi, ok := providerMap[provider]; ok && pi.modelHint != "" {
 			cfg.Agents.Defaults.Model = pi.modelHint
@@ -90,7 +90,7 @@ func runAutoOnboard(cfgPath string) bool {
 	}
 
 	// 3. Managed mode: Postgres setup
-	// Auto-detect: if GOCLAW_POSTGRES_DSN is set, assume managed mode even without GOCLAW_MODE
+	// Auto-detect: if MTCLAW_POSTGRES_DSN is set, assume managed mode even without MTCLAW_MODE
 	if cfg.Database.PostgresDSN != "" && cfg.Database.Mode == "" {
 		cfg.Database.Mode = "managed"
 	}
@@ -118,9 +118,9 @@ func runAutoOnboard(cfgPath string) bool {
 		fmt.Println(" OK")
 
 		// Generate encryption key if not set
-		if os.Getenv("GOCLAW_ENCRYPTION_KEY") == "" {
+		if os.Getenv("MTCLAW_ENCRYPTION_KEY") == "" {
 			encKey := onboardGenerateToken(32)
-			os.Setenv("GOCLAW_ENCRYPTION_KEY", encKey)
+			os.Setenv("MTCLAW_ENCRYPTION_KEY", encKey)
 			slog.Info("auto-onboard: generated encryption key")
 		}
 
@@ -129,11 +129,11 @@ func runAutoOnboard(cfgPath string) bool {
 		m, err := newMigrator(cfg.Database.PostgresDSN)
 		if err != nil {
 			fmt.Printf(" error: %v\n", err)
-			fmt.Println("  Continuing without migration (run manually: goclaw migrate up)")
+			fmt.Println("  Continuing without migration (run manually: mtclaw migrate up)")
 		} else {
 			if err := m.Up(); err != nil && err.Error() != "no change" {
 				fmt.Printf(" error: %v\n", err)
-				fmt.Println("  Continuing without migration (run manually: goclaw migrate up)")
+				fmt.Println("  Continuing without migration (run manually: mtclaw migrate up)")
 			} else {
 				v, _, _ := m.Version()
 				fmt.Printf(" OK (version: %d)\n", v)
@@ -185,7 +185,7 @@ var embeddingCapable = map[string]bool{
 }
 
 // autoDetectEmbeddingProvider picks an embedding provider from available API keys.
-// Priority: primary provider (GOCLAW_PROVIDER) if embedding-capable, then openai → openrouter → gemini.
+// Priority: primary provider (MTCLAW_PROVIDER) if embedding-capable, then openai → openrouter → gemini.
 func autoDetectEmbeddingProvider(cfg *config.Config) string {
 	// Prioritize the primary provider if it supports embeddings.
 	primary := cfg.Agents.Defaults.Provider

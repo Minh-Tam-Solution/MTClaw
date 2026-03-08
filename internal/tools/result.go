@@ -1,6 +1,6 @@
 package tools
 
-import "github.com/nextlevelbuilder/goclaw/internal/providers"
+import "github.com/Minh-Tam-Solution/MTClaw/internal/providers"
 
 // Result is the unified return type from tool execution.
 type Result struct {

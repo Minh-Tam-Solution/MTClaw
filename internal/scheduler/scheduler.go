@@ -6,7 +6,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/nextlevelbuilder/goclaw/internal/agent"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/agent"
 )
 
 // --- Scheduler ---

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
 )
 
 // activity is the minimal Bot Framework Activity schema we need to process.

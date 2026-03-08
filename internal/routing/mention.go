@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/agent"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/agent"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // TeamMentionMap maps short mention keys to full team names in DB.

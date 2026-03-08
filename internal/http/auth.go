@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // extractBearerToken extracts a bearer token from the Authorization header.
@@ -48,9 +48,9 @@ func extractUserID(r *http.Request) string {
 // extractAgentID determines the target agent from the request.
 // Checks model field, headers, and falls back to "default".
 func extractAgentID(r *http.Request, model string) string {
-	// From model field: "goclaw:<agentId>" or "agent:<agentId>"
-	if strings.HasPrefix(model, "goclaw:") {
-		return strings.TrimPrefix(model, "goclaw:")
+	// From model field: "mtclaw:<agentId>" or "agent:<agentId>"
+	if strings.HasPrefix(model, "mtclaw:") {
+		return strings.TrimPrefix(model, "mtclaw:")
 	}
 	if strings.HasPrefix(model, "agent:") {
 		return strings.TrimPrefix(model, "agent:")

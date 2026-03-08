@@ -4,10 +4,10 @@
 #   docker compose -f docker-compose.yml -f docker-compose.managed.yml -f docker-compose.tailscale.yml up
 #
 # Required:
-#   GOCLAW_TSNET_AUTH_KEY — Tailscale auth key (from https://login.tailscale.com/admin/settings/keys)
+#   MTCLAW_TSNET_AUTH_KEY — Tailscale auth key (from https://login.tailscale.com/admin/settings/keys)
 #
 # Optional:
-#   GOCLAW_TSNET_HOSTNAME — Tailscale device name (default: mtclaw-gateway)
+#   MTCLAW_TSNET_HOSTNAME — Tailscale device name (default: mtclaw-gateway)
 
 services:
   mtclaw:
@@ -15,8 +15,8 @@ services:
       args:
         ENABLE_TSNET: "true"
     environment:
-      - GOCLAW_TSNET_HOSTNAME=${GOCLAW_TSNET_HOSTNAME:-mtclaw-gateway}
-      - GOCLAW_TSNET_AUTH_KEY=${GOCLAW_TSNET_AUTH_KEY}
+      - MTCLAW_TSNET_HOSTNAME=${MTCLAW_TSNET_HOSTNAME:-mtclaw-gateway}
+      - MTCLAW_TSNET_AUTH_KEY=${MTCLAW_TSNET_AUTH_KEY}
     volumes:
       - tsnet-state:/app/tsnet-state
 

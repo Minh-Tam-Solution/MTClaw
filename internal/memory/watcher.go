@@ -11,7 +11,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
 )
 
 // watchDebounce is the delay before re-indexing after file changes.

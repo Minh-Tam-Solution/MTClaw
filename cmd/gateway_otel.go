@@ -6,9 +6,9 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/tracing"
-	"github.com/nextlevelbuilder/goclaw/internal/tracing/otelexport"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tracing"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tracing/otelexport"
 )
 
 // initOTelExporter creates and wires the OpenTelemetry OTLP exporter

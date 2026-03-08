@@ -410,5 +410,5 @@ Test: Session isolation
 - FR-001: Multi-Tenant Architecture (`docs/01-planning/requirements.md`)
 - ADR-002: Three-System Architecture (`docs/02-design/01-ADRs/SPEC-0002-ADR-002-Three-System-Architecture.md`)
 - ADR-003: Observability + Tenant Cost Guardrails (`docs/02-design/01-ADRs/SPEC-0003-ADR-003-Observability-Architecture.md`)
-- GoClaw Schema Analysis: `docs/02-design/goclaw-schema-analysis.md`
+- GoClaw Schema Analysis: `docs/02-design/mtclaw-schema-analysis.md`
 - BFlow RLS Pattern: Row-level security at 200K users, 3 years production

@@ -155,5 +155,7 @@ func DefaultMenuCommands() []telego.BotCommand {
 		{Command: "writers", Description: "List file writers for this group"},
 		{Command: "addwriter", Description: "Add a file writer (reply to their message)"},
 		{Command: "removewriter", Description: "Remove a file writer (reply to their message)"},
+		{Command: "workspace", Description: "Show or change workspace directory"},
+		{Command: "projects", Description: "List available projects"},
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/adhocore/gronx"
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 func (s *PGCronStore) scanJob(id uuid.UUID) (*store.CronJob, error) {

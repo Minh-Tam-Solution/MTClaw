@@ -3,7 +3,7 @@ package mcp
 import (
 	"log/slog"
 
-	"github.com/nextlevelbuilder/goclaw/internal/tools"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tools"
 )
 
 // ToolNames returns all registered MCP tool names.

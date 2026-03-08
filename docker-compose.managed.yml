@@ -4,7 +4,7 @@
 #   docker compose -f docker-compose.yml -f docker-compose.managed.yml -f docker-compose.selfservice.yml up -d --build
 #
 # Required env vars (set in .env or shell):
-#   GOCLAW_OPENROUTER_API_KEY (or another provider key)
+#   MTCLAW_OPENROUTER_API_KEY (or another provider key)
 #   POSTGRES_PASSWORD (defaults to "mtclaw" for dev)
 
 services:
@@ -30,8 +30,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - GOCLAW_MODE=managed
-      - GOCLAW_POSTGRES_DSN=postgres://${POSTGRES_USER:-mtclaw}:${POSTGRES_PASSWORD:-mtclaw}@postgres:5432/${POSTGRES_DB:-mtclaw}?sslmode=disable
+      - MTCLAW_MODE=managed
+      - MTCLAW_POSTGRES_DSN=postgres://${POSTGRES_USER:-mtclaw}:${POSTGRES_PASSWORD:-mtclaw}@postgres:5432/${POSTGRES_DB:-mtclaw}?sslmode=disable
     volumes:
       - mtclaw-skills:/app/skills
       - mtclaw-workspace:/app/.mtclaw

@@ -8,13 +8,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/nextlevelbuilder/goclaw/internal/agent"
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/gateway"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/tools"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/agent"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/gateway"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tools"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 // AgentsMethods handles agents.list, agents.create, agents.update, agents.delete,
@@ -158,7 +158,7 @@ func (m *AgentsMethods) handleCreate(_ context.Context, client *gateway.Client, 
 			return
 		}
 
-		// Resolve owner: use first provided ID so external provisioning tools (e.g. goclaw-wizards)
+		// Resolve owner: use first provided ID so external provisioning tools (e.g. mtclaw-wizards)
 		// can set a real user as owner at creation time. Falls back to "system" for backward compat.
 		ownerID := "system"
 		if len(params.OwnerIDs) > 0 && params.OwnerIDs[0] != "" {

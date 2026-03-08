@@ -12,10 +12,11 @@ import (
 
 	"github.com/mymmrac/telego"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/channels"
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/channels"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/claudecode"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // Channel connects to Telegram via the Bot API using long polling.
@@ -27,6 +28,8 @@ type Channel struct {
 	agentStore       store.AgentStore // for group file writer management (nil in standalone)
 	teamStore        store.TeamStore  // for /tasks, /task_detail commands (nil in standalone)
 	specStore        store.SpecStore  // for /spec-list, /spec-detail commands (nil in standalone)
+	bridgeManager    *claudecode.SessionManager // for /cc commands (nil = bridge disabled)
+	hookServer       *claudecode.HookServer     // for permission callbacks (nil = bridge disabled)
 	placeholders     sync.Map         // localKey string → messageID int
 	stopThinking     sync.Map         // localKey string → *thinkingCancel
 	typingCtrls      sync.Map         // localKey string → *typing.Controller
@@ -271,4 +274,16 @@ func resolveThreadIDForSend(threadID int) int {
 		return 0
 	}
 	return threadID
+}
+
+// SetBridgeManager injects the Claude Code bridge session manager (CTO I2).
+// Called from cmd/gateway.go when bridge is enabled. Nil-safe — /cc commands
+// check for nil and return "bridge not enabled" message.
+func (c *Channel) SetBridgeManager(mgr *claudecode.SessionManager) {
+	c.bridgeManager = mgr
+}
+
+// SetHookServer injects the hook server for permission callback handling.
+func (c *Channel) SetHookServer(hs *claudecode.HookServer) {
+	c.hookServer = hs
 }

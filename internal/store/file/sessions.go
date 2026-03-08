@@ -2,9 +2,9 @@ package file
 
 import (
 	"github.com/google/uuid"
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
-	"github.com/nextlevelbuilder/goclaw/internal/sessions"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sessions"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // FileSessionStore wraps sessions.Manager to implement store.SessionStore.

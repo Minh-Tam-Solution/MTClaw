@@ -1,5 +1,5 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
-LDFLAGS  = -s -w -X github.com/nextlevelbuilder/goclaw/cmd.Version=$(VERSION)
+LDFLAGS  = -s -w -X github.com/Minh-Tam-Solution/MTClaw/cmd.Version=$(VERSION)
 BINARY   = mtclaw
 
 .PHONY: build run clean version up down logs migrate-up migrate-down souls-validate test

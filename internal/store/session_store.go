@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
 )
 
 // SessionData holds conversation state for one session.

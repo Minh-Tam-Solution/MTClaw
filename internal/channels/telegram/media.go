@@ -231,7 +231,7 @@ func (c *Channel) downloadMedia(ctx context.Context, fileID string, maxBytes int
 		ext = ".bin"
 	}
 
-	tmpFile, err := os.CreateTemp("", "goclaw_media_*"+ext)
+	tmpFile, err := os.CreateTemp("", "mtclaw_media_*"+ext)
 	if err != nil {
 		return "", fmt.Errorf("create temp file: %w", err)
 	}

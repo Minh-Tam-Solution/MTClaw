@@ -9,9 +9,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/sandbox"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sandbox"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // virtualSystemFiles are files dynamically injected into the system prompt.
@@ -27,7 +27,7 @@ type ReadFileTool struct {
 	workspace        string
 	restrict         bool
 	allowedPrefixes  []string              // extra allowed path prefixes (e.g. skills dirs)
-	deniedPrefixes   []string              // path prefixes to deny access to (e.g. .goclaw)
+	deniedPrefixes   []string              // path prefixes to deny access to (e.g. .mtclaw)
 	sandboxMgr       sandbox.Manager       // nil = direct host access
 	contextFileIntc  *ContextFileInterceptor // nil = no virtual FS routing (standalone mode)
 	memIntc          *MemoryInterceptor      // nil = no memory routing (standalone mode)
@@ -219,7 +219,7 @@ func resolvePathWithAllowed(path, workspace string, restrict bool, allowedPrefix
 }
 
 // checkDeniedPath returns an error if the resolved path falls under any denied prefix.
-// Denied prefixes are relative to the workspace (e.g. ".goclaw" denies workspace/.goclaw/).
+// Denied prefixes are relative to the workspace (e.g. ".mtclaw" denies workspace/.mtclaw/).
 // The resolved path should already be canonical (from resolvePath with restrict=true).
 func checkDeniedPath(resolved, workspace string, deniedPrefixes []string) error {
 	if len(deniedPrefixes) == 0 {

@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/channels"
-	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/channels"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 )
 
 // MSTeamsChannel implements channels.Channel for Microsoft Teams via Bot Framework.

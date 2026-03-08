@@ -1,8 +1,8 @@
 package file
 
 import (
-	"github.com/nextlevelbuilder/goclaw/internal/pairing"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/pairing"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // FilePairingStore wraps pairing.Service to implement store.PairingStore.

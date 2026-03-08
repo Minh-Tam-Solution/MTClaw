@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 )
 
 func onboardCmd() *cobra.Command {
@@ -28,18 +28,18 @@ type providerInfo struct {
 }
 
 var providerMap = map[string]providerInfo{
-	"openrouter": {"openrouter", "GOCLAW_OPENROUTER_API_KEY", "anthropic/claude-sonnet-4-5-20250929"},
-	"anthropic":  {"anthropic", "GOCLAW_ANTHROPIC_API_KEY", "claude-sonnet-4-5-20250929"},
-	"openai":     {"openai", "GOCLAW_OPENAI_API_KEY", "gpt-4o"},
-	"groq":       {"groq", "GOCLAW_GROQ_API_KEY", "llama-3.3-70b-versatile"},
-	"deepseek":   {"deepseek", "GOCLAW_DEEPSEEK_API_KEY", "deepseek-chat"},
-	"gemini":     {"gemini", "GOCLAW_GEMINI_API_KEY", "gemini-2.0-flash"},
-	"mistral":    {"mistral", "GOCLAW_MISTRAL_API_KEY", "mistral-large-latest"},
-	"xai":        {"xai", "GOCLAW_XAI_API_KEY", "grok-3-mini"},
-	"minimax":    {"minimax", "GOCLAW_MINIMAX_API_KEY", "MiniMax-M2.5"},
-	"cohere":     {"cohere", "GOCLAW_COHERE_API_KEY", "command-a"},
-	"perplexity":        {"perplexity", "GOCLAW_PERPLEXITY_API_KEY", "sonar-pro"},
-	"bflow-ai-platform": {"bflow-ai-platform", "GOCLAW_BFLOW_API_KEY", "qwen3:14b"},
+	"openrouter": {"openrouter", "MTCLAW_OPENROUTER_API_KEY", "anthropic/claude-sonnet-4-5-20250929"},
+	"anthropic":  {"anthropic", "MTCLAW_ANTHROPIC_API_KEY", "claude-sonnet-4-5-20250929"},
+	"openai":     {"openai", "MTCLAW_OPENAI_API_KEY", "gpt-4o"},
+	"groq":       {"groq", "MTCLAW_GROQ_API_KEY", "llama-3.3-70b-versatile"},
+	"deepseek":   {"deepseek", "MTCLAW_DEEPSEEK_API_KEY", "deepseek-chat"},
+	"gemini":     {"gemini", "MTCLAW_GEMINI_API_KEY", "gemini-2.0-flash"},
+	"mistral":    {"mistral", "MTCLAW_MISTRAL_API_KEY", "mistral-large-latest"},
+	"xai":        {"xai", "MTCLAW_XAI_API_KEY", "grok-3-mini"},
+	"minimax":    {"minimax", "MTCLAW_MINIMAX_API_KEY", "MiniMax-M2.5"},
+	"cohere":     {"cohere", "MTCLAW_COHERE_API_KEY", "command-a"},
+	"perplexity":        {"perplexity", "MTCLAW_PERPLEXITY_API_KEY", "sonar-pro"},
+	"bflow-ai-platform": {"bflow-ai-platform", "MTCLAW_BFLOW_API_KEY", "qwen3:14b"},
 	"custom":            {"custom", "", ""},
 }
 
@@ -387,7 +387,7 @@ func runOnboard() {
 			fmt.Printf("    • %s\n", e)
 		}
 		fmt.Println()
-		fmt.Println("  Please re-run: ./goclaw onboard")
+		fmt.Println("  Please re-run: ./mtclaw onboard")
 		return
 	}
 
@@ -429,7 +429,7 @@ func runOnboard() {
 	}
 
 	// Workspace (use default, no prompt)
-	cfg.Agents.Defaults.Workspace = "~/.goclaw/workspace"
+	cfg.Agents.Defaults.Workspace = "~/.mtclaw/workspace"
 	expandedWS := config.ExpandHome(cfg.Agents.Defaults.Workspace)
 	if err := os.MkdirAll(expandedWS, 0755); err != nil {
 		fmt.Printf("Warning: could not create workspace: %v\n", err)
@@ -488,12 +488,12 @@ func runOnboard() {
 		cfg.Database.PostgresDSN = postgresDSN
 
 		// Auto-generate encryption key for API keys in DB (if not already set).
-		if os.Getenv("GOCLAW_ENCRYPTION_KEY") == "" {
+		if os.Getenv("MTCLAW_ENCRYPTION_KEY") == "" {
 			encKey := onboardGenerateToken(32)
-			os.Setenv("GOCLAW_ENCRYPTION_KEY", encKey)
+			os.Setenv("MTCLAW_ENCRYPTION_KEY", encKey)
 			fmt.Printf("  Generated encryption key for API keys (AES-256-GCM)\n")
 		} else {
-			fmt.Println("  Using existing GOCLAW_ENCRYPTION_KEY from environment")
+			fmt.Println("  Using existing MTCLAW_ENCRYPTION_KEY from environment")
 		}
 
 		fmt.Print("  Testing Postgres connection... ")
@@ -512,7 +512,7 @@ func runOnboard() {
 				cfg.Database.PostgresDSN = ""
 				fmt.Println("  Switched to standalone mode.")
 			} else {
-				fmt.Println("  Please check your DSN and try again: ./goclaw onboard")
+				fmt.Println("  Please check your DSN and try again: ./mtclaw onboard")
 				return
 			}
 		} else {
@@ -530,11 +530,11 @@ func runOnboard() {
 				m, err := newMigrator(postgresDSN)
 				if err != nil {
 					fmt.Printf("  Migration error: %v\n", err)
-					fmt.Println("  You can run it manually later: ./goclaw migrate up")
+					fmt.Println("  You can run it manually later: ./mtclaw migrate up")
 				} else {
 					if err := m.Up(); err != nil && err.Error() != "no change" {
 						fmt.Printf("  Migration error: %v\n", err)
-						fmt.Println("  You can run it manually later: ./goclaw migrate up")
+						fmt.Println("  You can run it manually later: ./mtclaw migrate up")
 					} else {
 						v, _, _ := m.Version()
 						fmt.Printf("  Migration complete (version: %d)\n", v)
@@ -643,7 +643,7 @@ func runOnboard() {
 	fmt.Println()
 	fmt.Println("To start the gateway:")
 	fmt.Println()
-	fmt.Printf("  source %s && ./goclaw\n", envPath)
+	fmt.Printf("  source %s && ./mtclaw\n", envPath)
 	fmt.Println()
 }
 

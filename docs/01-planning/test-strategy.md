@@ -1,9 +1,9 @@
 # Test Strategy — MTClaw
 
 **SDLC Stage**: 01-Planning
-**Version**: 1.1.0
-**Date**: 2026-03-22 (added MS Teams channel testing section — Sprint 10)
-**Author**: [@pm], [@cto] (tiered targets)
+**Version**: 2.1.0
+**Date**: 2026-03-06 (Sprint 12: governance engine, evidence chain, spec quality, workspace commands)
+**Author**: [@pm], [@cto] (tiered targets), [@tester] (Sprint 8-12 update)
 
 ---
 
@@ -20,7 +20,8 @@
 |-------|--------|-------------|-----------|
 | Foundation | 1-3 | **60%** | Establish baseline, learn Go patterns |
 | Core Rails | 4-5 | **70%** | Critical paths for Spec Factory + PR Gate |
-| Governance | 8+ | **80%** | Mature codebase, full 3 Rails |
+| Governance | 8-9 | **80%** | Mature codebase, full 3 Rails |
+| Evidence + Quality | 10-12 | **80%** | Governance engine, evidence chain, spec quality |
 
 ## Unit Tests
 
@@ -63,6 +64,17 @@ Scenario-based checklist (not line coverage):
 | MS Teams: channel column written to governance tables | 10 | P1 |
 | MS Teams: `MSTEAMS_APP_PASSWORD` not in logs | 10 | P0 (security) |
 | MS Teams + Telegram: cross-channel /spec produces same output | 10 | P1 |
+| PR Gate ENFORCE: fail verdict blocks merge | 8 | P0 |
+| GitHub webhook: HMAC signature verification + PR inbound | 8 | P0 |
+| Spec quality: 5-dimension scoring threshold (70) | 12 | P0 |
+| Design-first gate: coder blocked without approved spec | 12 | P0 |
+| Evidence chain: spec -> pr_gate link -> chain build | 12 | P0 |
+| Evidence linker: auto-link spec to PR by session key | 12 | P0 |
+| Audit PDF: spec + evidence chain -> valid PDF export | 8 | P1 |
+| Workspace show: `/workspace` returns current agent directory | 12 | P1 |
+| Workspace switch: `/workspace <path>` updates agent + cache invalidation | 12 | P0 |
+| Workspace invalid path: returns error, no state change | 12 | P1 |
+| Projects list: `/projects` lists siblings, marks current | 12 | P1 |
 
 ## E2E Tests (Critical Paths Only)
 
@@ -72,6 +84,12 @@ Scenario-based checklist (not line coverage):
 | Delegation | User → @pm → /spec → JSON output | 4 |
 | Multi-tenant | MTS user + NQH user concurrent | 6 |
 | MS Teams full flow | Teams message → SOUL → Adaptive Card reply | 10 (manual, requires Azure AD) |
+| PR Gate flow | GitHub PR → webhook → @reviewer → verdict → evidence link | 12 |
+| Spec quality gate | /spec → quality scoring → accept/reject → evidence chain | 12 |
+| Design gate | @coder task → design gate check → spec required | 12 |
+| Audit trail | Spec → PR review → chain build → PDF export | 12 |
+| Channel cleanup | Verify Discord/Feishu/WhatsApp removed cleanly | 9 |
+| Workspace flow | /workspace show -> /projects -> /workspace switch -> tools use new dir | 12 |
 
 ## CI/CD Integration
 
@@ -92,7 +110,9 @@ Per [@cto] directive: Unit tests for RAG client may use mocked HTTP responses (d
 
 **MS Teams exception** (Sprint 10): Unit tests use `httptest.NewServer` mock for Bot Framework token endpoint and API endpoint. This is not a mock — it is a real HTTP server in the test process (Zero Mock Policy compliant). Bot Framework OpenID metadata fetch is bypassed by injecting RSA keys directly into `jwksCache` via `injectTestKey()`. Tagged with `// CI_MOCK_EXCEPTION: Bot Framework live endpoint (Azure AD creds required for E2E)`.
 
-**Test plan location**: `docs/05-test/test-plan-msteams-sprint10.md`
+**Test plan locations**:
+- `docs/05-test/MASTER-TEST-PLAN.md` (Sprint 1-12 cumulative, includes workspace commands)
+- `docs/05-test/test-plan-msteams-sprint10.md` (MS Teams detail)
 
 ---
 

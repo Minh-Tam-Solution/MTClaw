@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
 )
 
 // Session stores conversation history for one agent+scope combination.

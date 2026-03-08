@@ -11,7 +11,7 @@ services:
       context: ./ui/web
       dockerfile: Dockerfile
     ports:
-      - "${GOCLAW_UI_PORT:-3000}:80"
+      - "${MTCLAW_UI_PORT:-3000}:80"
     depends_on:
       - mtclaw
     restart: unless-stopped

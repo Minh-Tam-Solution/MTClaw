@@ -6,15 +6,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/nextlevelbuilder/goclaw/internal/sandbox"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sandbox"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // WriteFileTool writes content to a file, optionally through a sandbox container.
 type WriteFileTool struct {
 	workspace        string
 	restrict         bool
-	deniedPrefixes   []string // path prefixes to deny access to (e.g. .goclaw)
+	deniedPrefixes   []string // path prefixes to deny access to (e.g. .mtclaw)
 	sandboxMgr       sandbox.Manager
 	contextFileIntc  *ContextFileInterceptor // nil = no virtual FS routing (standalone mode)
 	memIntc          *MemoryInterceptor      // nil = no memory routing (standalone mode)

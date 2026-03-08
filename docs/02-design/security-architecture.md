@@ -85,7 +85,7 @@ type PathDenyable interface {
 }
 ```
 
-All four filesystem tools (`read_file`, `write_file`, `list_files`, `edit`) implement `PathDenyable`. The agent loop calls `DenyPaths(".goclaw")` at startup to prevent agents from accessing internal data directories. `list_files` additionally filters denied directories from output entirely -- the agent does not see denied paths in directory listings.
+All four filesystem tools (`read_file`, `write_file`, `list_files`, `edit`) implement `PathDenyable`. The agent loop calls `DenyPaths(".mtclaw")` at startup to prevent agents from accessing internal data directories. `list_files` additionally filters denied directories from output entirely -- the agent does not see denied paths in directory listings.
 
 ### Layer 4: Output Security
 
@@ -100,7 +100,7 @@ All four filesystem tools (`read_file`, `write_file`, `list_files`, `edit`) impl
 
 | Level | Scope | Directory Pattern |
 |-------|-------|------------------|
-| Per-agent | Each agent gets its own base directory | `~/.goclaw/{agent-key}-workspace/` |
+| Per-agent | Each agent gets its own base directory | `~/.mtclaw/{agent-key}-workspace/` |
 | Per-user | Each user gets a subdirectory within the agent workspace | `{agent-workspace}/user_{sanitized_id}/` |
 
 The workspace is injected into tools via `WithToolWorkspace(ctx)` context injection. Tools read the workspace from context at execution time (fallback to the struct field for backward compatibility). User IDs are sanitized: anything outside `[a-zA-Z0-9_-]` becomes an underscore (`group:telegram:-1001234` → `group_telegram_-1001234`).

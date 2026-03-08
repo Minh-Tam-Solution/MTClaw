@@ -5,16 +5,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Run Commands
 
 ```bash
-make build              # Build binary → ./goclaw (CGO_ENABLED=0)
+make build              # Build binary → ./mtclaw (CGO_ENABLED=0)
 make run                # Build + run gateway
 make test               # go test ./... -v -count=1
 make test-coverage      # Generate coverage.out + coverage.html
-make migrate-up         # Build + ./goclaw migrate up
-make migrate-down       # Build + ./goclaw migrate down
+make migrate-up         # Build + ./mtclaw migrate up
+make migrate-down       # Build + ./mtclaw migrate down
 make souls-validate     # Check SOUL files for YAML frontmatter + char budget (2500)
 make up                 # Docker Compose up (yml + managed + selfservice)
 make down               # Docker Compose down
-make logs               # Follow goclaw container logs
+make logs               # Follow mtclaw container logs
 ```
 
 Run a single test: `go test ./internal/store/ -run TestSessionStore -v -count=1`
@@ -40,7 +40,7 @@ Channel webhook → Channel handler (parse, policy check)
 | `cmd/` | Cobra CLI commands. `gateway.go` wires everything. `gateway_consumer.go` is the inbound message orchestrator. `gateway_providers.go` registers AI providers. |
 | `internal/agent/` | Agent execution loop (`loop.go`: Think→Act→Observe), system prompt building (`systemprompt.go`), agent router with TTL cache (`router.go`), output sanitization. |
 | `internal/providers/` | LLM provider interface + implementations: Anthropic, OpenAI-compatible (OpenRouter, Groq, DeepSeek, Gemini, etc.), DashScope, Bflow AI-Platform. Retry with exponential backoff. |
-| `internal/store/` | Data persistence. Standalone mode = file-based JSON in `~/.goclaw/`. Managed mode = PostgreSQL with RLS. Context propagation via `store.WithTenantID(ctx, id)`, `store.WithUserID(ctx, id)`. |
+| `internal/store/` | Data persistence. Standalone mode = file-based JSON in `~/.mtclaw/`. Managed mode = PostgreSQL with RLS. Context propagation via `store.WithTenantID(ctx, id)`, `store.WithUserID(ctx, id)`. |
 | `internal/channels/` | Channel interface (Start/Stop/Send) + per-platform implementations. Telegram is primary (webhook handlers, /spec commands, streaming via message edit, emoji reactions). |
 | `internal/bus/` | Message bus: inbound channel (channels→consumer), outbound channel (agent→channels), deduplication (20min TTL, 5000 max), debouncing rapid messages, WebSocket event broadcasting. |
 | `internal/config/` | Config loading: `config.json` (settings) + `.env` (secrets). Agents, channels, providers, tools, sessions, telemetry, cron, tailscale. |
@@ -60,7 +60,7 @@ Channel webhook → Channel handler (parse, policy check)
 
 ### Two Operating Modes
 
-- **Standalone**: File-based stores (`~/.goclaw/`), single-tenant, no PostgreSQL required.
+- **Standalone**: File-based stores (`~/.mtclaw/`), single-tenant, no PostgreSQL required.
 - **Managed**: PostgreSQL with RLS, multi-tenant, DB-based agents/providers/channels, used in production Docker deployment.
 
 ### SOULs (AI Personas)
@@ -96,4 +96,4 @@ Key env vars: `GOCLAW_POSTGRES_DSN`, `GOCLAW_BFLOW_API_KEY`, `GOCLAW_BFLOW_BASE_
 
 ## CLI Subcommands
 
-`goclaw` (default = gateway), `onboard`, `agent` (list/add/delete/chat), `pairing`, `config`, `channels`, `cron`, `skills`, `sessions`, `migrate` (up/down), `upgrade`, `doctor`, `version`.
+`mtclaw` (default = gateway), `onboard`, `agent` (list/add/delete/chat), `pairing`, `config`, `channels`, `cron`, `skills`, `sessions`, `migrate` (up/down), `upgrade`, `doctor`, `version`.

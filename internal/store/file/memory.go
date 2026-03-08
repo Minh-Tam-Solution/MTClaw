@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/nextlevelbuilder/goclaw/internal/memory"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/memory"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // FileMemoryStore wraps memory.Manager to implement store.MemoryStore.

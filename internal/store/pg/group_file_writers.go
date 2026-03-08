@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 func (s *PGAgentStore) IsGroupFileWriter(ctx context.Context, agentID uuid.UUID, groupID, userID string) (bool, error) {

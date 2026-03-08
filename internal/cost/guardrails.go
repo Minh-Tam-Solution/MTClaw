@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // DefaultDailyLimit is the default daily request limit per tenant.
@@ -28,7 +28,7 @@ func CheckDailyLimit(ctx context.Context, tracingStore store.TracingStore) (bool
 	}
 
 	limit := DefaultDailyLimit
-	if envLimit := os.Getenv("GOCLAW_TENANT_DAILY_REQUEST_LIMIT"); envLimit != "" {
+	if envLimit := os.Getenv("MTCLAW_TENANT_DAILY_REQUEST_LIMIT"); envLimit != "" {
 		if parsed, parseErr := strconv.Atoi(envLimit); parseErr == nil && parsed > 0 {
 			limit = parsed
 		}

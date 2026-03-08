@@ -18,14 +18,14 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - GOCLAW_SANDBOX_MODE=all
-      - GOCLAW_SANDBOX_IMAGE=mtclaw-sandbox:bookworm-slim
-      - GOCLAW_SANDBOX_WORKSPACE_ACCESS=rw
-      - GOCLAW_SANDBOX_SCOPE=session
-      - GOCLAW_SANDBOX_MEMORY_MB=512
-      - GOCLAW_SANDBOX_CPUS=1.0
-      - GOCLAW_SANDBOX_TIMEOUT_SEC=300
-      - GOCLAW_SANDBOX_NETWORK=false
+      - MTCLAW_SANDBOX_MODE=all
+      - MTCLAW_SANDBOX_IMAGE=mtclaw-sandbox:bookworm-slim
+      - MTCLAW_SANDBOX_WORKSPACE_ACCESS=rw
+      - MTCLAW_SANDBOX_SCOPE=session
+      - MTCLAW_SANDBOX_MEMORY_MB=512
+      - MTCLAW_SANDBOX_CPUS=1.0
+      - MTCLAW_SANDBOX_TIMEOUT_SEC=300
+      - MTCLAW_SANDBOX_NETWORK=false
     # Override base cap_drop to allow Docker socket access
     cap_drop: []
     cap_add:

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 )
 
 // isManagedMode returns true if the config specifies managed (Postgres) mode.
@@ -24,7 +24,7 @@ func requireGatewayForManaged() {
 	}
 	if !isGatewayReachable() {
 		fmt.Fprintln(os.Stderr, "Error: managed mode requires the gateway to be running.")
-		fmt.Fprintln(os.Stderr, "Start it first:  goclaw")
+		fmt.Fprintln(os.Stderr, "Start it first:  mtclaw")
 		os.Exit(1)
 	}
 }

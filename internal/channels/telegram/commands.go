@@ -9,7 +9,7 @@ import (
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
 )
 
 // resolveAgentUUID looks up the agent UUID from the channel's agent key.
@@ -80,6 +80,8 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 			"/spec_detail <id> — View specification detail\n" +
 			"/review <pr_url> — Review a GitHub pull request (Rail #2)\n" +
 			"/teams — List available teams and how to mention them\n" +
+			"/workspace — Show or change current workspace/repo\n" +
+			"/projects — List available projects in workspace parent\n" +
 			"/stop — Stop current running task\n" +
 			"/stopall — Stop all running tasks\n" +
 			"/reset — Reset conversation history\n" +
@@ -292,6 +294,22 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 
 	case "/writers":
 		c.handleListWriters(ctx, chatID, chatIDStr, isGroup, setThread)
+		return true
+
+	case "/workspace":
+		wsArg := ""
+		if len(text) > len("/workspace") {
+			wsArg = strings.TrimSpace(text[len("/workspace"):])
+		}
+		c.handleWorkspace(ctx, chatID, wsArg, setThread)
+		return true
+
+	case "/projects":
+		c.handleProjects(ctx, chatID, setThread)
+		return true
+
+	case "/cc":
+		c.handleCC(ctx, chatID, chatIDStr, text, senderID, setThread)
 		return true
 	}
 

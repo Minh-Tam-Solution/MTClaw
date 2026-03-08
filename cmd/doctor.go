@@ -12,9 +12,9 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/spf13/cobra"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/upgrade"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/upgrade"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 func doctorCmd() *cobra.Command {
@@ -28,7 +28,7 @@ func doctorCmd() *cobra.Command {
 }
 
 func runDoctor() {
-	fmt.Println("goclaw doctor")
+	fmt.Println("mtclaw doctor")
 	fmt.Printf("  Version:  %s (protocol %d)\n", Version, protocol.ProtocolVersion)
 	fmt.Printf("  OS:       %s/%s\n", runtime.GOOS, runtime.GOARCH)
 	fmt.Printf("  Go:       %s\n", runtime.Version())
@@ -71,13 +71,13 @@ func runDoctor() {
 			if schemaErr != nil {
 				fmt.Printf("    %-12s CHECK FAILED (%s)\n", "Schema:", schemaErr)
 			} else if s.Dirty {
-				fmt.Printf("    %-12s v%d (DIRTY — run: goclaw migrate force %d)\n", "Schema:", s.CurrentVersion, s.CurrentVersion-1)
+				fmt.Printf("    %-12s v%d (DIRTY — run: mtclaw migrate force %d)\n", "Schema:", s.CurrentVersion, s.CurrentVersion-1)
 			} else if s.Compatible {
 				fmt.Printf("    %-12s v%d (up to date)\n", "Schema:", s.CurrentVersion)
 			} else if s.CurrentVersion > s.RequiredVersion {
 				fmt.Printf("    %-12s v%d (binary too old, requires v%d)\n", "Schema:", s.CurrentVersion, s.RequiredVersion)
 			} else {
-				fmt.Printf("    %-12s v%d (upgrade needed — run: goclaw upgrade)\n", "Schema:", s.CurrentVersion)
+				fmt.Printf("    %-12s v%d (upgrade needed — run: mtclaw upgrade)\n", "Schema:", s.CurrentVersion)
 			}
 
 			pending, hookErr := upgrade.PendingHooks(context.Background(), db)

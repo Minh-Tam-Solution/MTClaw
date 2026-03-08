@@ -7,14 +7,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/nextlevelbuilder/goclaw/internal/sandbox"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sandbox"
 )
 
 // ListFilesTool lists files in a directory, optionally through a sandbox container.
 type ListFilesTool struct {
 	workspace      string
 	restrict       bool
-	deniedPrefixes []string // path prefixes to deny access to (e.g. .goclaw)
+	deniedPrefixes []string // path prefixes to deny access to (e.g. .mtclaw)
 	sandboxMgr     sandbox.Manager
 }
 

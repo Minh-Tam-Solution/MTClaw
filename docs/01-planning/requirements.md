@@ -1,8 +1,8 @@
 # Requirements — MTClaw
 
 **SDLC Stage**: 01-Planning
-**Version**: 1.2.0
-**Date**: 2026-03-22 (added FR-005 MS Teams acceptance criteria — Sprint 10)
+**Version**: 1.3.0
+**Date**: 2026-03-06 (added workspace/projects commands — Sprint 12 dogfooding enabler)
 **Author**: [@pm]
 
 ---
@@ -57,6 +57,13 @@
 - AC-005-8: `MSTEAMS_APP_PASSWORD` never appears in logs (masked in all 3 config_secrets functions)
 - AC-005-9: `channel = 'msteams'` written to `governance_specs` + `pr_gate_evaluations` (migration 000016)
 - AC-005-10: Bot Framework token acquired once, cached until 5 min before expiry (no redundant token calls)
+
+**Workspace Management** (Sprint 12 — dogfooding enabler):
+- AC-005-11: `/workspace` with no args → shows current agent workspace directory
+- AC-005-12: `/workspace <path>` → validates path exists on disk → updates `AgentData.Workspace` via `agentStore.Update()` → broadcasts `CacheKindAgent` invalidation → confirms new workspace
+- AC-005-13: `/workspace <invalid_path>` → returns error "directory not found", no state change
+- AC-005-14: `/projects` → lists subdirectories in workspace parent dir, marks current workspace with `>` prefix
+- AC-005-15: Workspace change propagates to all subsequent tool calls via `WithToolWorkspace()` context key
 
 ### FR-006: Evidence Audit Trail
 - Every governance action produces evidence record

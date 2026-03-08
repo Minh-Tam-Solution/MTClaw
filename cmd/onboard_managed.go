@@ -10,10 +10,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/store/pg"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store/pg"
 )
 
 // testPostgresConnection verifies connectivity to Postgres with a 5s timeout.
@@ -37,7 +37,7 @@ func seedManagedData(dsn string, cfg *config.Config) error {
 	storeCfg := store.StoreConfig{
 		PostgresDSN:   dsn,
 		Mode:          "managed",
-		EncryptionKey: os.Getenv("GOCLAW_ENCRYPTION_KEY"),
+		EncryptionKey: os.Getenv("MTCLAW_ENCRYPTION_KEY"),
 	}
 	stores, err := pg.NewPGStores(storeCfg)
 	if err != nil {
@@ -46,7 +46,7 @@ func seedManagedData(dsn string, cfg *config.Config) error {
 
 	ctx := context.Background()
 
-	// Resolve owner: use first GOCLAW_OWNER_IDS entry if set, otherwise "system".
+	// Resolve owner: use first MTCLAW_OWNER_IDS entry if set, otherwise "system".
 	ownerID := "system"
 	if len(cfg.Gateway.OwnerIDs) > 0 && cfg.Gateway.OwnerIDs[0] != "" {
 		ownerID = cfg.Gateway.OwnerIDs[0]

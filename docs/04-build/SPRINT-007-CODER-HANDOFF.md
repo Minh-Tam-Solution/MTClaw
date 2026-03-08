@@ -469,7 +469,7 @@ import (
     "context"
     "strings"
 
-    "github.com/nextlevelbuilder/goclaw/internal/store"
+    "github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // ResolveMentionRoute resolves @mention to agent key or team lead.
@@ -491,7 +491,7 @@ import (
     "strconv"
     "time"
 
-    "github.com/nextlevelbuilder/goclaw/internal/store"
+    "github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // CheckDailyLimit checks if tenant has exceeded daily request limit.

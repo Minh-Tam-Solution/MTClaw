@@ -3,7 +3,7 @@ package tools
 import (
 	"context"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 )
 
 // Tool execution context keys.

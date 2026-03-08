@@ -480,5 +480,5 @@ CREATE POLICY tenant_context_files ON agent_context_files
 - Agent store: `internal/store/pg/agents_context.go`
 - Database schema: `migrations/000001_init_schema.up.sql` through `migrations/000007_*.up.sql`
 - SOUL quality rubric: `docs/01-planning/soul-quality-rubric.md`
-- GoClaw schema analysis: `docs/02-design/goclaw-schema-analysis.md`
+- GoClaw schema analysis: `docs/02-design/mtclaw-schema-analysis.md`
 - ADR-004: `docs/02-design/01-ADRs/SPEC-0004-ADR-004-SOUL-Implementation.md`

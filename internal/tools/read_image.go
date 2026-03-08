@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
 )
 
 // --- Context helpers for media images ---

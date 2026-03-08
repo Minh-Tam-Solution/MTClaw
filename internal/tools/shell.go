@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/nextlevelbuilder/goclaw/internal/sandbox"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sandbox"
 )
 
 // Dangerous command patterns to deny by default.
@@ -126,6 +126,12 @@ var defaultDenyPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`(?i)\bstrings\b.*/proc/`),                        // strings on /proc files (binary env dump)
 }
 
+// DefaultDenyPatterns returns a copy of the built-in dangerous command patterns.
+// Returns a copy to prevent caller mutation of the original slice.
+func DefaultDenyPatterns() []*regexp.Regexp {
+	return append([]*regexp.Regexp(nil), defaultDenyPatterns...)
+}
+
 // ExecTool executes shell commands, optionally inside a sandbox container.
 type ExecTool struct {
 	workingDir   string
@@ -162,7 +168,7 @@ func NewSandboxedExecTool(workingDir string, restrict bool, mgr sandbox.Manager)
 func (t *ExecTool) SetSandboxKey(key string) {}
 
 // DenyPaths adds dynamic deny patterns that block commands referencing the given paths.
-// Used to prevent exec from reading/copying files from sensitive directories (e.g. data dir, .goclaw).
+// Used to prevent exec from reading/copying files from sensitive directories (e.g. data dir, .mtclaw).
 func (t *ExecTool) DenyPaths(paths ...string) {
 	for _, p := range paths {
 		escaped := regexp.QuoteMeta(p)

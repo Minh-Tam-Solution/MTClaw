@@ -147,7 +147,7 @@ flowchart TD
 | Aspect | Standalone | Managed |
 |--------|-----------|---------|
 | Config source | `config.json` + env vars | `config.json` + `GOCLAW_POSTGRES_DSN` |
-| Storage | JSON files + SQLite (`~/.goclaw/data/agents.db`) | PostgreSQL |
+| Storage | JSON files + SQLite (`~/.mtclaw/data/agents.db`) | PostgreSQL |
 | Agents | Defined in `config.json` `agents.list`, created eagerly at startup | `agents` table, lazy-resolved via `ManagedResolver` |
 | Agent store | `FileAgentStore` (filesystem + SQLite) | `PGAgentStore` |
 | Context files | Agent-level on filesystem, per-user in SQLite | `agent_context_files` + `user_context_files` tables |

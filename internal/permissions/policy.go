@@ -15,7 +15,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 // Role represents a user's permission level.

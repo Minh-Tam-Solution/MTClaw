@@ -260,7 +260,7 @@ if len(goalRunes) > 200 {
                   -f docker-compose.mts.yml \
                   up -d --build
    ```
-4. Run migrations: `docker exec goclaw ./goclaw migrate up`
+4. Run migrations: `docker exec mtclaw ./mtclaw migrate up`
 5. Verify:
    - [ ] `GET /v1/agents` returns 17 agents
    - [ ] Telegram: `/start` → welcome message

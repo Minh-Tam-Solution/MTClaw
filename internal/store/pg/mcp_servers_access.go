@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/crypto"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/crypto"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // --- Agent Grants ---

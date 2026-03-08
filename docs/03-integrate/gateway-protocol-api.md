@@ -321,7 +321,7 @@ flowchart TD
     RESP -->|No| JSON["JSON response<br/>(OpenAI format)"]
 ```
 
-Agent resolution priority: `model` field with `goclaw:` or `agent:` prefix, then `X-GoClaw-Agent-Id` header, then `"default"`.
+Agent resolution priority: `model` field with `mtclaw:` or `agent:` prefix, then `X-GoClaw-Agent-Id` header, then `"default"`.
 
 #### POST /v1/responses (OpenResponses Protocol)
 

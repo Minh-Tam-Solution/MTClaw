@@ -5,7 +5,7 @@
 //  1. Workspace skills          — <workspace>/skills/
 //  2. Project agent skills      — <workspace>/.agents/skills/
 //  3. Personal agent skills     — ~/.agents/skills/
-//  4. Global/managed skills     — ~/.goclaw/skills/
+//  4. Global/managed skills     — ~/.mtclaw/skills/
 //  5. Builtin skills            — bundled with binary
 package skills
 
@@ -43,7 +43,7 @@ type Loader struct {
 	workspaceSkills      string // <workspace>/skills/
 	projectAgentSkills   string // <workspace>/.agents/skills/
 	personalAgentSkills  string // ~/.agents/skills/
-	globalSkills         string // ~/.goclaw/skills/
+	globalSkills         string // ~/.mtclaw/skills/
 	builtinSkills        string // bundled with binary
 
 	mu    sync.RWMutex
@@ -56,7 +56,7 @@ type Loader struct {
 
 // NewLoader creates a skills loader.
 // workspace: project workspace root (skills dir is workspace/skills/)
-// globalSkills: global skills directory (e.g. ~/.goclaw/skills)
+// globalSkills: global skills directory (e.g. ~/.mtclaw/skills)
 // builtinSkills: bundled skills directory
 func NewLoader(workspace, globalSkills, builtinSkills string) *Loader {
 	wsSkills := ""

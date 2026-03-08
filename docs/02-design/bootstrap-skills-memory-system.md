@@ -105,7 +105,7 @@ flowchart TD
 
 ### Standalone UUID Generation
 
-Standalone agents are defined in `config.json` without database-generated UUIDs. `FileAgentStore` uses UUID v5 (`uuid.NewSHA1(namespace, "goclaw-standalone:{agentKey}")`) to produce deterministic IDs from agent keys. This ensures SQLite rows for per-user files survive process restarts without coordination.
+Standalone agents are defined in `config.json` without database-generated UUIDs. `FileAgentStore` uses UUID v5 (`uuid.NewSHA1(namespace, "mtclaw-standalone:{agentKey}")`) to produce deterministic IDs from agent keys. This ensures SQLite rows for per-user files survive process restarts without coordination.
 
 ### Predefined Agent Bootstrap
 
@@ -241,7 +241,7 @@ flowchart TD
     T1["Tier 1 (highest): Workspace skills<br/>workspace/skills/name/SKILL.md"] --> T2
     T2["Tier 2: Project agent skills<br/>workspace/.agents/skills/"] --> T3
     T3["Tier 3: Personal agent skills<br/>~/.agents/skills/"] --> T4
-    T4["Tier 4: Global/managed skills<br/>~/.goclaw/skills/"] --> T5
+    T4["Tier 4: Global/managed skills<br/>~/.mtclaw/skills/"] --> T5
     T5["Tier 5 (lowest): Builtin skills<br/>(bundled with binary)"]
 
     style T1 fill:#e1f5fe

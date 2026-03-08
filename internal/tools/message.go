@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
 )
 
 // MessageTool allows the agent to proactively send messages to channels.

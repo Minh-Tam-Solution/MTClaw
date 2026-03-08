@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 )
 
 func onboardGenerateToken(bytes int) string {
@@ -32,55 +32,55 @@ func onboardWriteEnvFile(path string, cfg *config.Config, primaryKey, primaryEnv
 			lines = append(lines, fmt.Sprintf("export %s=%s", envKey, value))
 		}
 	}
-	addIfSet("GOCLAW_ANTHROPIC_API_KEY", cfg.Providers.Anthropic.APIKey)
-	addIfSet("GOCLAW_OPENAI_API_KEY", cfg.Providers.OpenAI.APIKey)
-	addIfSet("GOCLAW_OPENROUTER_API_KEY", cfg.Providers.OpenRouter.APIKey)
-	addIfSet("GOCLAW_GROQ_API_KEY", cfg.Providers.Groq.APIKey)
-	addIfSet("GOCLAW_DEEPSEEK_API_KEY", cfg.Providers.DeepSeek.APIKey)
-	addIfSet("GOCLAW_GEMINI_API_KEY", cfg.Providers.Gemini.APIKey)
-	addIfSet("GOCLAW_MISTRAL_API_KEY", cfg.Providers.Mistral.APIKey)
-	addIfSet("GOCLAW_XAI_API_KEY", cfg.Providers.XAI.APIKey)
-	addIfSet("GOCLAW_MINIMAX_API_KEY", cfg.Providers.MiniMax.APIKey)
-	addIfSet("GOCLAW_COHERE_API_KEY", cfg.Providers.Cohere.APIKey)
-	addIfSet("GOCLAW_PERPLEXITY_API_KEY", cfg.Providers.Perplexity.APIKey)
+	addIfSet("MTCLAW_ANTHROPIC_API_KEY", cfg.Providers.Anthropic.APIKey)
+	addIfSet("MTCLAW_OPENAI_API_KEY", cfg.Providers.OpenAI.APIKey)
+	addIfSet("MTCLAW_OPENROUTER_API_KEY", cfg.Providers.OpenRouter.APIKey)
+	addIfSet("MTCLAW_GROQ_API_KEY", cfg.Providers.Groq.APIKey)
+	addIfSet("MTCLAW_DEEPSEEK_API_KEY", cfg.Providers.DeepSeek.APIKey)
+	addIfSet("MTCLAW_GEMINI_API_KEY", cfg.Providers.Gemini.APIKey)
+	addIfSet("MTCLAW_MISTRAL_API_KEY", cfg.Providers.Mistral.APIKey)
+	addIfSet("MTCLAW_XAI_API_KEY", cfg.Providers.XAI.APIKey)
+	addIfSet("MTCLAW_MINIMAX_API_KEY", cfg.Providers.MiniMax.APIKey)
+	addIfSet("MTCLAW_COHERE_API_KEY", cfg.Providers.Cohere.APIKey)
+	addIfSet("MTCLAW_PERPLEXITY_API_KEY", cfg.Providers.Perplexity.APIKey)
 
 	if cfg.Gateway.Token != "" {
-		lines = append(lines, fmt.Sprintf("export GOCLAW_GATEWAY_TOKEN=%s", cfg.Gateway.Token))
+		lines = append(lines, fmt.Sprintf("export MTCLAW_GATEWAY_TOKEN=%s", cfg.Gateway.Token))
 	}
 
 	if cfg.Channels.Telegram.Enabled && cfg.Channels.Telegram.Token != "" {
-		lines = append(lines, fmt.Sprintf("export GOCLAW_TELEGRAM_TOKEN=%s", cfg.Channels.Telegram.Token))
+		lines = append(lines, fmt.Sprintf("export MTCLAW_TELEGRAM_TOKEN=%s", cfg.Channels.Telegram.Token))
 	}
 	if cfg.Channels.Zalo.Enabled && cfg.Channels.Zalo.Token != "" {
-		lines = append(lines, fmt.Sprintf("export GOCLAW_ZALO_TOKEN=%s", cfg.Channels.Zalo.Token))
+		lines = append(lines, fmt.Sprintf("export MTCLAW_ZALO_TOKEN=%s", cfg.Channels.Zalo.Token))
 	}
 	// Database (managed mode)
 	if cfg.Database.PostgresDSN != "" {
-		lines = append(lines, fmt.Sprintf("export GOCLAW_POSTGRES_DSN=%s", cfg.Database.PostgresDSN))
+		lines = append(lines, fmt.Sprintf("export MTCLAW_POSTGRES_DSN=%s", cfg.Database.PostgresDSN))
 	}
 
 	// Encryption key for API keys in DB (managed mode)
-	if encKey := os.Getenv("GOCLAW_ENCRYPTION_KEY"); encKey != "" {
-		lines = append(lines, fmt.Sprintf("export GOCLAW_ENCRYPTION_KEY=%s", encKey))
+	if encKey := os.Getenv("MTCLAW_ENCRYPTION_KEY"); encKey != "" {
+		lines = append(lines, fmt.Sprintf("export MTCLAW_ENCRYPTION_KEY=%s", encKey))
 	}
 
 	// TTS secrets
 	if cfg.Tts.OpenAI.APIKey != "" {
-		lines = append(lines, fmt.Sprintf("export GOCLAW_TTS_OPENAI_API_KEY=%s", cfg.Tts.OpenAI.APIKey))
+		lines = append(lines, fmt.Sprintf("export MTCLAW_TTS_OPENAI_API_KEY=%s", cfg.Tts.OpenAI.APIKey))
 	}
 	if cfg.Tts.ElevenLabs.APIKey != "" {
-		lines = append(lines, fmt.Sprintf("export GOCLAW_TTS_ELEVENLABS_API_KEY=%s", cfg.Tts.ElevenLabs.APIKey))
+		lines = append(lines, fmt.Sprintf("export MTCLAW_TTS_ELEVENLABS_API_KEY=%s", cfg.Tts.ElevenLabs.APIKey))
 	}
 	if cfg.Tts.MiniMax.APIKey != "" {
-		lines = append(lines, fmt.Sprintf("export GOCLAW_TTS_MINIMAX_API_KEY=%s", cfg.Tts.MiniMax.APIKey))
+		lines = append(lines, fmt.Sprintf("export MTCLAW_TTS_MINIMAX_API_KEY=%s", cfg.Tts.MiniMax.APIKey))
 	}
 	if cfg.Tts.MiniMax.GroupID != "" {
-		lines = append(lines, fmt.Sprintf("export GOCLAW_TTS_MINIMAX_GROUP_ID=%s", cfg.Tts.MiniMax.GroupID))
+		lines = append(lines, fmt.Sprintf("export MTCLAW_TTS_MINIMAX_GROUP_ID=%s", cfg.Tts.MiniMax.GroupID))
 	}
 
 	// Verbose tracing
 	if traceVerbose {
-		lines = append(lines, "export GOCLAW_TRACE_VERBOSE=1")
+		lines = append(lines, "export MTCLAW_TRACE_VERBOSE=1")
 	}
 
 	lines = append(lines, "")

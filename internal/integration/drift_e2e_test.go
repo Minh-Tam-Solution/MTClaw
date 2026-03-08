@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nextlevelbuilder/goclaw/internal/rag"
-	"github.com/nextlevelbuilder/goclaw/internal/souls"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/rag"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/souls"
 )
 
 const soulDir = "../../docs/08-collaborate/souls"

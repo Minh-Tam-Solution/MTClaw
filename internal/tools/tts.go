@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/nextlevelbuilder/goclaw/internal/tts"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tts"
 )
 
 // TtsTool is an agent tool that converts text to speech audio.

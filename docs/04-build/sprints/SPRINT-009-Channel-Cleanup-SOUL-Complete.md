@@ -115,9 +115,9 @@ rm cmd/onboard_feishu.go             # 1 file, Feishu-specific wizard
 
 ```go
 // REMOVE these imports:
-"github.com/nextlevelbuilder/goclaw/internal/channels/discord"
-"github.com/nextlevelbuilder/goclaw/internal/channels/feishu"
-"github.com/nextlevelbuilder/goclaw/internal/channels/whatsapp"
+"github.com/Minh-Tam-Solution/MTClaw/internal/channels/discord"
+"github.com/Minh-Tam-Solution/MTClaw/internal/channels/feishu"
+"github.com/Minh-Tam-Solution/MTClaw/internal/channels/whatsapp"
 
 // REMOVE RegisterFactory calls:
 instanceLoader.RegisterFactory("discord", discord.Factory)

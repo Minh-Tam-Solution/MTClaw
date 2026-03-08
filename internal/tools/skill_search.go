@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/nextlevelbuilder/goclaw/internal/skills"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/skills"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // SkillSearchTool implements the skill_search tool with BM25 search

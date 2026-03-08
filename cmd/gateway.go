@@ -8,36 +8,38 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
 
-	"github.com/nextlevelbuilder/goclaw/internal/agent"
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/channels"
-	"github.com/nextlevelbuilder/goclaw/extensions/msteams"
-	"github.com/nextlevelbuilder/goclaw/internal/channels/telegram"
-	"github.com/nextlevelbuilder/goclaw/internal/channels/zalo"
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/cron"
-	"github.com/nextlevelbuilder/goclaw/internal/evidence"
-	"github.com/nextlevelbuilder/goclaw/internal/gateway"
-	"github.com/nextlevelbuilder/goclaw/internal/gateway/methods"
-	mcpbridge "github.com/nextlevelbuilder/goclaw/internal/mcp"
-	"github.com/nextlevelbuilder/goclaw/internal/pairing"
-	"github.com/nextlevelbuilder/goclaw/internal/permissions"
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
-	"github.com/nextlevelbuilder/goclaw/internal/sandbox"
-	"github.com/nextlevelbuilder/goclaw/internal/scheduler"
-	"github.com/nextlevelbuilder/goclaw/internal/sessions"
-	"github.com/nextlevelbuilder/goclaw/internal/skills"
-	"github.com/nextlevelbuilder/goclaw/internal/rag"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/store/file"
-	"github.com/nextlevelbuilder/goclaw/internal/store/pg"
-	"github.com/nextlevelbuilder/goclaw/internal/tools"
-	"github.com/nextlevelbuilder/goclaw/internal/tracing"
-	httpapi "github.com/nextlevelbuilder/goclaw/internal/http"
-	"github.com/nextlevelbuilder/goclaw/pkg/browser"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/agent"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/channels"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/claudecode"
+	"github.com/Minh-Tam-Solution/MTClaw/extensions/msteams"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/channels/telegram"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/channels/zalo"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/cron"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/evidence"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/gateway"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/gateway/methods"
+	mcpbridge "github.com/Minh-Tam-Solution/MTClaw/internal/mcp"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/pairing"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/permissions"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sandbox"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/scheduler"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sessions"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/skills"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/rag"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store/file"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store/pg"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tools"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tracing"
+	httpapi "github.com/Minh-Tam-Solution/MTClaw/internal/http"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/browser"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 func runGateway() {
@@ -77,9 +79,9 @@ func runGateway() {
 			envPath := filepath.Join(filepath.Dir(cfgPath), ".env.local")
 			fmt.Println("No AI provider API key found. Did you forget to load your secrets?")
 			fmt.Println()
-			fmt.Printf("  source %s && ./goclaw\n", envPath)
+			fmt.Printf("  source %s && ./mtclaw\n", envPath)
 			fmt.Println()
-			fmt.Println("Or re-run the setup wizard:  ./goclaw onboard")
+			fmt.Println("Or re-run the setup wizard:  ./mtclaw onboard")
 			os.Exit(1)
 		} else {
 			// No config file at all → first time, redirect to onboard wizard.
@@ -294,18 +296,18 @@ func runGateway() {
 	toolPE := tools.NewPolicyEngine(&cfg.Tools)
 
 	// Data directory for Phase 2 services
-	dataDir := os.Getenv("GOCLAW_DATA_DIR")
+	dataDir := os.Getenv("MTCLAW_DATA_DIR")
 	if dataDir == "" {
-		dataDir = config.ExpandHome("~/.goclaw/data")
+		dataDir = config.ExpandHome("~/.mtclaw/data")
 	}
 	os.MkdirAll(dataDir, 0755)
 
-	// Block exec from accessing sensitive directories (data dir, .goclaw, config file).
+	// Block exec from accessing sensitive directories (data dir, .mtclaw, config file).
 	// Prevents `cp /app/data/config.json workspace/` and similar exfiltration.
 	if execTool, ok := toolsReg.Get("exec"); ok {
 		if et, ok := execTool.(*tools.ExecTool); ok {
-			et.DenyPaths(dataDir, ".goclaw/")
-			if cfgPath := os.Getenv("GOCLAW_CONFIG"); cfgPath != "" {
+			et.DenyPaths(dataDir, ".mtclaw/")
+			if cfgPath := os.Getenv("MTCLAW_CONFIG"); cfgPath != "" {
 				et.DenyPaths(cfgPath)
 			}
 		}
@@ -330,7 +332,7 @@ func runGateway() {
 		storeCfg := store.StoreConfig{
 			PostgresDSN:   cfg.Database.PostgresDSN,
 			Mode:          cfg.Database.Mode,
-			EncryptionKey: os.Getenv("GOCLAW_ENCRYPTION_KEY"),
+			EncryptionKey: os.Getenv("MTCLAW_ENCRYPTION_KEY"),
 		}
 		pgStores, pgErr := pg.NewPGStores(storeCfg)
 		if pgErr != nil {
@@ -460,10 +462,10 @@ func runGateway() {
 	}
 
 	// Skills loader + search tool
-	// Global skills live under ~/.goclaw/skills/ (user-managed), not data/skills/.
-	globalSkillsDir := os.Getenv("GOCLAW_SKILLS_DIR")
+	// Global skills live under ~/.mtclaw/skills/ (user-managed), not data/skills/.
+	globalSkillsDir := os.Getenv("MTCLAW_SKILLS_DIR")
 	if globalSkillsDir == "" {
-		globalSkillsDir = filepath.Join(config.ExpandHome("~/.goclaw"), "skills")
+		globalSkillsDir = filepath.Join(config.ExpandHome("~/.mtclaw"), "skills")
 	}
 	skillsLoader := skills.NewLoader(workspace, globalSkillsDir, "")
 	skillSearchTool := tools.NewSkillSearchTool(skillsLoader)
@@ -507,7 +509,7 @@ func runGateway() {
 	slog.Info("session + message tools registered")
 
 	// Allow read_file to access skills directories (outside workspace).
-	// Skills can live in ~/.goclaw/skills/, ~/.agents/skills/, etc.
+	// Skills can live in ~/.mtclaw/skills/, ~/.agents/skills/, etc.
 	homeDir, _ := os.UserHomeDir()
 	if readTool, ok := toolsReg.Get("read_file"); ok {
 		if pa, ok := readTool.(tools.PathAllowable); ok {
@@ -753,6 +755,76 @@ func runGateway() {
 		}
 	}
 
+	// Wire Claude Code Bridge (ADR-010, CTO I2) — inject into all Telegram channels.
+	if cfg.Bridge.Enabled {
+		bridgeCfg := claudecode.BridgeConfig{
+			Enabled:       cfg.Bridge.Enabled,
+			HookPort:      cfg.Bridge.HookPort,
+			AuditDir:      cfg.Bridge.AuditDir,
+			StandaloneDir: cfg.Bridge.StandaloneDir,
+		}
+		tmuxBridge, err := claudecode.NewTmuxBridge()
+		if err != nil {
+			slog.Warn("claude code bridge: tmux not available, sessions will not launch terminal", "error", err)
+		}
+		bridgeMgr := claudecode.NewSessionManager(bridgeCfg, tmuxBridge)
+
+		// Inject into all registered Telegram channels
+		for _, name := range channelMgr.GetEnabledChannels() {
+			if ch, ok := channelMgr.GetChannel(name); ok {
+				if tgCh, ok := ch.(*telegram.Channel); ok {
+					tgCh.SetBridgeManager(bridgeMgr)
+					slog.Info("claude code bridge wired into telegram channel", "channel", name)
+				}
+			}
+		}
+
+		// Start HookServer (Sprint 15/B) — localhost-only HTTP server for signed webhooks
+		notifier := claudecode.NewNotifier(func(ctx context.Context, channel, chatID, message string) error {
+			return channelMgr.SendToChannel(ctx, channel, chatID, message)
+		})
+		hookServer := claudecode.NewHookServer(bridgeCfg.HookPort, bridgeMgr, notifier)
+
+		// Inject HookServer into Telegram channels for permission callbacks (Sprint 16/C)
+		for _, name := range channelMgr.GetEnabledChannels() {
+			if ch, ok := channelMgr.GetChannel(name); ok {
+				if tgCh, ok := ch.(*telegram.Channel); ok {
+					tgCh.SetHookServer(hookServer)
+				}
+			}
+		}
+
+		bridgeCtx, bridgeCancel := context.WithCancel(context.Background())
+		go func() {
+			if err := hookServer.Start(bridgeCtx); err != nil {
+				slog.Error("hook server stopped", "error", err)
+			}
+		}()
+
+		// Start HealthMonitor (Sprint 15/B) — 30s check interval
+		healthMon := claudecode.NewHealthMonitor(bridgeMgr, tmuxBridge, 0)
+		go healthMon.Start(bridgeCtx)
+
+		// Session cleanup ticker: remove stopped sessions older than 24h every 10 minutes.
+		go func() {
+			ticker := time.NewTicker(10 * time.Minute)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-ticker.C:
+					if n := bridgeMgr.CleanupStopped(24 * time.Hour); n > 0 {
+						slog.Info("bridge session cleanup", "removed", n)
+					}
+				case <-bridgeCtx.Done():
+					return
+				}
+			}
+		}()
+
+		defer bridgeCancel()
+		_ = healthMon // accessed via bridge status CLI
+	}
+
 	// TODO: create_forum_topic tool — disabled for now, re-enable when needed.
 	// toolsReg.Register(tools.NewCreateForumTopicTool(func() tools.ForumTopicCreator {
 	// 	for _, name := range channelMgr.GetEnabledChannels() {
@@ -949,7 +1021,7 @@ func runGateway() {
 	if cfg.Database.Mode == "managed" {
 		gatewayMode = "managed"
 	}
-	slog.Info("goclaw gateway starting",
+	slog.Info("mtclaw gateway starting",
 		"version", Version,
 		"protocol", protocol.ProtocolVersion,
 		"mode", gatewayMode,
@@ -969,7 +1041,7 @@ func runGateway() {
 
 	// Phase 1: suggest localhost binding when Tailscale is active
 	if cfg.Tailscale.Hostname != "" && cfg.Gateway.Host == "0.0.0.0" {
-		slog.Info("Tailscale enabled. Consider setting GOCLAW_HOST=127.0.0.1 for localhost-only + Tailscale access")
+		slog.Info("Tailscale enabled. Consider setting MTCLAW_HOST=127.0.0.1 for localhost-only + Tailscale access")
 	}
 
 	if err := server.Start(ctx); err != nil {

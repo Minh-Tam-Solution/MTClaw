@@ -20,7 +20,7 @@
 
 | # | Deliverable | User Story | Status |
 |---|------------|------------|--------|
-| 1 | GoClaw docs reorganized → `docs/99-goclaw-upstream/` | CTO ISSUE-2 | Done |
+| 1 | GoClaw docs reorganized → `docs/99-mtclaw-upstream/` | CTO ISSUE-2 | Done |
 | 2 | User Journey Map — 3 personas x first interaction | US-013 | Done |
 
 ### Day 1-2: Requirements & Design

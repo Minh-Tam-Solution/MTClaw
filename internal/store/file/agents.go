@@ -13,8 +13,8 @@ import (
 	"github.com/google/uuid"
 	_ "modernc.org/sqlite"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // standaloneNS is the UUID v5 namespace for standalone agent IDs.
@@ -23,7 +23,7 @@ var standaloneNS = uuid.MustParse("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 
 // AgentUUID generates a deterministic UUID v5 from an agent key.
 func AgentUUID(key string) uuid.UUID {
-	return uuid.NewSHA1(standaloneNS, []byte("goclaw-standalone:"+key))
+	return uuid.NewSHA1(standaloneNS, []byte("mtclaw-standalone:"+key))
 }
 
 // agentContextFiles lists filenames read from the workspace root for agent-level context.

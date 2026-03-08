@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
 )
 
 // ManagerConfig configures the memory manager.

@@ -90,7 +90,7 @@ Check if GoClaw has relevant tables:
 - `agents` — may map to SOUL definition
 - `agent_teams` — may map to SOUL grouping
 
-Document findings in `docs/02-design/goclaw-schema-analysis.md`.
+Document findings in `docs/02-design/mtclaw-schema-analysis.md`.
 
 ### SOUL Drift Control
 

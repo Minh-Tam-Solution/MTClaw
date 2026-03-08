@@ -3,9 +3,9 @@ package tools
 import (
 	"context"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // Tool is the interface all tools must implement.

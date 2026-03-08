@@ -17,7 +17,7 @@ func Default() *Config {
 	return &Config{
 		Agents: AgentsConfig{
 			Defaults: AgentDefaults{
-				Workspace:           "~/.goclaw/workspace",
+				Workspace:           "~/.mtclaw/workspace",
 				RestrictToWorkspace: true,
 				Provider:            "anthropic",
 				Model:               "claude-sonnet-4-5-20250929",
@@ -57,7 +57,7 @@ func Default() *Config {
 			},
 		},
 		Sessions: SessionsConfig{
-			Storage: "~/.goclaw/sessions",
+			Storage: "~/.mtclaw/sessions",
 		},
 	}
 }
@@ -93,25 +93,25 @@ func (c *Config) applyEnvOverrides() {
 			*dst = v
 		}
 	}
-	envStr("GOCLAW_ANTHROPIC_API_KEY", &c.Providers.Anthropic.APIKey)
-	envStr("GOCLAW_ANTHROPIC_BASE_URL", &c.Providers.Anthropic.APIBase)
-	envStr("GOCLAW_OPENAI_API_KEY", &c.Providers.OpenAI.APIKey)
-	envStr("GOCLAW_OPENROUTER_API_KEY", &c.Providers.OpenRouter.APIKey)
-	envStr("GOCLAW_GROQ_API_KEY", &c.Providers.Groq.APIKey)
-	envStr("GOCLAW_DEEPSEEK_API_KEY", &c.Providers.DeepSeek.APIKey)
-	envStr("GOCLAW_GEMINI_API_KEY", &c.Providers.Gemini.APIKey)
-	envStr("GOCLAW_MISTRAL_API_KEY", &c.Providers.Mistral.APIKey)
-	envStr("GOCLAW_XAI_API_KEY", &c.Providers.XAI.APIKey)
-	envStr("GOCLAW_MINIMAX_API_KEY", &c.Providers.MiniMax.APIKey)
-	envStr("GOCLAW_COHERE_API_KEY", &c.Providers.Cohere.APIKey)
-	envStr("GOCLAW_PERPLEXITY_API_KEY", &c.Providers.Perplexity.APIKey)
-	envStr("GOCLAW_DASHSCOPE_API_KEY", &c.Providers.DashScope.APIKey)
-	envStr("GOCLAW_BAILIAN_API_KEY", &c.Providers.Bailian.APIKey)
-	envStr("GOCLAW_BFLOW_API_KEY", &c.Providers.BflowAI.APIKey)
-	envStr("GOCLAW_BFLOW_BASE_URL", &c.Providers.BflowAI.APIBase)
-	envStr("GOCLAW_GATEWAY_TOKEN", &c.Gateway.Token)
-	envStr("GOCLAW_TELEGRAM_TOKEN", &c.Channels.Telegram.Token)
-	envStr("GOCLAW_ZALO_TOKEN", &c.Channels.Zalo.Token)
+	envStr("MTCLAW_ANTHROPIC_API_KEY", &c.Providers.Anthropic.APIKey)
+	envStr("MTCLAW_ANTHROPIC_BASE_URL", &c.Providers.Anthropic.APIBase)
+	envStr("MTCLAW_OPENAI_API_KEY", &c.Providers.OpenAI.APIKey)
+	envStr("MTCLAW_OPENROUTER_API_KEY", &c.Providers.OpenRouter.APIKey)
+	envStr("MTCLAW_GROQ_API_KEY", &c.Providers.Groq.APIKey)
+	envStr("MTCLAW_DEEPSEEK_API_KEY", &c.Providers.DeepSeek.APIKey)
+	envStr("MTCLAW_GEMINI_API_KEY", &c.Providers.Gemini.APIKey)
+	envStr("MTCLAW_MISTRAL_API_KEY", &c.Providers.Mistral.APIKey)
+	envStr("MTCLAW_XAI_API_KEY", &c.Providers.XAI.APIKey)
+	envStr("MTCLAW_MINIMAX_API_KEY", &c.Providers.MiniMax.APIKey)
+	envStr("MTCLAW_COHERE_API_KEY", &c.Providers.Cohere.APIKey)
+	envStr("MTCLAW_PERPLEXITY_API_KEY", &c.Providers.Perplexity.APIKey)
+	envStr("MTCLAW_DASHSCOPE_API_KEY", &c.Providers.DashScope.APIKey)
+	envStr("MTCLAW_BAILIAN_API_KEY", &c.Providers.Bailian.APIKey)
+	envStr("MTCLAW_BFLOW_API_KEY", &c.Providers.BflowAI.APIKey)
+	envStr("MTCLAW_BFLOW_BASE_URL", &c.Providers.BflowAI.APIBase)
+	envStr("MTCLAW_GATEWAY_TOKEN", &c.Gateway.Token)
+	envStr("MTCLAW_TELEGRAM_TOKEN", &c.Channels.Telegram.Token)
+	envStr("MTCLAW_ZALO_TOKEN", &c.Channels.Zalo.Token)
 
 	// GitHub PR Gate (Sprint 8)
 	envStr("GITHUB_WEBHOOK_SECRET", &c.GitHub.WebhookSecret)
@@ -123,10 +123,10 @@ func (c *Config) applyEnvOverrides() {
 	envStr("MSTEAMS_TENANT_ID", &c.Channels.MSTeams.TenantID)
 
 	// TTS secrets
-	envStr("GOCLAW_TTS_OPENAI_API_KEY", &c.Tts.OpenAI.APIKey)
-	envStr("GOCLAW_TTS_ELEVENLABS_API_KEY", &c.Tts.ElevenLabs.APIKey)
-	envStr("GOCLAW_TTS_MINIMAX_API_KEY", &c.Tts.MiniMax.APIKey)
-	envStr("GOCLAW_TTS_MINIMAX_GROUP_ID", &c.Tts.MiniMax.GroupID)
+	envStr("MTCLAW_TTS_OPENAI_API_KEY", &c.Tts.OpenAI.APIKey)
+	envStr("MTCLAW_TTS_ELEVENLABS_API_KEY", &c.Tts.ElevenLabs.APIKey)
+	envStr("MTCLAW_TTS_MINIMAX_API_KEY", &c.Tts.MiniMax.APIKey)
+	envStr("MTCLAW_TTS_MINIMAX_GROUP_ID", &c.Tts.MiniMax.GroupID)
 
 	// Auto-enable channels if credentials are provided via env
 	if c.Channels.Telegram.Token != "" {
@@ -140,45 +140,45 @@ func (c *Config) applyEnvOverrides() {
 	}
 
 	// Allow overriding default provider/model
-	envStr("GOCLAW_PROVIDER", &c.Agents.Defaults.Provider)
-	envStr("GOCLAW_MODEL", &c.Agents.Defaults.Model)
+	envStr("MTCLAW_PROVIDER", &c.Agents.Defaults.Provider)
+	envStr("MTCLAW_MODEL", &c.Agents.Defaults.Model)
 
 	// Workspace & sessions
-	envStr("GOCLAW_WORKSPACE", &c.Agents.Defaults.Workspace)
-	envStr("GOCLAW_SESSIONS_STORAGE", &c.Sessions.Storage)
+	envStr("MTCLAW_WORKSPACE", &c.Agents.Defaults.Workspace)
+	envStr("MTCLAW_SESSIONS_STORAGE", &c.Sessions.Storage)
 
 	// Gateway host/port
-	envStr("GOCLAW_HOST", &c.Gateway.Host)
-	if v := os.Getenv("GOCLAW_PORT"); v != "" {
+	envStr("MTCLAW_HOST", &c.Gateway.Host)
+	if v := os.Getenv("MTCLAW_PORT"); v != "" {
 		if port, err := strconv.Atoi(v); err == nil && port > 0 {
 			c.Gateway.Port = port
 		}
 	}
 
 	// Database
-	envStr("GOCLAW_POSTGRES_DSN", &c.Database.PostgresDSN)
-	envStr("GOCLAW_MODE", &c.Database.Mode)
+	envStr("MTCLAW_POSTGRES_DSN", &c.Database.PostgresDSN)
+	envStr("MTCLAW_MODE", &c.Database.Mode)
 
 	// Telemetry
-	envStr("GOCLAW_TELEMETRY_ENDPOINT", &c.Telemetry.Endpoint)
-	envStr("GOCLAW_TELEMETRY_PROTOCOL", &c.Telemetry.Protocol)
-	envStr("GOCLAW_TELEMETRY_SERVICE_NAME", &c.Telemetry.ServiceName)
-	if v := os.Getenv("GOCLAW_TELEMETRY_ENABLED"); v != "" {
+	envStr("MTCLAW_TELEMETRY_ENDPOINT", &c.Telemetry.Endpoint)
+	envStr("MTCLAW_TELEMETRY_PROTOCOL", &c.Telemetry.Protocol)
+	envStr("MTCLAW_TELEMETRY_SERVICE_NAME", &c.Telemetry.ServiceName)
+	if v := os.Getenv("MTCLAW_TELEMETRY_ENABLED"); v != "" {
 		c.Telemetry.Enabled = v == "true" || v == "1"
 	}
-	if v := os.Getenv("GOCLAW_TELEMETRY_INSECURE"); v != "" {
+	if v := os.Getenv("MTCLAW_TELEMETRY_INSECURE"); v != "" {
 		c.Telemetry.Insecure = v == "true" || v == "1"
 	}
 
 	// Owner IDs from env (comma-separated)
-	if v := os.Getenv("GOCLAW_OWNER_IDS"); v != "" {
+	if v := os.Getenv("MTCLAW_OWNER_IDS"); v != "" {
 		c.Gateway.OwnerIDs = strings.Split(v, ",")
 	}
 
 	// Tailscale (tsnet)
-	envStr("GOCLAW_TSNET_HOSTNAME", &c.Tailscale.Hostname)
-	envStr("GOCLAW_TSNET_AUTH_KEY", &c.Tailscale.AuthKey)
-	envStr("GOCLAW_TSNET_DIR", &c.Tailscale.StateDir)
+	envStr("MTCLAW_TSNET_HOSTNAME", &c.Tailscale.Hostname)
+	envStr("MTCLAW_TSNET_AUTH_KEY", &c.Tailscale.AuthKey)
+	envStr("MTCLAW_TSNET_DIR", &c.Tailscale.StateDir)
 
 	// Sandbox (for Docker-compose sandbox overlay)
 	ensureSandbox := func() {
@@ -186,41 +186,41 @@ func (c *Config) applyEnvOverrides() {
 			c.Agents.Defaults.Sandbox = &SandboxConfig{}
 		}
 	}
-	if v := os.Getenv("GOCLAW_SANDBOX_MODE"); v != "" {
+	if v := os.Getenv("MTCLAW_SANDBOX_MODE"); v != "" {
 		ensureSandbox()
 		c.Agents.Defaults.Sandbox.Mode = v
 	}
-	if v := os.Getenv("GOCLAW_SANDBOX_IMAGE"); v != "" {
+	if v := os.Getenv("MTCLAW_SANDBOX_IMAGE"); v != "" {
 		ensureSandbox()
 		c.Agents.Defaults.Sandbox.Image = v
 	}
-	if v := os.Getenv("GOCLAW_SANDBOX_WORKSPACE_ACCESS"); v != "" {
+	if v := os.Getenv("MTCLAW_SANDBOX_WORKSPACE_ACCESS"); v != "" {
 		ensureSandbox()
 		c.Agents.Defaults.Sandbox.WorkspaceAccess = v
 	}
-	if v := os.Getenv("GOCLAW_SANDBOX_SCOPE"); v != "" {
+	if v := os.Getenv("MTCLAW_SANDBOX_SCOPE"); v != "" {
 		ensureSandbox()
 		c.Agents.Defaults.Sandbox.Scope = v
 	}
-	if v := os.Getenv("GOCLAW_SANDBOX_MEMORY_MB"); v != "" {
+	if v := os.Getenv("MTCLAW_SANDBOX_MEMORY_MB"); v != "" {
 		ensureSandbox()
 		if mb, err := strconv.Atoi(v); err == nil && mb > 0 {
 			c.Agents.Defaults.Sandbox.MemoryMB = mb
 		}
 	}
-	if v := os.Getenv("GOCLAW_SANDBOX_CPUS"); v != "" {
+	if v := os.Getenv("MTCLAW_SANDBOX_CPUS"); v != "" {
 		ensureSandbox()
 		if cpus, err := strconv.ParseFloat(v, 64); err == nil && cpus > 0 {
 			c.Agents.Defaults.Sandbox.CPUs = cpus
 		}
 	}
-	if v := os.Getenv("GOCLAW_SANDBOX_TIMEOUT_SEC"); v != "" {
+	if v := os.Getenv("MTCLAW_SANDBOX_TIMEOUT_SEC"); v != "" {
 		ensureSandbox()
 		if sec, err := strconv.Atoi(v); err == nil && sec > 0 {
 			c.Agents.Defaults.Sandbox.TimeoutSec = sec
 		}
 	}
-	if v := os.Getenv("GOCLAW_SANDBOX_NETWORK"); v != "" {
+	if v := os.Getenv("MTCLAW_SANDBOX_NETWORK"); v != "" {
 		ensureSandbox()
 		c.Agents.Defaults.Sandbox.NetworkEnabled = v == "true" || v == "1"
 	}

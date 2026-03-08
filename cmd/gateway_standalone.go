@@ -5,12 +5,12 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	"github.com/nextlevelbuilder/goclaw/internal/agent"
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/store/file"
-	"github.com/nextlevelbuilder/goclaw/internal/tools"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/agent"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store/file"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tools"
 )
 
 // wireStandaloneExtras sets up standalone-mode components that mirror managed mode:
@@ -89,8 +89,8 @@ func wireStandaloneExtras(
 		}
 	}
 
-	// Deny access to hidden directories (e.g. .goclaw) from filesystem tools
-	hiddenDirs := []string{".goclaw"}
+	// Deny access to hidden directories (e.g. .mtclaw) from filesystem tools
+	hiddenDirs := []string{".mtclaw"}
 	for _, toolName := range []string{"read_file", "write_file", "list_files", "edit"} {
 		if t, ok := toolsReg.Get(toolName); ok {
 			if pd, ok := t.(tools.PathDenyable); ok {

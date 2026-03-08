@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/nextlevelbuilder/goclaw/internal/hooks"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/hooks"
 )
 
 func checkUserPermission(settings json.RawMessage, userID string) error {

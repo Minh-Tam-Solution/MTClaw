@@ -26,7 +26,7 @@ RUN set -eux; \
     fi; \
     if [ -n "$TAGS" ]; then TAGS="-tags $TAGS"; fi; \
     CGO_ENABLED=0 GOOS=linux \
-    go build -ldflags="-s -w -X github.com/nextlevelbuilder/goclaw/cmd.Version=${VERSION}" \
+    go build -ldflags="-s -w -X github.com/Minh-Tam-Solution/MTClaw/cmd.Version=${VERSION}" \
     ${TAGS} -o /out/mtclaw .
 
 # ── Stage 2: Runtime ──
@@ -56,14 +56,14 @@ RUN mkdir -p /app/workspace /app/data /app/sessions /app/skills /app/tsnet-state
     && chown -R mtclaw:mtclaw /app
 
 # Default environment
-ENV GOCLAW_CONFIG=/app/config.json \
-    GOCLAW_WORKSPACE=/app/workspace \
-    GOCLAW_DATA_DIR=/app/data \
-    GOCLAW_SESSIONS_STORAGE=/app/sessions \
-    GOCLAW_SKILLS_DIR=/app/skills \
-    GOCLAW_MIGRATIONS_DIR=/app/migrations \
-    GOCLAW_HOST=0.0.0.0 \
-    GOCLAW_PORT=18790
+ENV MTCLAW_CONFIG=/app/config.json \
+    MTCLAW_WORKSPACE=/app/workspace \
+    MTCLAW_DATA_DIR=/app/data \
+    MTCLAW_SESSIONS_STORAGE=/app/sessions \
+    MTCLAW_SKILLS_DIR=/app/skills \
+    MTCLAW_MIGRATIONS_DIR=/app/migrations \
+    MTCLAW_HOST=0.0.0.0 \
+    MTCLAW_PORT=18790
 
 USER mtclaw
 

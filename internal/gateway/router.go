@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"log/slog"
 
-	"github.com/nextlevelbuilder/goclaw/internal/permissions"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/permissions"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 // MethodHandler processes a single RPC method request.
@@ -134,7 +134,7 @@ func (r *MethodRouter) handleConnect(ctx context.Context, client *Client, req *p
 				"pairing_code": code,
 				"sender_id":    client.id,
 				"server": map[string]interface{}{
-					"name":    "goclaw",
+					"name":    "mtclaw",
 					"version": "0.2.0",
 				},
 			}))
@@ -155,7 +155,7 @@ func (r *MethodRouter) sendConnectResponse(client *Client, reqID string) {
 		"role":     string(client.role),
 		"user_id":  client.userID,
 		"server": map[string]interface{}{
-			"name":    "goclaw",
+			"name":    "mtclaw",
 			"version": "0.2.0",
 		},
 	}))

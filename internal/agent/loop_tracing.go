@@ -10,10 +10,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/tools"
-	"github.com/nextlevelbuilder/goclaw/internal/tracing"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tools"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tracing"
 )
 
 func (l *Loop) emit(event AgentEvent) {
@@ -32,7 +32,7 @@ func (l *Loop) Model() string { return l.model }
 func (l *Loop) IsRunning() bool { return l.activeRuns.Load() > 0 }
 
 // emitLLMSpan records an LLM call span if tracing is active.
-// When GOCLAW_TRACE_VERBOSE is set, messages are serialized as InputPreview.
+// When MTCLAW_TRACE_VERBOSE is set, messages are serialized as InputPreview.
 func (l *Loop) emitLLMSpan(ctx context.Context, start time.Time, iteration int, messages []providers.Message, resp *providers.ChatResponse, callErr error) {
 	traceID := tracing.TraceIDFromContext(ctx)
 	collector := tracing.CollectorFromContext(ctx)

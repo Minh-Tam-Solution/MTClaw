@@ -13,17 +13,17 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/agent"
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
-	"github.com/nextlevelbuilder/goclaw/internal/sessions"
-	"github.com/nextlevelbuilder/goclaw/internal/skills"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/store/file"
-	"github.com/nextlevelbuilder/goclaw/internal/tools"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/agent"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sessions"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/skills"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store/file"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tools"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 func runStandaloneMode(cfg *config.Config, agentName, message, sessionKey string) {
@@ -122,7 +122,7 @@ func bootstrapStandaloneAgent(cfg *config.Config, agentName string) (*agent.Loop
 	if err != nil {
 		names := providerReg.List()
 		if len(names) == 0 {
-			fmt.Fprintf(os.Stderr, "Error: no providers configured. Run 'goclaw onboard' first.\n")
+			fmt.Fprintf(os.Stderr, "Error: no providers configured. Run 'mtclaw onboard' first.\n")
 			os.Exit(1)
 		}
 		provider, _ = providerReg.Get(names[0])
@@ -166,7 +166,7 @@ func bootstrapStandaloneAgent(cfg *config.Config, agentName string) (*agent.Loop
 	contextFiles := bootstrap.BuildContextFiles(rawFiles, truncCfg)
 
 	// 5. Skills
-	globalSkillsDir := filepath.Join(config.ExpandHome("~/.goclaw"), "skills")
+	globalSkillsDir := filepath.Join(config.ExpandHome("~/.mtclaw"), "skills")
 	skillsLoader := skills.NewLoader(workspace, globalSkillsDir, "")
 	toolsReg.Register(tools.NewSkillSearchTool(skillsLoader))
 

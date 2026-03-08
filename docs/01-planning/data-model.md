@@ -196,7 +196,7 @@ These tables will be added via migrations as governance rails are built:
 
 ## References
 
-- [GoClaw Schema Analysis](../02-design/goclaw-schema-analysis.md) — detailed table-by-table analysis
+- [GoClaw Schema Analysis](../02-design/mtclaw-schema-analysis.md) — detailed table-by-table analysis
 - [RLS Tenant Isolation Design](../02-design/rls-tenant-isolation-design.md) — RLS policies + middleware
 - [SOUL Loading Implementation Plan](../02-design/soul-loading-implementation-plan.md) — agent/context file usage
 - [API Specification](api-specification.md) — 73 endpoints using this data model

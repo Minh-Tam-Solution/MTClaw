@@ -71,7 +71,7 @@ After completing the System Architecture Document, hand these implementation tas
 
 **Input docs**:
 - [RLS Tenant Isolation Design](../02-design/rls-tenant-isolation-design.md) — full policy specifications
-- [GoClaw Schema Analysis](../02-design/goclaw-schema-analysis.md) — table inventory
+- [GoClaw Schema Analysis](../02-design/mtclaw-schema-analysis.md) — table inventory
 
 **Implementation**:
 ```
@@ -179,7 +179,7 @@ File: migrations/000009_seed_mtclaw_souls.down.sql
 | User Research (8 interviews) | `docs/00-foundation/user-research/` | ✅ |
 | User Personas (3 personas) | `docs/00-foundation/user-personas.md` | ✅ |
 | Product Vision | `docs/00-foundation/product-vision.md` | ✅ |
-| License Verification | `docs/00-foundation/goclaw-license-verification.md` | ✅ |
+| License Verification | `docs/00-foundation/mtclaw-license-verification.md` | ✅ |
 | G0.1 Gate Proposal | `docs/00-foundation/G0.1-GATE-PROPOSAL.md` | ✅ APPROVED |
 | G0.2 Gate Proposal | `docs/00-foundation/G0.2-GATE-PROPOSAL.md` | ✅ APPROVED |
 
@@ -206,7 +206,7 @@ File: migrations/000009_seed_mtclaw_souls.down.sql
 | ADR-003: Observability | `docs/02-design/01-ADRs/SPEC-0003-...` | ✅ |
 | ADR-004: SOUL Implementation | `docs/02-design/01-ADRs/SPEC-0004-...` | ✅ |
 | ADR-005: Bflow AI-Platform | `docs/02-design/01-ADRs/SPEC-0005-...` | ✅ |
-| GoClaw Schema Analysis | `docs/02-design/goclaw-schema-analysis.md` | ✅ |
+| GoClaw Schema Analysis | `docs/02-design/mtclaw-schema-analysis.md` | ✅ |
 | SOUL Loading Implementation Plan | `docs/02-design/soul-loading-implementation-plan.md` | ✅ |
 | RLS Tenant Isolation Design | `docs/02-design/rls-tenant-isolation-design.md` | ✅ |
 | /spec Command Design | `docs/02-design/spec-command-design.md` | ✅ |

@@ -10,7 +10,7 @@ import (
 	mcpclient "github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/client/transport"
 	mcpgo "github.com/mark3labs/mcp-go/mcp"
-	"github.com/nextlevelbuilder/goclaw/internal/tools"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tools"
 )
 
 // connectServer creates a client, initializes the connection, discovers tools, and registers them.
@@ -32,7 +32,7 @@ func (m *Manager) connectServer(ctx context.Context, name, transportType, comman
 	initReq := mcpgo.InitializeRequest{}
 	initReq.Params.ProtocolVersion = mcpgo.LATEST_PROTOCOL_VERSION
 	initReq.Params.ClientInfo = mcpgo.Implementation{
-		Name:    "goclaw",
+		Name:    "mtclaw",
 		Version: "1.0.0",
 	}
 

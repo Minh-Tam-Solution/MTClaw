@@ -23,11 +23,11 @@ services:
       - path: .env
         required: false
     environment:
-      - GOCLAW_MODE=managed
-      - GOCLAW_POSTGRES_DSN=postgres://${POSTGRES_USER:-mtclaw}:${POSTGRES_PASSWORD:-mtclaw}@postgres:5432/${POSTGRES_DB:-mtclaw}?sslmode=disable
-      - GOCLAW_CONFIG=/app/data/config.json
-      - GOCLAW_MIGRATIONS_DIR=/app/migrations
-      - GOCLAW_ENCRYPTION_KEY=${GOCLAW_ENCRYPTION_KEY:-}
+      - MTCLAW_MODE=managed
+      - MTCLAW_POSTGRES_DSN=postgres://${POSTGRES_USER:-mtclaw}:${POSTGRES_PASSWORD:-mtclaw}@postgres:5432/${POSTGRES_DB:-mtclaw}?sslmode=disable
+      - MTCLAW_CONFIG=/app/data/config.json
+      - MTCLAW_MIGRATIONS_DIR=/app/migrations
+      - MTCLAW_ENCRYPTION_KEY=${MTCLAW_ENCRYPTION_KEY:-}
     volumes:
       - mtclaw-data:/app/data
     depends_on:

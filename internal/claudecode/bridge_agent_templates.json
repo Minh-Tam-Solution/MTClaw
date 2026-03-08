@@ -1,0 +1,36 @@
+{
+  "_comment": "Tool/model/skills/risk mappings for claude-code >= 2.x. Update when Claude Code changes tool names.",
+  "claude_code_version_min": "2.0",
+  "categories": {
+    "executor": {
+      "tools": ["Read", "Edit", "Write", "Bash", "Grep", "Glob"],
+      "model": "sonnet",
+      "skills": ["sdlc-framework"],
+      "default_risk_mode": "patch"
+    },
+    "advisor": {
+      "tools": ["Read", "Grep", "Glob"],
+      "model": "opus",
+      "skills": ["sdlc-framework"],
+      "default_risk_mode": "read"
+    },
+    "router": {
+      "tools": ["Read", "Grep", "Glob", "Bash"],
+      "model": "inherit",
+      "skills": ["sdlc-framework"],
+      "default_risk_mode": "read"
+    },
+    "business": {
+      "tools": ["Read", "Grep", "Glob"],
+      "model": "sonnet",
+      "skills": [],
+      "default_risk_mode": "read"
+    }
+  },
+  "role_overrides": {
+    "architect": { "model": "opus" },
+    "cto": { "model": "opus" },
+    "cpo": { "model": "opus" },
+    "ceo": { "model": "opus" }
+  }
+}

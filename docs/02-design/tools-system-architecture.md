@@ -194,7 +194,7 @@ type PathDenyable interface {
 }
 ```
 
-All four filesystem tools (`read_file`, `write_file`, `list_files`, `edit_file`) implement it. `list_files` additionally filters denied directories from its output entirely -- the agent doesn't even know the directory exists. Used to prevent agents from accessing `.goclaw` directories within workspaces.
+All four filesystem tools (`read_file`, `write_file`, `list_files`, `edit_file`) implement it. `list_files` additionally filters denied directories from its output entirely -- the agent doesn't even know the directory exists. Used to prevent agents from accessing `.mtclaw` directories within workspaces.
 
 ### Workspace Context Injection
 
@@ -292,7 +292,7 @@ flowchart TD
 | `messaging` | `message` |
 | `delegation` | `delegate`, `delegate_search`, `evaluate_loop`, `handoff` |
 | `teams` | `team_tasks`, `team_message` |
-| `goclaw` | All native tools (composite group) |
+| `mtclaw` | All native tools (composite group) |
 
 Groups can be referenced in allow/deny lists with the `group:` prefix (e.g., `group:fs`). The MCP manager dynamically registers `mcp` and `mcp:{serverName}` groups at runtime.
 

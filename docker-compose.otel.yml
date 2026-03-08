@@ -21,11 +21,11 @@ services:
       args:
         ENABLE_OTEL: "true"
     environment:
-      - GOCLAW_TELEMETRY_ENABLED=true
-      - GOCLAW_TELEMETRY_ENDPOINT=jaeger:4317
-      - GOCLAW_TELEMETRY_PROTOCOL=grpc
-      - GOCLAW_TELEMETRY_INSECURE=true
-      - GOCLAW_TELEMETRY_SERVICE_NAME=mtclaw-gateway
+      - MTCLAW_TELEMETRY_ENABLED=true
+      - MTCLAW_TELEMETRY_ENDPOINT=jaeger:4317
+      - MTCLAW_TELEMETRY_PROTOCOL=grpc
+      - MTCLAW_TELEMETRY_INSECURE=true
+      - MTCLAW_TELEMETRY_SERVICE_NAME=mtclaw-gateway
     depends_on:
       jaeger:
         condition: service_started

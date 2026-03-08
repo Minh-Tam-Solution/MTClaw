@@ -1,12 +1,12 @@
 # Product Roadmap — MTClaw
 
 **SDLC Stage**: 01-Planning
-**Version**: 2.7.0
-**Date**: 2026-03-22 (Sprint 10 COMPLETE pending CTO review; Sprint 11 plan filed — Hardening; Sprint 12 OaaS + Dogfooding added)
+**Version**: 3.0.0
+**Date**: 2026-03-07 (Phase 4: Bridge Intelligence — Sprint 18-23 roadmap added)
 **Author**: [@pm] + [@architect]
 **Framework**: SDLC Enterprise Framework 6.1.1
 **Tier**: STANDARD
-**Duration**: 12 sprints (5 days each) ≈ 24 weeks
+**Duration**: 23 sprints (5 days each) — Phase 1-3 (12 sprints) + Phase 4 (6 sprints bridge foundation) + Phase 5 (5 sprints bridge intelligence)
 
 ---
 
@@ -279,7 +279,7 @@
 | ID | Task | Priority | Points | Notes |
 |----|------|----------|--------|-------|
 | T12-01 | Multi-tenant self-service: registration API + admin panel (new tenant → working bot <30 min) | P0 | 3 | OaaS core |
-| T12-02 | **MTClaw self-development tools: file system tools + code execution sandbox** | P1 | 3 | Dogfooding: MTClaw builds MTClaw via Telegram |
+| T12-02 | **MTClaw self-development tools: file system tools + code execution sandbox** | P1 | 3 | Dogfooding: MTClaw builds MTClaw via Telegram. **Prerequisite delivered**: `/workspace` + `/projects` commands (switch repo/project from OTT) |
 | T12-03 | Pricing model: token-based tiers (Starter/Growth/Enterprise) | P1 | 2 | Revenue enabler |
 | T12-04 | SOUL marketplace design: F&B, retail, tech industry personas | P2 | 2 | OaaS differentiator |
 | T12-05 | Tenant admin guide + API reference + G5 gate proposal | P1 | 2 | Gate + docs |
@@ -301,10 +301,11 @@ Sprint 12 target state:
   Response: "auth.go created. Build: ✅ 0 errors. Tests: 3/3 PASS."
 ```
 
-**Required capabilities** (not in Sprint 11):
-- `file_read` / `file_write` tools (scoped to MTClaw repo path)
+**Required capabilities**:
+- ✅ `/workspace` + `/projects` commands (switch repo/project from Telegram — **DELIVERED**)
+- `file_read` / `file_write` tools (scoped to current workspace path)
 - `code_exec` tool (runs in Docker sandbox, isolated from host)
-- `git_status` / `git_commit` tools (scoped to MTClaw repo)
+- `git_status` / `git_commit` tools (scoped to current workspace)
 
 **Security**: code_exec runs in ephemeral Docker container, no host filesystem access except repo bind mount.
 
@@ -315,6 +316,71 @@ Sprint 12 target state:
 - Evidence chain: spec → PR → test → deploy linkable
 - Pricing model defined + approved [@ceo]
 - Legal: terms of service draft reviewed
+
+---
+
+## Phase 4: Bridge Foundation (Sprint 13-17) ✅ COMPLETE
+
+Claude Code Terminal Bridge — 2-way interaction via tmux with multi-tenant governance. See ADR-010.
+
+| Sprint | Title | Key Deliverable | Tests | CTO Score |
+|--------|-------|-----------------|-------|-----------|
+| 13 ✅ | Bridge A1: Local Session Core | `internal/claudecode/` package, tmux bridge, session state machine | +46 | — |
+| 14 ✅ | Bridge A2: Telegram + Security | /cc commands, audit logging, input sanitizer, output redactor | +38 | — |
+| 15 ✅ | Bridge B: HookServer + Stop | HMAC hooks, stop notification, health monitor | +30 | — |
+| 16 ✅ | Bridge C: Permission Approval | Async permission polling, fail-closed, inline keyboard | +22 | — |
+| 17 ✅ | Bridge D: Free-Text + Installer | Free-text relay, CLI installer, PG store | +14 | — |
+
+**Cumulative**: 150+ bridge tests, 3-axis capability model, async permission polling, multi-tenant isolation.
+
+---
+
+## Phase 5: Bridge Intelligence (Sprint 18-23) ← CURRENT
+
+SOUL-aware bridge sessions — persona injection, intelligence envelope, skills, context, role defaults.
+
+See ADR-011 (`SPEC-0011-ADR-011-SOUL-Aware-Bridge-Launch.md`).
+
+### Sprint 18 — SOUL-Aware Launch ← NEXT
+
+**Duration**: 5 days | **CTO Approval**: 9.3/10 APPROVED (2026-03-07)
+**ADR**: ADR-011 (D10-D14, B4-B7 resolved)
+**Plan**: `docs/04-build/sprints/SPRINT-018-SOUL-Aware-Launch.md`
+**Handoff**: `docs/04-build/SPRINT-018-CODER-HANDOFF.md`
+
+| Deliverable | Status |
+|-------------|--------|
+| `soul_loader.go` — load SOULs with frontmatter + hash | 📋 |
+| `LaunchOpts` struct — replaces rigid LaunchCommand signature | 📋 |
+| Strategy A/B/C cascade — persona injection into bridge sessions | 📋 |
+| `/cc launch --as coder` — role selection from Telegram | 📋 |
+| `mtclaw bridge install-agents` — generate .claude/agents/*.md | 📋 |
+| `BridgeConfig.SoulsDir` — config wiring | 📋 |
+| ~28 new tests | 📋 |
+
+### Sprint 19 — Intelligence Envelope (4 days, directional)
+
+`SessionIntelligenceEnvelope` type + `/cc info` command. Contract only, no runtime injection.
+
+### Sprint 20A — Skills Integration (3 days, directional)
+
+`.claude/skills/sdlc-framework/` + agent template skills. SDLC Framework knowledge in Claude Code native skills.
+
+### Sprint 20B — Project Context (3 days, directional)
+
+CLAUDE.md generator + `/cc context set` + turn-time injection via rotating file.
+
+### Sprint 21 — Role-Aware Defaults (3 days, directional)
+
+Role->RiskMode defaults as UX convenience. NOT security boundary. Always overridable via `/cc risk`.
+
+### Sprint 22 — Agent Teams Research Spike (3 days, directional)
+
+2-day spike + ADR-026 GO/NO-GO. Validate experimental API before production commitment.
+
+### Sprint 23 — Provider Persona Projection Research (3 days, directional)
+
+Per-provider capability matrix + 1 POC adapter (Cursor). Provider parity is an illusion — four surfaces, not one abstraction.
 
 ---
 
@@ -332,8 +398,16 @@ Sprint 12 target state:
 | 8 ✅ | Governance | PR Gate ENFORCE + G4 | G4 ✅ [@cto] | 290 | ~160 | Telegram + Zalo |
 | 9 ✅ | Scale | Channel cleanup + SOUL x17 + MS Teams scaffold | — (9.0/10) | 350 | ~160 | Telegram + Zalo |
 | 10 ✅ | Scale | MS Teams + NQH corporate rollout | — (pending CTO) | 366 | ~200 | + Teams |
-| **11 →** | **Scale** | **Hardening + pen test + audit trail PDF** | **—** | **≥400** | **~200** | **3 channels** |
+| 11 → | Scale | Hardening + pen test + audit trail PDF | — | ≥400 | ~200 | 3 channels |
 | 12 📋 | Scale | OaaS prep + MTClaw self-development (dogfooding) | G5 | TBD | Expand | Multi-channel |
+| 13-17 ✅ | Bridge Foundation | Claude Code bridge — tmux, hooks, permissions | ADR-010 | 150+ | — | + Bridge |
+| **18 →** | **Bridge Intelligence** | **SOUL-Aware Launch — Strategy A/B/C** | **ADR-011** | **+28** | **—** | **—** |
+| 19 📋 | Bridge Intelligence | Intelligence Envelope + /cc info | — | +12 | — | — |
+| 20A 📋 | Bridge Intelligence | Skills Integration | — | +6 | — | — |
+| 20B 📋 | Bridge Intelligence | Project Context + CLAUDE.md | — | +6 | — | — |
+| 21 📋 | Bridge Intelligence | Role-Aware Defaults (UX) | — | +8 | — | — |
+| 22 📋 | Bridge Intelligence | Agent Teams Research Spike | ADR-026 | — | — | — |
+| 23 📋 | Bridge Intelligence | Provider Persona Research | ADR-027 | +4 | — | — |
 
 ---
 
@@ -353,7 +427,21 @@ Sprint 1 ─┐
            │                              Sprint 9 ──► Sprint 10 ──► Sprint 11 ──► Sprint 12
            │                              (cleanup)    (MSTeams)     (hardening)   (OaaS+dogfood)
            │
-           └──► Critical path: Sprint 3 (RLS) blocks ALL feature sprints
+           │    Phase 4-5: Bridge Track (parallel to Phase 3)
+           │
+           │                Sprint 13 ──► Sprint 14 ──► Sprint 15 ──► Sprint 16 ──► Sprint 17
+           │                (A1:tmux)     (A2:Telegram)  (B:hooks)     (C:perms)    (D:free-text)
+           │                                                                             │
+           │                    Sprint 18 ──► Sprint 19 ──► Sprint 20A ──► Sprint 20B    │
+           │                    (SOUL launch)  (envelope)    (skills)       (context)     │
+           │                         │              │                          │          │
+           │                         ▼              ▼                          ▼          │
+           │                    Sprint 21 ──► Sprint 22 ──► Sprint 23                    │
+           │                    (role defaults) (teams spike) (providers)                 │
+           │                                                                             │
+           └──► Critical paths: Sprint 3 (RLS) blocks Phase 1-3
+                               Sprint 17 (bridge D) blocks Phase 5
+                               Sprint 18 blocks Sprint 19-23
 ```
 
 ---
@@ -368,6 +456,9 @@ Sprint 1 ─┐
 | G3 | 5 | Build Ready (MTS Pilot) | [@cto], [@cpo] | ✅ APPROVED |
 | **G4** | **8→9** | **Validation Ready (3 Rails)** | **[@cto], [@cpo], [@ceo]** | **[@cto] ✅ 2026-03-17 — [@cpo]+[@ceo] co-sign pending** |
 | G5 | 12 | Scale Ready (OaaS) | [@cto], [@cpo], [@ceo] | ⏳ Structure filed Sprint 11 |
+| — | 13-17 | Bridge Foundation (ADR-010) | [@cto] | ✅ 150+ tests, all PASS |
+| **—** | **18** | **SOUL-Aware Launch (ADR-011)** | **[@cto]** | **✅ APPROVED 9.3/10** |
+| — | 19-23 | Bridge Intelligence (directional) | [@cto] per sprint | ⏳ Pre-sprint review gate each |
 
 ---
 
@@ -386,6 +477,9 @@ Sprint 1 ─┐
 | 10 | [@coder] | [@devops] (Azure AD) + [@pm] | MS Teams review | ✅ Complete (pending score) |
 | **11** | **[@coder]** | **[@tester] (pen test) + [@pm] (G4 close)** | **Hardening review** | **← NEXT** |
 | 12 | [@coder] | [@architect] (dogfood design) + [@pm] (OaaS) | G5 gate | 📋 Planned |
+| 13-17 | [@coder] | [@pm] + [@architect] | ADR-010 review | ✅ Complete |
+| **18** | **[@coder]** | **[@pm] + [@architect]** | **ADR-011 review** | **← NEXT** |
+| 19-23 | [@coder] | [@pm] + [@architect] | Per-sprint review | 📋 Planned |
 
 ---
 
@@ -410,6 +504,10 @@ Sprint 1 ─┐
 | R18 | SOUL injection (PT-03) hard to automate | High | Med | Manual Sprint 11; automated checksum Sprint 12 | 11 | NEW |
 | R19 | RAG p95 > 3s baseline | Med | Med | Document in Sprint 11; fix Sprint 12 | 11-12 | NEW |
 | R20 | Dogfooding file tools scope creep | Med | Med | Scope to MTClaw repo only; sandbox code_exec | 12 | NEW |
+| R21 | Claude Code CLI flag behavior changes | Low | High | `claude_code_version_min` check in templates | 18-23 | NEW |
+| R22 | `--agent` + `--allowedTools` interaction unknown | Med | Med | Verify before Sprint 21, defer if conflict | 21 | NEW |
+| R23 | Agent teams experimental API unstable | High | Med | 2-day spike (Sprint 22) before production | 22 | NEW |
+| R24 | EndiorBot + MTClaw `.claude/agents/` conflict | Med | High | MTClaw is authority (Option D), document in ADR | 19 | NEW |
 
 ---
 
@@ -429,6 +527,8 @@ Sprint 1 ─┐
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.0.0 | 2026-03-07 | **Phase 4+5 added**: Sprint 13-17 (Bridge Foundation, 150+ tests, COMPLETE) + Sprint 18-23 (Bridge Intelligence roadmap). ADR-011 SOUL-Aware Launch. Sprint 18 APPROVED 9.3/10. Dependency map extended. New risks R21-R24. |
+| 2.8.0 | 2026-03-06 | Workspace/projects commands delivered as Sprint 12 dogfooding prerequisite. T12-02 updated. |
 | 2.7.0 | 2026-03-22 | Sprint 12 expanded: OaaS + MTClaw Dogfooding (file tools + code exec sandbox). Sprint 11 detailed: evidence_links ADR-009, maroto ADR-008, pen test 6 vectors, post-mortem. Roadmap extended to 12 sprints. |
 | 2.6.0 | 2026-03-22 | Sprint 10 COMPLETE (366 tests, 6 CTO issues resolved). Sprint 11 placeholder added. |
 | 2.5.0 | 2026-03-17 | Sprint 9 COMPLETE (9.0/10). Sprint 10 entry criteria set. ADR-007 APPROVED. G4 @cto approved. |
@@ -448,3 +548,7 @@ Sprint 1 ─┐
 - [ADR-007 MS Teams](../02-design/01-ADRs/SPEC-0007-ADR-007-MSTeams-Extension.md)
 - [ADR-008 PDF Library](../02-design/01-ADRs/SPEC-0008-ADR-008-PDF-Library.md) ← NEW Sprint 11
 - [ADR-009 Evidence Linking](../02-design/01-ADRs/SPEC-0009-ADR-009-Evidence-Linking-Schema.md) ← NEW Sprint 11
+- [ADR-010 Claude Code Bridge](../02-design/01-ADRs/SPEC-0010-ADR-010-Claude-Code-Bridge.md) ← Phase 4
+- [ADR-011 SOUL-Aware Launch](../02-design/01-ADRs/SPEC-0011-ADR-011-SOUL-Aware-Bridge-Launch.md) ← Phase 5 NEW
+- [Sprint 18 Plan](../04-build/sprints/SPRINT-018-SOUL-Aware-Launch.md) ← Phase 5 NEW
+- [Sprint 18 Handoff](../04-build/SPRINT-018-CODER-HANDOFF.md) ← Phase 5 NEW

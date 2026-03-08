@@ -9,7 +9,7 @@ import (
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // --- Team tasks ---
@@ -191,7 +191,14 @@ func (c *Channel) handleCallbackQuery(ctx context.Context, query *telego.Callbac
 		CallbackQueryID: query.ID,
 	})
 
-	if !strings.HasPrefix(query.Data, "td:") {
+	// Route callback by prefix
+	switch {
+	case strings.HasPrefix(query.Data, "cc_approve:"), strings.HasPrefix(query.Data, "cc_deny:"):
+		c.handlePermissionCallback(ctx, query)
+		return
+	case strings.HasPrefix(query.Data, "td:"):
+		// fall through to task detail handler below
+	default:
 		return
 	}
 

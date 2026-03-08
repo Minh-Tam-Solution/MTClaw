@@ -40,7 +40,7 @@ func newDockerSandbox(ctx context.Context, name string, cfg Config, workspace st
 	args := []string{
 		"run", "-d",
 		"--name", name,
-		"--label", "goclaw.sandbox=true",
+		"--label", "mtclaw.sandbox=true",
 	}
 
 	// Security hardening (matching TS buildSandboxCreateArgs)
@@ -251,7 +251,7 @@ func (m *DockerManager) Get(ctx context.Context, key string, workspace string) (
 
 	prefix := m.config.ContainerPrefix
 	if prefix == "" {
-		prefix = "goclaw-sbx-"
+		prefix = "mtclaw-sbx-"
 	}
 	name := prefix + sanitizeKey(key)
 	sb, err := newDockerSandbox(ctx, name, m.config, workspace)

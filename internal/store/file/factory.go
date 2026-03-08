@@ -3,12 +3,12 @@ package file
 import (
 	"fmt"
 
-	"github.com/nextlevelbuilder/goclaw/internal/cron"
-	"github.com/nextlevelbuilder/goclaw/internal/memory"
-	"github.com/nextlevelbuilder/goclaw/internal/pairing"
-	"github.com/nextlevelbuilder/goclaw/internal/sessions"
-	"github.com/nextlevelbuilder/goclaw/internal/skills"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/cron"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/memory"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/pairing"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sessions"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/skills"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // NewFileStores creates all stores backed by filesystem/in-memory managers (standalone mode).

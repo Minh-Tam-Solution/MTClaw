@@ -8,13 +8,13 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/providers"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/tracing"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/providers"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tracing"
 )
 
 // emitLLMSpan records an LLM call span for a subagent iteration.
-// When GOCLAW_TRACE_VERBOSE is set, messages are serialized as InputPreview.
+// When MTCLAW_TRACE_VERBOSE is set, messages are serialized as InputPreview.
 func (sm *SubagentManager) emitLLMSpan(ctx context.Context, start time.Time, iteration int, model string, messages []providers.Message, resp *providers.ChatResponse, callErr error) {
 	collector := tracing.CollectorFromContext(ctx)
 	traceID := tracing.TraceIDFromContext(ctx)

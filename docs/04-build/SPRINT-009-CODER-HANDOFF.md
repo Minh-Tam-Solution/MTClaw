@@ -157,9 +157,9 @@ grep -n "slack\|Slack" /home/nqh/shared/MTClaw/cmd/gateway.go
 **`cmd/gateway.go`** — remove:
 ```go
 // REMOVE imports:
-"github.com/nextlevelbuilder/goclaw/internal/channels/discord"
-"github.com/nextlevelbuilder/goclaw/internal/channels/feishu"
-"github.com/nextlevelbuilder/goclaw/internal/channels/whatsapp"
+"github.com/Minh-Tam-Solution/MTClaw/internal/channels/discord"
+"github.com/Minh-Tam-Solution/MTClaw/internal/channels/feishu"
+"github.com/Minh-Tam-Solution/MTClaw/internal/channels/whatsapp"
 // Slack: only remove if CTO-29 grep shows a reference
 
 // REMOVE factory registrations (managed mode):
@@ -350,7 +350,7 @@ Zero core code changes required.
 //
 // package msteams
 //
-// import "github.com/nextlevelbuilder/goclaw/internal/channels"
+// import "github.com/Minh-Tam-Solution/MTClaw/internal/channels"
 //
 // type MSTeamsChannel struct { ... }
 //

@@ -741,7 +741,7 @@ MTClaw's `BuildSystemPrompt()` already injects SOUL.md as section [2] of the 15-
 - [ADR-005: Bflow AI-Platform Integration](01-ADRs/SPEC-0005-ADR-005-Bflow-AI-Platform-Integration.md)
 - [RLS Tenant Isolation Design](rls-tenant-isolation-design.md)
 - [SOUL Loading Implementation Plan](soul-loading-implementation-plan.md)
-- [GoClaw Schema Analysis](goclaw-schema-analysis.md)
+- [GoClaw Schema Analysis](mtclaw-schema-analysis.md)
 - [/spec Command Design](spec-command-design.md)
 - [Requirements](../01-planning/requirements.md)
 - [Data Model](../01-planning/data-model.md)

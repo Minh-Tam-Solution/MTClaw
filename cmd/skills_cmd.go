@@ -9,8 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/skills"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/skills"
 )
 
 func skillsCmd() *cobra.Command {
@@ -90,6 +90,6 @@ func loadSkillsLoader() *skills.Loader {
 	cfgPath := resolveConfigPath()
 	cfg, _ := config.Load(cfgPath)
 	workspace := config.ExpandHome(cfg.Agents.Defaults.Workspace)
-	globalSkillsDir := filepath.Join(config.ExpandHome("~/.goclaw"), "skills")
+	globalSkillsDir := filepath.Join(config.ExpandHome("~/.mtclaw"), "skills")
 	return skills.NewLoader(workspace, globalSkillsDir, "")
 }

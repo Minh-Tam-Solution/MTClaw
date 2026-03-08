@@ -150,16 +150,16 @@ func NewLaneManager(configs []LaneConfig) *LaneManager {
 // DefaultLanes returns the standard lane configuration.
 // Concurrency defaults can be overridden via env vars:
 //
-//	GOCLAW_LANE_MAIN=30
-//	GOCLAW_LANE_SUBAGENT=50
-//	GOCLAW_LANE_DELEGATE=100
-//	GOCLAW_LANE_CRON=30
+//	MTCLAW_LANE_MAIN=30
+//	MTCLAW_LANE_SUBAGENT=50
+//	MTCLAW_LANE_DELEGATE=100
+//	MTCLAW_LANE_CRON=30
 func DefaultLanes() []LaneConfig {
 	return []LaneConfig{
-		{Name: LaneMain, Concurrency: laneEnv("GOCLAW_LANE_MAIN", 30)},
-		{Name: LaneSubagent, Concurrency: laneEnv("GOCLAW_LANE_SUBAGENT", 50)},
-		{Name: LaneDelegate, Concurrency: laneEnv("GOCLAW_LANE_DELEGATE", 100)},
-		{Name: LaneCron, Concurrency: laneEnv("GOCLAW_LANE_CRON", 30)},
+		{Name: LaneMain, Concurrency: laneEnv("MTCLAW_LANE_MAIN", 30)},
+		{Name: LaneSubagent, Concurrency: laneEnv("MTCLAW_LANE_SUBAGENT", 50)},
+		{Name: LaneDelegate, Concurrency: laneEnv("MTCLAW_LANE_DELEGATE", 100)},
+		{Name: LaneCron, Concurrency: laneEnv("MTCLAW_LANE_CRON", 30)},
 	}
 }
 

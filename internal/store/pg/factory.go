@@ -3,7 +3,7 @@ package pg
 import (
 	"fmt"
 
-	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // NewPGStores creates all stores backed by Postgres (managed mode).
@@ -17,7 +17,7 @@ func NewPGStores(cfg store.StoreConfig) (*store.Stores, error) {
 
 	skillsDir := cfg.SkillsStorageDir
 	if skillsDir == "" {
-		skillsDir = "~/.goclaw/skills-store"
+		skillsDir = "~/.mtclaw/skills-store"
 	}
 
 	return &store.Stores{

@@ -323,7 +323,7 @@ Refer to your SOUL.md persona for tone and boundaries.
 | Configure `GOCLAW_TELEGRAM_TOKEN` in `.env` | [@coder] | Env var set |
 | Create `spec-factory/SKILL.md` | [@coder] | Skill file with schema + instructions |
 | Add `make souls-validate` target (CTO-3) | [@coder] | Char budget check |
-| Verify skills loader discovers spec-factory | [@coder] | `goclaw skills list` shows it |
+| Verify skills loader discovers spec-factory | [@coder] | `mtclaw skills list` shows it |
 | Create migration `000012_seed_itadmin_soul` (CEO) | [@coder] | IT Admin SOUL in DB |
 | Start /spec command handler implementation | [@coder] | Case added to commands.go |
 

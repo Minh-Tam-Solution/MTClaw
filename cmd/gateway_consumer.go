@@ -11,19 +11,19 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/agent"
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/channels"
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/cost"
-	"github.com/nextlevelbuilder/goclaw/internal/evidence"
-	"github.com/nextlevelbuilder/goclaw/internal/governance"
-	"github.com/nextlevelbuilder/goclaw/internal/rag"
-	"github.com/nextlevelbuilder/goclaw/internal/routing"
-	"github.com/nextlevelbuilder/goclaw/internal/scheduler"
-	"github.com/nextlevelbuilder/goclaw/internal/sessions"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/internal/tools"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/agent"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/channels"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/cost"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/evidence"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/governance"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/rag"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/routing"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/scheduler"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/sessions"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/tools"
 )
 
 // makeSchedulerRunFunc creates the RunFunc for the scheduler.

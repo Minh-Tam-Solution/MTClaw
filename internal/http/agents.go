@@ -8,10 +8,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
-	"github.com/nextlevelbuilder/goclaw/internal/bus"
-	"github.com/nextlevelbuilder/goclaw/internal/store"
-	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
+	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
 // AgentsHandler handles agent CRUD and sharing endpoints (managed mode only).
@@ -24,7 +24,7 @@ type AgentsHandler struct {
 }
 
 // NewAgentsHandler creates a handler for agent management endpoints.
-// isOwner is a function that checks if a user ID is in GOCLAW_OWNER_IDS (nil = disabled).
+// isOwner is a function that checks if a user ID is in MTCLAW_OWNER_IDS (nil = disabled).
 func NewAgentsHandler(agents store.AgentStore, token string, msgBus *bus.MessageBus, summoner *AgentSummoner, isOwner func(string) bool) *AgentsHandler {
 	return &AgentsHandler{agents: agents, token: token, msgBus: msgBus, summoner: summoner, isOwner: isOwner}
 }
@@ -129,9 +129,9 @@ func (h *AgentsHandler) handleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Workspace == "" {
 		if req.IsDefault {
-			req.Workspace = "~/.goclaw/workspace"
+			req.Workspace = "~/.mtclaw/workspace"
 		} else {
-			req.Workspace = fmt.Sprintf("~/.goclaw/%s-workspace", req.AgentKey)
+			req.Workspace = fmt.Sprintf("~/.mtclaw/%s-workspace", req.AgentKey)
 		}
 	}
 	req.RestrictToWorkspace = true

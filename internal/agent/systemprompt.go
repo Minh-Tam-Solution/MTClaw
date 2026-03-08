@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/nextlevelbuilder/goclaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
 )
 
 // PromptMode controls which system prompt sections are included.

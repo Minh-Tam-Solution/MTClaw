@@ -7,9 +7,9 @@
 ## Findings
 
 ### 1. LICENSE File
-- **Local clone**: NOT FOUND (`/home/nqh/shared/MTS-OpenClaw/goclaw/LICENSE` does not exist)
+- **Local clone**: NOT FOUND (`/home/nqh/shared/MTS-OpenClaw/mtclaw/LICENSE` does not exist)
 - **Git history**: Never tracked (not in any commit)
-- **GitHub raw**: 404 (https://raw.githubusercontent.com/nextlevelbuilder/goclaw/main/LICENSE)
+- **GitHub raw**: 404 (https://raw.githubusercontent.com/Minh-Tam-Solution/mtclaw/main/LICENSE)
 - **GitHub API**: License endpoint returns 404
 
 ### 2. MIT Declaration Evidence

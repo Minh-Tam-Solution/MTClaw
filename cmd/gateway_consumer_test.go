@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nextlevelbuilder/goclaw/internal/config"
-	"github.com/nextlevelbuilder/goclaw/internal/rag"
-	"github.com/nextlevelbuilder/goclaw/internal/routing"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/rag"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/routing"
 )
 
 // =============================================================
