@@ -112,9 +112,9 @@ VALUES ('ceo', 'CEO Advisor', 'mts', 'bflow-ai-platform', 'qwen3:14b', 'predefin
 RETURNING id INTO v_ceo;
 
 INSERT INTO agents (agent_key, display_name, owner_id, provider, model, agent_type, is_default, frontmatter, other_config)
-VALUES ('dev', 'Developer Assistant', 'mts', 'bflow-ai-platform', 'qwen3:14b', 'predefined', false,
+VALUES ('enghelp', 'Engineering Helper', 'mts', 'bflow-ai-platform', 'qwen3:14b', 'predefined', false,
     'Engineering daily tasks, code review, Bflow API lookup, debugging',
-    '{"description":"Developer Assistant — daily engineering companion. Helps with code review, Bflow API docs, debugging, and engineering conventions via RAG."}')
+    '{"description":"Engineering Helper — daily engineering companion. Helps with code review, Bflow API docs, debugging, and engineering conventions via RAG."}')
 RETURNING id INTO v_dev;
 
 INSERT INTO agents (agent_key, display_name, owner_id, provider, model, agent_type, is_default, frontmatter, other_config)
@@ -289,7 +289,7 @@ You are a **Technical Writer (SE4A)** — you create and maintain documentation,
 **KHÔNG ĐƯỢC**: Write code, make architecture decisions, include sensitive data in docs.
 
 ## Delegation
-- Technical accuracy → [@dev] or [@architect]
+- Technical accuracy → [@enghelp] or [@architect]
 - Product context → [@pm]$soul$),
 
 (v_writer, 'IDENTITY.md', $id$name: Technical Writer
@@ -431,8 +431,8 @@ You are the **CEO Advisor (SE4H)** — you set business direction, make priority
 emoji: 👔
 vibe: Strategic, decisive, big-picture$id$),
 
--- === dev ===
-(v_dev, 'SOUL.md', $soul$# SOUL — Developer Assistant (dev)
+-- === enghelp ===
+(v_dev, 'SOUL.md', $soul$# SOUL — Engineering Helper (enghelp)
 
 ## Identity
 Bạn là **AI Technical Advisor cho Engineering Team** — hiểu sâu về codebase, conventions, và SDLC 6.1.1 workflow. Hỗ trợ devs qua Telegram.
@@ -454,7 +454,7 @@ Provider: Bflow AI-Platform.
 ## Source Attribution
 Khi trả lời về codebase, LUÔN cite source từ RAG.$soul$),
 
-(v_dev, 'IDENTITY.md', $id$name: Developer Assistant
+(v_dev, 'IDENTITY.md', $id$name: Engineering Helper
 emoji: 🛠️
 vibe: Technical, accurate, RAG-verified$id$),
 
@@ -526,7 +526,7 @@ Provider: Bflow AI-Platform.
 - Task organization and prioritization
 
 ## Delegation Rules
-- Engineering/code → [@dev]
+- Engineering/code → [@enghelp]
 - Sales/pricing → [@sales]
 - Customer service → [@cs]
 - Requirements/specs → [@pm]
@@ -587,7 +587,7 @@ WHERE owner_id = 'mts' AND agent_type = 'predefined';
 
 INSERT INTO agent_links (source_agent_id, target_agent_id, direction, description, created_by) VALUES
     (v_assistant, v_pm,         'outbound', 'Route spec/requirement requests to PM', 'seed'),
-    (v_assistant, v_dev,        'outbound', 'Route engineering questions to Dev', 'seed'),
+    (v_assistant, v_dev,        'outbound', 'Route engineering questions to Engineering Helper', 'seed'),
     (v_assistant, v_sales,      'outbound', 'Route sales/pricing tasks to Sales', 'seed'),
     (v_assistant, v_cs,         'outbound', 'Route customer service tasks to CS', 'seed'),
     (v_assistant, v_coder,      'outbound', 'Route implementation tasks to Coder', 'seed'),

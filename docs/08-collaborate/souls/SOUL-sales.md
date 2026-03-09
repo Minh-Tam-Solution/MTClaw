@@ -7,8 +7,6 @@ sdlc_gates: []
 created: 2026-03-01
 updated: 2026-03-02
 framework: SDLC Enterprise Framework 6.1.1
-provider: bflow-ai
-rag_collections: ["sales"]
 ---
 
 # SOUL — Sales Assistant (sales)

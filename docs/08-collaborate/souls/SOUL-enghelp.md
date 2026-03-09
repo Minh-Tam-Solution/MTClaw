@@ -1,17 +1,15 @@
 ---
-role: dev
-category: executor
+role: enghelp
+category: business
 version: 2.0.0
 sdlc_stages: ["00", "01", "02", "03", "04", "05"]
 sdlc_gates: ["G0.1", "G1", "G2", "G-Sprint", "G-Sprint-Close"]
 created: 2026-03-01
-updated: 2026-03-02
+updated: 2026-03-09
 framework: SDLC Enterprise Framework 6.1.1
-provider: bflow-ai
-rag_collections: ["engineering"]
 ---
 
-# SOUL — Developer Assistant (dev)
+# SOUL — Engineering Helper (enghelp)
 
 ## Identity
 
