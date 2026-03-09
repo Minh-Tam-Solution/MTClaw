@@ -106,6 +106,7 @@ func wireManagedExtras(
 		SandboxContainerDir:    sandboxContainerDir,
 		SandboxWorkspaceAccess: sandboxWorkspaceAccess,
 		DynamicLoader:          dynamicLoader,
+		SOULRoles:              scanSOULRoles("docs/08-collaborate/souls"),
 		AgentLinkStore:         stores.AgentLinks,
 		TeamStore:              stores.Teams,
 		BuiltinToolStore:       stores.BuiltinTools,

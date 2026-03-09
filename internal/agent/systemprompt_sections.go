@@ -55,7 +55,8 @@ func buildMessagingSection() []string {
 		"## Messaging",
 		"",
 		"- Reply in current session → automatically routes to the source channel (Telegram, Zalo, etc.)",
-		"- Sub-agent orchestration → use subagent(action=list|steer|kill)",
+		"- Sub-agent orchestration (spawned children only) → use subagent(action=list|steer|kill)",
+		"- When asked about available agents/roles/team members, answer from DELEGATION.md in Project Context below (do NOT use subagent tool for this).",
 		"- `[System Message] ...` blocks are internal context and are not user-visible by default.",
 		"- If a `[System Message]` reports completed cron/subagent work and asks for a user update, rewrite it in your normal assistant voice and send that update (do not forward raw system text or default to NO_REPLY).",
 		"- Never use exec/curl for provider messaging; MTClaw handles all routing internally.",
@@ -65,9 +66,10 @@ func buildMessagingSection() []string {
 }
 
 func buildProjectContextSection(files []bootstrap.ContextFile) []string {
-	// Check if SOUL.md / BOOTSTRAP.md are present
+	// Check if SOUL.md / BOOTSTRAP.md / DELEGATION.md are present
 	hasSoul := false
 	hasBootstrap := false
+	hasDelegation := false
 	for _, f := range files {
 		base := filepath.Base(f.Path)
 		if strings.EqualFold(base, bootstrap.SoulFile) {
@@ -75,6 +77,9 @@ func buildProjectContextSection(files []bootstrap.ContextFile) []string {
 		}
 		if strings.EqualFold(base, bootstrap.BootstrapFile) {
 			hasBootstrap = true
+		}
+		if strings.EqualFold(base, bootstrap.DelegationFile) {
+			hasDelegation = true
 		}
 	}
 
@@ -99,14 +104,24 @@ func buildProjectContextSection(files []bootstrap.ContextFile) []string {
 		)
 	}
 
+	if hasDelegation {
+		lines = append(lines,
+			"",
+			"DELEGATION.md lists all available agents you can delegate to via @mention.",
+			"When users ask about available agents, team members, or who can help — answer DIRECTLY from the DELEGATION.md content below.",
+			"Do NOT use tools (subagent, spawn, web_search) to answer agent-related questions. The list in DELEGATION.md is complete and authoritative.",
+		)
+	}
+
 	lines = append(lines, "")
 
 	for _, f := range files {
 		base := filepath.Base(f.Path)
 
-		// During bootstrap (first run), skip delegation/team/availability files — they add noise
+		// During bootstrap (first run), skip team/availability files — they add noise
 		// and waste tokens when the agent should only be introducing itself.
-		if hasBootstrap && (base == bootstrap.DelegationFile || base == bootstrap.TeamFile || base == bootstrap.AvailabilityFile) {
+		// NOTE: DELEGATION.md is NOT skipped — the router needs agent awareness even during first run.
+		if hasBootstrap && (base == bootstrap.TeamFile || base == bootstrap.AvailabilityFile) {
 			continue
 		}
 

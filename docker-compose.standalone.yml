@@ -5,6 +5,9 @@
 
 services:
   mtclaw:
+    environment:
+      - MTCLAW_POSTGRES_DSN=
+      - MTCLAW_CONFIG=/app/config.json
     volumes:
       - ./config.json:/app/config.json:ro
       - mtclaw-workspace:/app/workspace

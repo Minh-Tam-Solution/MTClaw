@@ -60,6 +60,12 @@ type ResolverDeps struct {
 	// Inter-agent delegation (managed mode)
 	AgentLinkStore store.AgentLinkStore // nil if not managed or no links
 
+	// SOUL-based delegation fallback: pre-scanned role info from SOUL files on disk.
+	// When agent_links are empty/incomplete for the default (router) agent,
+	// this data is used to build DELEGATION.md so the router knows all available SOULs.
+	// Scoped to is_default=true agents only (ARCH-029-3).
+	SOULRoles []bootstrap.SOULRoleInfo
+
 	// Agent teams (managed mode)
 	TeamStore store.TeamStore // nil if not managed or no teams
 
@@ -166,6 +172,21 @@ func NewManagedResolver(deps ResolverDeps) ResolverFunc {
 				}
 			} else {
 				hasDelegation = true
+			}
+		}
+
+		// SOUL-file fallback: if the router/default agent has no delegation links,
+		// inject DELEGATION.md from SOUL files on disk so it knows all available agents.
+		// Scoped to is_default=true agents only (ARCH-029-3) — non-router agents
+		// should keep "no delegation" negative context if they have no explicit links.
+		if !hasDelegation && ag.IsDefault && len(deps.SOULRoles) > 0 {
+			md := bootstrap.BuildSOULDelegationMD(deps.SOULRoles, nil)
+			if md != "" {
+				hasDelegation = true
+				contextFiles = append(contextFiles, bootstrap.ContextFile{
+					Path:    bootstrap.DelegationFile,
+					Content: md,
+				})
 			}
 		}
 

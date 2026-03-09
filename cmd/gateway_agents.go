@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"path/filepath"
 	"strings"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/Minh-Tam-Solution/MTClaw/internal/agent"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/bootstrap"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/claudecode"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/heartbeat"
@@ -24,9 +26,10 @@ import (
 	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
 
-// createAgentLoop creates and registers an agent Loop for the given agent ID.
-// Works for "default" and any agent in agents.list.
-func createAgentLoop(agentID string, cfg *config.Config, router *agent.Router, providerReg *providers.Registry, msgBus *bus.MessageBus, sess store.SessionStore, toolsReg *tools.Registry, toolPE *tools.PolicyEngine, contextFiles []bootstrap.ContextFile, skillsLoader *skills.Loader, hasMemory bool, sandboxMgr sandbox.Manager, agentStore store.AgentStore, ensureUserFiles agent.EnsureUserFilesFunc, contextFileLoader agent.ContextFileLoaderFunc) error {
+// buildAgentLoop creates an agent Loop for the given agent ID without registering it.
+// Returns the Loop and the resolved model name, or an error.
+// Used by createAgentLoop (eager registration) and standalone resolver (lazy creation).
+func buildAgentLoop(agentID string, cfg *config.Config, providerReg *providers.Registry, msgBus *bus.MessageBus, sess store.SessionStore, toolsReg *tools.Registry, toolPE *tools.PolicyEngine, contextFiles []bootstrap.ContextFile, skillsLoader *skills.Loader, hasMemory bool, sandboxMgr sandbox.Manager, agentStore store.AgentStore, ensureUserFiles agent.EnsureUserFilesFunc, contextFileLoader agent.ContextFileLoaderFunc) (*agent.Loop, error) {
 	agentCfg := cfg.ResolveAgent(agentID)
 
 	provider, err := providerReg.Get(agentCfg.Provider)
@@ -34,16 +37,14 @@ func createAgentLoop(agentID string, cfg *config.Config, router *agent.Router, p
 		// Fallback: try any available provider
 		names := providerReg.List()
 		if len(names) == 0 {
-			slog.Warn("no providers configured, agent will fail on first LLM call", "agent", agentID)
-			return nil
+			return nil, fmt.Errorf("no providers configured for agent %s", agentID)
 		}
 		provider, _ = providerReg.Get(names[0])
 		slog.Warn("configured provider not found, using fallback", "agent", agentID, "wanted", agentCfg.Provider, "using", names[0])
 	}
 
 	if provider == nil {
-		slog.Warn("no provider available for agent", "agent", agentID)
-		return nil
+		return nil, fmt.Errorf("no provider available for agent %s", agentID)
 	}
 
 	workspace := config.ExpandHome(agentCfg.Workspace)
@@ -123,7 +124,21 @@ func createAgentLoop(agentID string, cfg *config.Config, router *agent.Router, p
 		},
 	})
 
+	return loop, nil
+}
+
+// createAgentLoop creates and registers an agent Loop for the given agent ID.
+// Works for "default" and any agent in agents.list.
+func createAgentLoop(agentID string, cfg *config.Config, router *agent.Router, providerReg *providers.Registry, msgBus *bus.MessageBus, sess store.SessionStore, toolsReg *tools.Registry, toolPE *tools.PolicyEngine, contextFiles []bootstrap.ContextFile, skillsLoader *skills.Loader, hasMemory bool, sandboxMgr sandbox.Manager, agentStore store.AgentStore, ensureUserFiles agent.EnsureUserFilesFunc, contextFileLoader agent.ContextFileLoaderFunc) error {
+	loop, err := buildAgentLoop(agentID, cfg, providerReg, msgBus, sess, toolsReg, toolPE, contextFiles, skillsLoader, hasMemory, sandboxMgr, agentStore, ensureUserFiles, contextFileLoader)
+	if err != nil {
+		return err
+	}
+	if loop == nil {
+		return nil
+	}
 	router.Register(loop)
+	agentCfg := cfg.ResolveAgent(agentID)
 	slog.Info("created agent", "agent", agentID, "model", agentCfg.Model, "provider", agentCfg.Provider)
 	return nil
 }
@@ -457,4 +472,40 @@ func resolveDefaultAgentManaged(cfg *config.Config, managedStores *store.Stores)
 		return agentID
 	}
 	return agent.AgentKey
+}
+
+// scanSOULRoles scans SOUL files on disk and returns role info for delegation.
+// Used by both standalone mode (gateway.go) and managed-mode fallback (resolver.go).
+func scanSOULRoles(soulsDir string) []bootstrap.SOULRoleInfo {
+	roles, err := claudecode.KnownRoles(soulsDir)
+	if err != nil {
+		slog.Warn("SOUL delegation: cannot scan SOUL files", "dir", soulsDir, "error", err)
+		return nil
+	}
+
+	var result []bootstrap.SOULRoleInfo
+	for _, role := range roles {
+		soul, err := claudecode.LoadSOUL(soulsDir, role)
+		if err != nil {
+			continue
+		}
+		// Extract first heading as title
+		title := role
+		for _, line := range strings.SplitN(soul.Body, "\n", 10) {
+			if strings.HasPrefix(line, "# ") {
+				title = strings.TrimPrefix(line, "# ")
+				break
+			}
+		}
+		cat := soul.Category
+		if cat == "" {
+			cat = "executor"
+		}
+		result = append(result, bootstrap.SOULRoleInfo{
+			Role:     role,
+			Title:    title,
+			Category: cat,
+		})
+	}
+	return result
 }

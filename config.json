@@ -1,6 +1,14 @@
 {
   "agents": {
+    "defaults": {
+      "workspace": "/home/nqh/shared/MTClaw"
+    },
     "list": {
+      "default": {
+        "displayName": "Assistant",
+        "provider": "bflow-ai-platform",
+        "model": "qwen3:14b"
+      },
       "pm": {
         "displayName": "PM",
         "provider": "bflow-ai-platform",

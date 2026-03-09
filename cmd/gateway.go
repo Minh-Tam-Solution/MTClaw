@@ -572,8 +572,40 @@ func runGateway() {
 	isManaged := managedStores != nil
 
 	// In managed mode, agents are created lazily by the resolver (from DB).
-	// In standalone mode, create agents eagerly from config.
+	// In standalone mode, create agents eagerly from config (no resolver to re-create on TTL expiry).
 	if !isManaged {
+		agentRouter.DisableTTL()
+
+		// Standalone: inject DELEGATION.md listing all available SOULs.
+		// In managed mode this is built from agent_links DB table; in standalone
+		// we derive it from SOUL files on disk so the router agent knows its peers.
+		const defaultSoulsDir = "docs/08-collaborate/souls"
+		soulRoles := scanSOULRoles(defaultSoulsDir)
+		if len(soulRoles) > 0 {
+			// Build active agents map from config
+			activeAgents := map[string]string{"default": "Assistant — router agent"}
+			for agentID, spec := range cfg.Agents.List {
+				if agentID == "default" {
+					continue
+				}
+				name := spec.DisplayName
+				if name == "" {
+					name = agentID
+				}
+				activeAgents[agentID] = name
+			}
+			delegationMD := bootstrap.BuildSOULDelegationMD(soulRoles, activeAgents)
+			if delegationMD != "" {
+				contextFiles = append(contextFiles, bootstrap.ContextFile{
+					Path:    bootstrap.DelegationFile,
+					Content: delegationMD,
+				})
+				slog.Info("DELEGATION.md injected", "chars", len(delegationMD), "roles", len(soulRoles))
+			} else {
+				slog.Warn("DELEGATION.md is empty despite having SOUL roles", "roles", len(soulRoles))
+			}
+		}
+
 		// Always create "default" agent
 		if err := createAgentLoop("default", cfg, agentRouter, providerRegistry, msgBus, sessStore, toolsReg, toolPE, contextFiles, skillsLoader, hasMemory, sandboxMgr, fileAgentStore, ensureUserFiles, contextFileLoader); err != nil {
 			slog.Error("failed to create default agent", "error", err)
@@ -617,6 +649,44 @@ func runGateway() {
 				slog.Error("failed to create agent", "agent", agentID, "error", err)
 			}
 		}
+
+		// Set standalone resolver: lazy-create agent Loops on-demand from SOUL files.
+		// When @coder or @reviewer is mentioned but not in cfg.Agents.List, the resolver
+		// validates against known SOULs and creates a Loop inheriting the default agent's
+		// provider, workspace, and tool config (CTO-3). Cached forever (DisableTTL).
+		knownSOULs := make(map[string]bool, len(soulRoles))
+		for _, r := range soulRoles {
+			knownSOULs[r.Role] = true
+		}
+		agentRouter.SetResolver(func(agentKey string) (agent.Agent, error) {
+			if !knownSOULs[agentKey] {
+				return nil, fmt.Errorf("unknown agent: %s (not a known SOUL)", agentKey)
+			}
+			// Build per-agent context files: replace SOUL.md with role-specific SOUL content.
+			// On-demand agents inherit default's bootstrap files but get their own persona.
+			agentCtxFiles := make([]bootstrap.ContextFile, 0, len(contextFiles)+1)
+			for _, cf := range contextFiles {
+				if cf.Path == bootstrap.SoulFile {
+					continue // skip default SOUL.md — replaced below
+				}
+				agentCtxFiles = append(agentCtxFiles, cf)
+			}
+			// Load role-specific SOUL content from disk
+			soul, err := claudecode.LoadSOUL(defaultSoulsDir, agentKey)
+			if err == nil && soul.Body != "" {
+				agentCtxFiles = append(agentCtxFiles, bootstrap.ContextFile{
+					Path:    bootstrap.SoulFile,
+					Content: soul.Body,
+				})
+				slog.Info("standalone resolver: loaded SOUL persona", "agent", agentKey, "chars", len(soul.Body))
+			}
+			loop, loopErr := buildAgentLoop(agentKey, cfg, providerRegistry, msgBus, sessStore, toolsReg, toolPE, agentCtxFiles, skillsLoader, hasMemory, sandboxMgr, fileAgentStore, ensureUserFiles, contextFileLoader)
+			if loopErr != nil {
+				return nil, fmt.Errorf("failed to create agent %s: %w", agentKey, loopErr)
+			}
+			slog.Info("standalone resolver: created agent on-demand", "agent", agentKey)
+			return loop, nil
+		})
 	} else {
 		slog.Info("managed mode: agents will be resolved lazily from database")
 	}

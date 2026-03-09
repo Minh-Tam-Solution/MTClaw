@@ -57,9 +57,10 @@ RUN set -eux; \
 RUN adduser -D -u 1000 -h /app mtclaw
 WORKDIR /app
 
-# Copy binary and migrations
+# Copy binary, migrations, and SOUL files (for DELEGATION.md generation)
 COPY --from=builder /out/mtclaw /app/mtclaw
 COPY --from=builder /src/migrations/ /app/migrations/
+COPY --from=builder /src/docs/08-collaborate/souls/ /app/docs/08-collaborate/souls/
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 

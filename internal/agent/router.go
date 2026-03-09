@@ -37,6 +37,14 @@ func NewRouter() *Router {
 	}
 }
 
+// DisableTTL disables cache expiry. Use in standalone mode where agents are
+// static and no resolver exists to re-create them.
+func (r *Router) DisableTTL() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.ttl = 0
+}
+
 // SetResolver sets a resolver function for lazy agent creation (managed mode).
 func (r *Router) SetResolver(fn ResolverFunc) {
 	r.mu.Lock()
