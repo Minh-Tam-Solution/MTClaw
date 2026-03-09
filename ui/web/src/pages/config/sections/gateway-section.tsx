@@ -82,7 +82,7 @@ export function GatewaySection({ data, onSave, saving }: Props) {
             />
           </div>
           <div className="grid gap-1.5">
-            <InfoLabel tip="Bearer token for authenticating WebSocket and API connections. Managed via GOCLAW_GATEWAY_TOKEN env var.">Token</InfoLabel>
+            <InfoLabel tip="Bearer token for authenticating WebSocket and API connections. Managed via MTCLAW_GATEWAY_TOKEN env var.">Token</InfoLabel>
             <Input
               type="password"
               value={draft.token ?? ""}
@@ -91,7 +91,7 @@ export function GatewaySection({ data, onSave, saving }: Props) {
               onChange={(e) => update({ token: e.target.value })}
             />
             {isSecret(draft.token) && (
-              <p className="text-xs text-muted-foreground">Managed via GOCLAW_GATEWAY_TOKEN</p>
+              <p className="text-xs text-muted-foreground">Managed via MTCLAW_GATEWAY_TOKEN</p>
             )}
           </div>
         </div>

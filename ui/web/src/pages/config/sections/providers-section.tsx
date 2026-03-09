@@ -13,17 +13,17 @@ type ProviderEntry = {
 type ProvidersData = Record<string, ProviderEntry>;
 
 const KNOWN_PROVIDERS = [
-  { key: "anthropic", label: "Anthropic", envKey: "GOCLAW_ANTHROPIC_API_KEY" },
-  { key: "openai", label: "OpenAI", envKey: "GOCLAW_OPENAI_API_KEY" },
-  { key: "openrouter", label: "OpenRouter", envKey: "GOCLAW_OPENROUTER_API_KEY" },
-  { key: "groq", label: "Groq", envKey: "GOCLAW_GROQ_API_KEY" },
-  { key: "gemini", label: "Gemini", envKey: "GOCLAW_GEMINI_API_KEY" },
-  { key: "deepseek", label: "DeepSeek", envKey: "GOCLAW_DEEPSEEK_API_KEY" },
-  { key: "mistral", label: "Mistral", envKey: "GOCLAW_MISTRAL_API_KEY" },
-  { key: "xai", label: "xAI", envKey: "GOCLAW_XAI_API_KEY" },
-  { key: "minimax", label: "MiniMax", envKey: "GOCLAW_MINIMAX_API_KEY" },
-  { key: "cohere", label: "Cohere", envKey: "GOCLAW_COHERE_API_KEY" },
-  { key: "perplexity", label: "Perplexity", envKey: "GOCLAW_PERPLEXITY_API_KEY" },
+  { key: "anthropic", label: "Anthropic", envKey: "MTCLAW_ANTHROPIC_API_KEY" },
+  { key: "openai", label: "OpenAI", envKey: "MTCLAW_OPENAI_API_KEY" },
+  { key: "openrouter", label: "OpenRouter", envKey: "MTCLAW_OPENROUTER_API_KEY" },
+  { key: "groq", label: "Groq", envKey: "MTCLAW_GROQ_API_KEY" },
+  { key: "gemini", label: "Gemini", envKey: "MTCLAW_GEMINI_API_KEY" },
+  { key: "deepseek", label: "DeepSeek", envKey: "MTCLAW_DEEPSEEK_API_KEY" },
+  { key: "mistral", label: "Mistral", envKey: "MTCLAW_MISTRAL_API_KEY" },
+  { key: "xai", label: "xAI", envKey: "MTCLAW_XAI_API_KEY" },
+  { key: "minimax", label: "MiniMax", envKey: "MTCLAW_MINIMAX_API_KEY" },
+  { key: "cohere", label: "Cohere", envKey: "MTCLAW_COHERE_API_KEY" },
+  { key: "perplexity", label: "Perplexity", envKey: "MTCLAW_PERPLEXITY_API_KEY" },
 ];
 
 function isSecret(val: unknown): boolean {

@@ -12,12 +12,12 @@ import { Badge } from "@/components/ui/badge";
 type ChannelsData = Record<string, any>;
 
 const CHANNEL_META: Record<string, { label: string; secretEnv: string; secretField: string }> = {
-  telegram: { label: "Telegram", secretEnv: "GOCLAW_TELEGRAM_TOKEN", secretField: "token" },
-  discord: { label: "Discord", secretEnv: "GOCLAW_DISCORD_TOKEN", secretField: "token" },
-  slack: { label: "Slack", secretEnv: "GOCLAW_SLACK_BOT_TOKEN", secretField: "bot_token" },
+  telegram: { label: "Telegram", secretEnv: "MTCLAW_TELEGRAM_TOKEN", secretField: "token" },
+  discord: { label: "Discord", secretEnv: "MTCLAW_DISCORD_TOKEN", secretField: "token" },
+  slack: { label: "Slack", secretEnv: "MTCLAW_SLACK_BOT_TOKEN", secretField: "bot_token" },
   whatsapp: { label: "WhatsApp", secretEnv: "", secretField: "" },
-  zalo: { label: "Zalo", secretEnv: "GOCLAW_ZALO_TOKEN", secretField: "token" },
-  feishu: { label: "Feishu / Lark", secretEnv: "GOCLAW_FEISHU_APP_SECRET", secretField: "app_secret" },
+  zalo: { label: "Zalo", secretEnv: "MTCLAW_ZALO_TOKEN", secretField: "token" },
+  feishu: { label: "Feishu / Lark", secretEnv: "MTCLAW_FEISHU_APP_SECRET", secretField: "app_secret" },
 };
 
 const DM_POLICIES = ["pairing", "allowlist", "open", "disabled"];

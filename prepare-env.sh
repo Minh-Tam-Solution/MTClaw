@@ -44,7 +44,7 @@ set_env_val() {
 # --- main ---
 
 echo ""
-echo "=== GoClaw Environment Preparation ==="
+echo "=== MTClaw Environment Preparation ==="
 echo ""
 
 # 1. Create .env from .env.example if it doesn't exist
@@ -61,32 +61,32 @@ else
   echo "  [exists]    .env"
 fi
 
-# 2. Auto-generate GOCLAW_ENCRYPTION_KEY if missing
-current_enc="$(get_env_val GOCLAW_ENCRYPTION_KEY)"
+# 2. Auto-generate MTCLAW_ENCRYPTION_KEY if missing
+current_enc="$(get_env_val MTCLAW_ENCRYPTION_KEY)"
 if [ -z "$current_enc" ]; then
   new_key="$(gen_hex 32)"
-  set_env_val "GOCLAW_ENCRYPTION_KEY" "$new_key"
-  echo "  [generated] GOCLAW_ENCRYPTION_KEY"
+  set_env_val "MTCLAW_ENCRYPTION_KEY" "$new_key"
+  echo "  [generated] MTCLAW_ENCRYPTION_KEY"
 else
-  echo "  [exists]    GOCLAW_ENCRYPTION_KEY"
+  echo "  [exists]    MTCLAW_ENCRYPTION_KEY"
 fi
 
-# 3. Auto-generate GOCLAW_GATEWAY_TOKEN if missing
-current_tok="$(get_env_val GOCLAW_GATEWAY_TOKEN)"
+# 3. Auto-generate MTCLAW_GATEWAY_TOKEN if missing
+current_tok="$(get_env_val MTCLAW_GATEWAY_TOKEN)"
 if [ -z "$current_tok" ]; then
   new_tok="$(gen_hex 16)"
-  set_env_val "GOCLAW_GATEWAY_TOKEN" "$new_tok"
-  echo "  [generated] GOCLAW_GATEWAY_TOKEN"
+  set_env_val "MTCLAW_GATEWAY_TOKEN" "$new_tok"
+  echo "  [generated] MTCLAW_GATEWAY_TOKEN"
 else
-  echo "  [exists]    GOCLAW_GATEWAY_TOKEN"
+  echo "  [exists]    MTCLAW_GATEWAY_TOKEN"
 fi
 
 # 4. Check provider API key
 has_provider=false
-for key in GOCLAW_OPENROUTER_API_KEY GOCLAW_ANTHROPIC_API_KEY GOCLAW_OPENAI_API_KEY \
-           GOCLAW_MINIMAX_API_KEY GOCLAW_GROQ_API_KEY GOCLAW_DEEPSEEK_API_KEY \
-           GOCLAW_GEMINI_API_KEY GOCLAW_MISTRAL_API_KEY GOCLAW_XAI_API_KEY \
-           GOCLAW_COHERE_API_KEY GOCLAW_PERPLEXITY_API_KEY; do
+for key in MTCLAW_OPENROUTER_API_KEY MTCLAW_ANTHROPIC_API_KEY MTCLAW_OPENAI_API_KEY \
+           MTCLAW_MINIMAX_API_KEY MTCLAW_GROQ_API_KEY MTCLAW_DEEPSEEK_API_KEY \
+           MTCLAW_GEMINI_API_KEY MTCLAW_MISTRAL_API_KEY MTCLAW_XAI_API_KEY \
+           MTCLAW_COHERE_API_KEY MTCLAW_PERPLEXITY_API_KEY; do
   val="$(get_env_val "$key")"
   if [ -n "$val" ]; then
     has_provider=true
@@ -99,9 +99,9 @@ if [ "$has_provider" = false ]; then
   echo "  [missing]   No LLM provider API key found"
   echo ""
   echo "  Add at least one provider key to .env before starting:"
-  echo "    GOCLAW_OPENROUTER_API_KEY=sk-or-..."
-  echo "    GOCLAW_ANTHROPIC_API_KEY=sk-ant-..."
-  echo "    GOCLAW_MINIMAX_API_KEY=..."
+  echo "    MTCLAW_OPENROUTER_API_KEY=sk-or-..."
+  echo "    MTCLAW_ANTHROPIC_API_KEY=sk-ant-..."
+  echo "    MTCLAW_MINIMAX_API_KEY=..."
   echo ""
   echo "=== Done (action required) ==="
   echo ""
