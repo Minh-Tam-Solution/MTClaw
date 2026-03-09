@@ -3,23 +3,23 @@ package rag
 import "testing"
 
 func TestClassifyRankingReason_ExactMatch(t *testing.T) {
-	reason := ClassifyRankingReason(0.98, "dev", "engineering")
+	reason := ClassifyRankingReason(0.98, "enghelp", "engineering")
 	if reason != RankingExactMatch {
 		t.Errorf("expected %q for score 0.98, got %q", RankingExactMatch, reason)
 	}
 }
 
 func TestClassifyRankingReason_SoulDomainBoost(t *testing.T) {
-	reason := ClassifyRankingReason(0.80, "dev", "engineering")
+	reason := ClassifyRankingReason(0.80, "enghelp", "engineering")
 	if reason != RankingSoulDomainBoost {
-		t.Errorf("expected %q for dev+engineering, got %q", RankingSoulDomainBoost, reason)
+		t.Errorf("expected %q for enghelp+engineering, got %q", RankingSoulDomainBoost, reason)
 	}
 }
 
 func TestClassifyRankingReason_SemanticSimilar(t *testing.T) {
-	reason := ClassifyRankingReason(0.70, "dev", "sales")
+	reason := ClassifyRankingReason(0.70, "enghelp", "sales")
 	if reason != RankingSemanticSimilar {
-		t.Errorf("expected %q for dev querying sales, got %q", RankingSemanticSimilar, reason)
+		t.Errorf("expected %q for enghelp querying sales, got %q", RankingSemanticSimilar, reason)
 	}
 }
 
@@ -32,7 +32,7 @@ func TestClassifyRankingReason_Fallback(t *testing.T) {
 
 func TestClassifyRankingReason_BoundaryExactMatch(t *testing.T) {
 	// Exactly 0.95 should be exact_match
-	reason := ClassifyRankingReason(0.95, "dev", "engineering")
+	reason := ClassifyRankingReason(0.95, "enghelp", "engineering")
 	if reason != RankingExactMatch {
 		t.Errorf("expected %q for score 0.95, got %q", RankingExactMatch, reason)
 	}
@@ -40,7 +40,7 @@ func TestClassifyRankingReason_BoundaryExactMatch(t *testing.T) {
 
 func TestClassifyRankingReason_BoundarySemantic(t *testing.T) {
 	// Exactly 0.5, non-matching collection should be semantic_similar
-	reason := ClassifyRankingReason(0.50, "dev", "sales")
+	reason := ClassifyRankingReason(0.50, "enghelp", "sales")
 	if reason != RankingSemanticSimilar {
 		t.Errorf("expected %q for score 0.50, got %q", RankingSemanticSimilar, reason)
 	}

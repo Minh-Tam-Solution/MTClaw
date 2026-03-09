@@ -22,7 +22,7 @@ const (
 	// TenantIDKey is the context key for RLS tenant isolation (maps to agents.owner_id).
 	// Set by tenant middleware; used by SET LOCAL app.tenant_id in transactions.
 	TenantIDKey contextKey = "mtclaw_tenant_id"
-	// AgentKeyKey is the context key for the agent's string key (e.g. "pm", "dev", "assistant").
+	// AgentKeyKey is the context key for the agent's string key (e.g. "pm", "enghelp", "assistant").
 	// Set after agent resolution; used for structured logging and OTEL attributes.
 	AgentKeyKey contextKey = "mtclaw_agent_key"
 )

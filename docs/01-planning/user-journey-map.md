@@ -22,7 +22,7 @@
 
 **Persona**: Phú (Senior Dev, Engineering team)
 **Context**: Cần review PR trước khi merge, muốn Bflow API context
-**SOUL**: `assistant` (default router) → delegates to `dev` or `reviewer` based on context
+**SOUL**: `assistant` (default router) → delegates to `enghelp` or `reviewer` based on context
 
 ### Flow
 
@@ -43,14 +43,14 @@ Step 1: Open Telegram → find MTClaw bot → /start
         ⏱ Response: <2s (welcome = cached, no AI call)
 
 Step 2: Gõ câu hỏi — "Review PR #42: thêm tenant isolation cho agent_shares table"
-        → assistant detects engineering context → delegates to `dev`
+        → assistant detects engineering context → delegates to `enghelp`
         → AI-Platform call: POST /v1/chat/completions
-           system_prompt = SOUL-dev.md content
+           system_prompt = SOUL-enghelp.md content
            user_message = PR review request
         ⏱ Response: 3-5s (AI generation)
 
 Step 3: Muốn deep review → "@reviewer PR #42 check SQL injection risk"
-        → SOUL switch: dev → reviewer (via @mention detection)
+        → SOUL switch: enghelp → reviewer (via @mention detection)
         → reviewer SOUL has Rail #2 (PR Gate) context
         → Response includes structured checklist
         ⏱ Response: 3-5s

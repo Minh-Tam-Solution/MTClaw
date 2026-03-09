@@ -220,57 +220,45 @@ func TestSOUL_Coder_ChecksumDeterministic(t *testing.T) {
 }
 
 // =============================================================================
-// SOUL: Dev (Backend Developer — dev-be) — 5 tests
+// SOUL: Enghelp (Engineering Helper) — 4 tests
 // =============================================================================
 
-func TestSOUL_Dev_HasYAMLFrontmatter(t *testing.T) {
-	content := loadSOUL(t, "dev")
+func TestSOUL_Enghelp_HasYAMLFrontmatter(t *testing.T) {
+	content := loadSOUL(t, "enghelp")
 	if !hasYAMLFrontmatter(content) {
-		t.Error("Dev SOUL missing YAML frontmatter")
+		t.Error("Enghelp SOUL missing YAML frontmatter")
 	}
 	fm := extractFrontmatter(content)
-	if !strings.Contains(fm, "role: dev") {
-		t.Error("Dev SOUL frontmatter missing 'role: dev'")
+	if !strings.Contains(fm, "role: enghelp") {
+		t.Error("Enghelp SOUL frontmatter missing 'role: enghelp'")
 	}
 }
 
-func TestSOUL_Dev_IdentitySection(t *testing.T) {
-	content := loadSOUL(t, "dev")
+func TestSOUL_Enghelp_IdentitySection(t *testing.T) {
+	content := loadSOUL(t, "enghelp")
 	if !hasSection(content, "## Identity") {
-		t.Fatal("Dev SOUL missing '## Identity' section")
+		t.Fatal("Enghelp SOUL missing '## Identity' section")
 	}
 }
 
-func TestSOUL_Dev_CapabilitiesMentionBackend(t *testing.T) {
-	content := loadSOUL(t, "dev")
+func TestSOUL_Enghelp_CapabilitiesMentionBackend(t *testing.T) {
+	content := loadSOUL(t, "enghelp")
 	if !hasSection(content, "## Capabilities") {
-		t.Fatal("Dev SOUL missing '## Capabilities' section")
+		t.Fatal("Enghelp SOUL missing '## Capabilities' section")
 	}
 	lower := strings.ToLower(content)
-	// Dev-be should mention backend-specific patterns
 	if !strings.Contains(lower, "code") && !strings.Contains(lower, "review") &&
 		!strings.Contains(lower, "debug") && !strings.Contains(lower, "adr") {
-		t.Error("Dev Capabilities should mention code, review, debug, or ADR")
+		t.Error("Enghelp Capabilities should mention code, review, debug, or ADR")
 	}
 }
 
-func TestSOUL_Dev_RAGCollectionField(t *testing.T) {
-	content := loadSOUL(t, "dev")
-	fm := extractFrontmatter(content)
-	if !strings.Contains(fm, "rag_collections:") {
-		t.Error("Dev SOUL frontmatter missing 'rag_collections' field (needed for Layer B routing)")
-	}
-	if !strings.Contains(fm, "engineering") {
-		t.Error("Dev SOUL rag_collections should include 'engineering'")
-	}
-}
-
-func TestSOUL_Dev_ChecksumDeterministic(t *testing.T) {
-	content := loadSOUL(t, "dev")
+func TestSOUL_Enghelp_ChecksumDeterministic(t *testing.T) {
+	content := loadSOUL(t, "enghelp")
 	h1 := ChecksumContent(content)
 	h2 := ChecksumContent(content)
 	if h1 != h2 {
-		t.Error("Dev SOUL checksum not deterministic")
+		t.Error("Enghelp SOUL checksum not deterministic")
 	}
 }
 

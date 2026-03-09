@@ -48,7 +48,7 @@
 
 | SOUL | Mode | Use Case |
 |------|------|----------|
-| `dev` | On-demand (via `@dev` or auto-detect) | Daily engineering tasks, Bflow API lookup |
+| `enghelp` | On-demand (via `@enghelp` or auto-detect) | Daily engineering tasks, Bflow API lookup |
 | `reviewer` | On-demand (`@reviewer`) | PR review with structured checklist |
 | `coder` | On-demand (`@coder`) | Code generation, bug fix assistance |
 | `pm` | On-demand (`@pm` or `/spec`) | Spec writing, user stories |
@@ -162,7 +162,7 @@
 | SOUL | Mode | Use Case |
 |------|------|----------|
 | `assistant` | Default entry point (`is_default=true`) | HR Q&A, meeting notes, general office — handles directly |
-| `dev` | Auto-delegate (rare) | If Thảo asks technical question, assistant delegates to dev |
+| `enghelp` | Auto-delegate (rare) | If Thảo asks technical question, assistant delegates to enghelp |
 
 > **Note (CPO-OBS-1)**: 95%+ of Thảo's interactions stay within assistant. Delegation to dev is edge case but documented for completeness.
 
@@ -198,7 +198,7 @@
 ```
 New user → /start → welcome message
   │
-  ├─ Engineering (detected by context) → assistant delegates to dev
+  ├─ Engineering (detected by context) → assistant delegates to enghelp
   ├─ Sales (detected by context: proposal, pricing) → assistant delegates to sales
   └─ Others (default) → assistant handles directly
 ```

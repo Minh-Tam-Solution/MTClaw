@@ -19,7 +19,7 @@ const soulDir = "../../docs/08-collaborate/souls"
 // into developer behavior after many code-related questions.
 
 func TestLayerA_ContextAnchoring_SOULIdentityStable(t *testing.T) {
-	soulRoles := []string{"pm", "reviewer", "coder", "dev", "sales"}
+	soulRoles := []string{"pm", "reviewer", "coder", "enghelp", "sales"}
 
 	for _, role := range soulRoles {
 		t.Run(role, func(t *testing.T) {
@@ -65,8 +65,8 @@ func TestLayerB_RAGRouting_SOULDomainCorrect(t *testing.T) {
 			wantNot:     []string{"engineering"},
 		},
 		{
-			name:        "dev routes to engineering collection",
-			agentID:     "dev",
+			name:        "enghelp routes to engineering collection",
+			agentID:     "enghelp",
 			wantCollect: []string{"engineering"},
 			wantNot:     []string{"sales"},
 		},
@@ -145,7 +145,7 @@ func TestLayerC_RetrievalEvidence_RankingReasonPopulated(t *testing.T) {
 		{
 			name:       "exact match at high score",
 			topScore:   0.98,
-			soulRole:   "dev",
+			soulRole:   "enghelp",
 			collection: "engineering",
 			wantReason: rag.RankingExactMatch,
 		},
@@ -159,7 +159,7 @@ func TestLayerC_RetrievalEvidence_RankingReasonPopulated(t *testing.T) {
 		{
 			name:       "semantic similar for cross-domain query",
 			topScore:   0.70,
-			soulRole:   "dev",
+			soulRole:   "enghelp",
 			collection: "sales",
 			wantReason: rag.RankingSemanticSimilar,
 		},
@@ -190,7 +190,7 @@ func TestLayerC_RetrievalEvidence_RankingReasonPopulated(t *testing.T) {
 
 func TestCrossSOUL_DelegationIdentityPreserved(t *testing.T) {
 	pmContent := loadSOULFile(t, "pm")
-	devContent := loadSOULFile(t, "dev")
+	devContent := loadSOULFile(t, "enghelp")
 	reviewerContent := loadSOULFile(t, "reviewer")
 
 	// Each pair must have different Identity sections

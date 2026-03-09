@@ -391,7 +391,7 @@ func TestLayerA_ContextAnchoringInjected(t *testing.T) {
 // Test 2: Layer B — RAG routing per SOUL domain
 func TestLayerB_RAGRoutingPerSOUL(t *testing.T) {
     // @sales query → rag.InjectRAGContext selects mts-sales collection
-    // @dev query → rag.InjectRAGContext selects mts-engineering collection
+    // @enghelp query → rag.InjectRAGContext selects mts-engineering collection
     // @general query → rag.InjectRAGContext selects mts-general collection
     // Verify collection parameter in RAG client call
 }

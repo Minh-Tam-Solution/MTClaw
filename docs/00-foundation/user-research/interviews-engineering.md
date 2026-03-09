@@ -187,7 +187,7 @@
 
 ### [@researcher] Unexpected Finding
 
-> **Accuracy concern is primary blocker, not convenience.** Engineering team (khác Sales/CS) coi AI accuracy higher than convenience — nếu AI sai về AGPL containment hoặc tenant isolation, risk cao hơn là không dùng. **Implication cho product**: SOUL-dev.md cần emphasize RAG-backed accuracy cho convention-specific queries, không chỉ speed. Onboarding message nên address accuracy concern explicitly.
+> **Accuracy concern is primary blocker, not convenience.** Engineering team (khác Sales/CS) coi AI accuracy higher than convenience — nếu AI sai về AGPL containment hoặc tenant isolation, risk cao hơn là không dùng. **Implication cho product**: SOUL-enghelp.md cần emphasize RAG-backed accuracy cho convention-specific queries, không chỉ speed. Onboarding message nên address accuracy concern explicitly.
 
 ### Interview Status
 

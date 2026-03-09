@@ -23,14 +23,14 @@ Support MTS daily business operations: sales enablement, customer success, and g
 ## Members
 
 - **assistant** (lead): General tasks, HR Q&A, meeting notes, workflow bridge
-- **dev** (sales persona): Sales enablement, pricing, proposals, competitor intel
+- **enghelp** (sales persona): Sales enablement, pricing, proposals, competitor intel
 - **sales**: Direct sales support, pipeline management, deal assistance
 - **cs**: Customer escalation, SLA tracking, support procedures
 
 ## Delegation Rules
 
 - Lead (assistant) triages incoming requests by domain
-- Sales-related queries route to @sales or @dev (sales persona)
+- Sales-related queries route to @sales or @enghelp (sales persona)
 - Customer escalation routes to @cs
 - Cross-functional requests stay with @assistant
 - Technical questions escalate to Engineering (@engineering)

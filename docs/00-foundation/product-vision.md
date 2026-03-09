@@ -40,7 +40,7 @@
 
 | Persona | Count | Primary Need | SOUL |
 |---------|-------|-------------|------|
-| Engineering | 4 | Code review, spec writing, Bflow API docs | `dev`, `coder`, `reviewer` |
+| Engineering | 4 | Code review, spec writing, Bflow API docs | `enghelp`, `coder`, `reviewer` |
 | Sales | 3 | Proposal drafts, pricing lookup, case studies | `sales` |
 | Customer Service | 2 | SOP lookup, ticket resolution templates | `cs` |
 | Back Office (HR/Admin) | 1 | HR policy Q&A, meeting minutes, contracts | `assistant` (default) |
@@ -119,7 +119,7 @@ Users think in **tasks**, not in SOULs. SOUL routing is:
 ├───────────────────────┬─────────────────────────────────┤
 │  13 SDLC Governance   │  3 Business (tenant-agnostic)    │
 │                       │                                  │
-│  ★ assistant (Router)  │  dev (Engineering daily)         │
+│  ★ assistant (Router)  │  enghelp (Engineering daily)     │
 │  ★ pm (Spec Factory)  │  sales (Proposals, pricing)      │
 │  ★ reviewer (PR Gate) │  cs (SOPs, tickets)              │
 │  ★ coder              │                                  │

@@ -13,7 +13,7 @@
 | 3 | architect | SE4A | Executor | Default | ADRs, system design, G2 gate review | `@architect` or design context |
 | 4 | coder | SE4A | Executor | Default | Implementation, tests, code generation | `@coder` or code context |
 | 5 | reviewer | SE4A | Executor | Default | PR Gate (Rail #2), code review, quality scoring | `@reviewer` or PR context |
-| 6 | dev | Business | Executor | On-demand | Engineering daily tasks, code review, debugging | `@dev` or engineering context |
+| 6 | enghelp | Business | Business | On-demand | Engineering daily tasks, code review, debugging | `@enghelp` or engineering context |
 | 7 | cto | SE4H | Advisor | On-demand | Architecture guard, P0 blocking decisions | `@cto` explicit |
 | 8 | cpo | SE4H | Advisor | On-demand | Product guard, strategic decisions | `@cpo` explicit |
 | 9 | ceo | SE4H | Advisor | On-demand | Executive decisions, governance override | `@ceo` explicit |
@@ -41,4 +41,4 @@
 - **SE4H**: Software Engineer for Human (advisory, human-in-loop)
 - **Tenant-agnostic**: SOUL names have no tenant prefix — same SOULs work for MTS, NQH, or future tenants
 - **v2.1.0**: Added `itadmin` SOUL (Operations executor) — infrastructure, AI models, ports, security
-- **Retired**: `mts-general` merged into `assistant` (v2.0.0); `mts-dev/mts-sales/mts-cs` renamed to `dev/sales/cs`
+- **Retired**: `mts-general` merged into `assistant` (v2.0.0); `mts-dev/mts-sales/mts-cs` renamed to `enghelp/sales/cs`

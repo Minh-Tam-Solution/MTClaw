@@ -411,7 +411,7 @@ func TestParseMention_CaseInsensitive(t *testing.T) {
 // =============================================================
 
 func TestRAGCollectionMapping_EngineeringSOULs(t *testing.T) {
-	engSOULs := []string{"dev", "coder", "architect", "reviewer", "devops", "tester", "itadmin", "writer"}
+	engSOULs := []string{"enghelp", "coder", "architect", "reviewer", "devops", "tester", "itadmin", "writer"}
 	for _, soul := range engSOULs {
 		collections := rag.CollectionMap[soul]
 		if len(collections) == 0 {

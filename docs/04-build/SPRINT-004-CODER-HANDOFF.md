@@ -266,13 +266,13 @@ SOUL: {current_soul_display_name} — stay in character per your SOUL.md
 **Agent Keys** (from migration 000009 + 000012):
 ```
 pm, architect, coder, reviewer, researcher, writer, pjm, devops,
-tester, cto, cpo, ceo, dev, sales, cs, assistant, itadmin
+tester, cto, cpo, ceo, enghelp, sales, cs, assistant, itadmin
 ```
 
 **Validation**:
 - [ ] `@reviewer review this code` → reviewer SOUL responds
 - [ ] `@pm create requirements` → PM SOUL responds
-- [ ] `@dev help me debug` → dev SOUL responds
+- [ ] `@enghelp help me debug` → enghelp SOUL responds
 - [ ] No @mention → default SOUL (assistant) handles
 
 ---

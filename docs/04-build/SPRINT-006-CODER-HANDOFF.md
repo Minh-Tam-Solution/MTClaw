@@ -66,7 +66,7 @@ All Sprint 5 code is committed and verified (`go vet` + `go build` + 22 tests PA
 ```go
 // ragCollectionMap maps SOUL agent_key to RAG collection(s).
 var ragCollectionMap = map[string][]string{
-    "dev":       {"engineering"},
+    "enghelp":   {"engineering"},
     "coder":     {"engineering"},
     "architect": {"engineering"},
     "reviewer":  {"engineering"},

@@ -54,7 +54,7 @@ Sprint 6 adds the third and final rail — Knowledge & Answering. Three parallel
 **So that** answers are accurate and domain-specific (dev gets code docs, sales gets pricing).
 
 **Acceptance Criteria**:
-- Given `@dev` asks about Bflow API → RAG queries `engineering` collection → response includes code-relevant content
+- Given `@enghelp` asks about Bflow API → RAG queries `engineering` collection → response includes code-relevant content
 - Given `@sales` asks about pricing → RAG queries `sales` collection → response includes pricing/product content
 - Given `@cs` asks about customer issue → RAG queries `engineering` + `sales` collections → response includes cross-domain content
 - Given `@assistant` asks general question → RAG queries broad collections → general response

@@ -183,7 +183,7 @@ func (c *Client) QueryMultiple(ctx context.Context, query string, collections []
 // CollectionMap maps SOUL agent_key to RAG collection(s).
 // Hardcoded for Sprint 6 (MTS collections). Sprint 9+: configurable per tenant.
 var CollectionMap = map[string][]string{
-	"dev":       {"engineering"},
+	"enghelp":   {"engineering"},
 	"coder":     {"engineering"},
 	"architect": {"engineering"},
 	"reviewer":  {"engineering"},
