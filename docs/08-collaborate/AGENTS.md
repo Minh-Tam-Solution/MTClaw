@@ -60,18 +60,18 @@ Channel webhook → Channel handler (parse, policy check)
 
 ### Two Operating Modes
 
-- **Standalone**: File-based stores (`~/.mtclaw/`), single-tenant, no PostgreSQL required.
-- **Managed**: PostgreSQL with RLS, multi-tenant, DB-based agents/providers/channels, used in production Docker deployment.
+- **Standalone** (DEPRECATED): File-based stores (`~/.mtclaw/`), single-tenant, no PostgreSQL required. Deprecated — MTClaw requires PostgreSQL per Stage 00 product vision.
+- **Managed**: PostgreSQL with RLS, multi-tenant, DB-based agents/providers/channels. This is the production deployment mode.
 
 ### SOULs (AI Personas)
 
 17 SOULs defined in `docs/08-collaborate/souls/SOUL-*.md` and seeded to PostgreSQL via migration 000009. Each SOUL has YAML frontmatter + markdown content. The agent loop injects SOUL content into the LLM system prompt.
 
-Categories: 13 SDLC roles (pm, architect, coder, reviewer, researcher, writer, pjm, devops, tester, cto, cpo, ceo, assistant) + 3 business (dev, sales, cs) + 1 operations (itadmin). `assistant` is the default router (`is_default=true`).
+Categories: 13 SDLC roles (pm, architect, coder, reviewer, researcher, writer, pjm, devops, tester, cto, cpo, ceo, assistant) + 3 business (enghelp, sales, cs) + 1 operations (itadmin). `assistant` is the default router (`is_default=true`).
 
 ### Database
 
-PostgreSQL with 12 migrations (000001–000012). Key tables: `agents`, `agent_context_files`, `sessions`, `messages`, `llm_providers`, `agent_teams`, `agent_links`, `traces`, `channel_instances`, `topic_config`. RLS via `owner_id` = tenant ID.
+PostgreSQL with 19 migrations (000001–000019). Key tables: `agents`, `agent_context_files`, `sessions`, `messages`, `llm_providers`, `agent_teams`, `agent_links`, `traces`, `channel_instances`, `topic_config`. RLS via `owner_id` = tenant ID.
 
 ### Provider Registration
 

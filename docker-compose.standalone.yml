@@ -1,6 +1,11 @@
+# DEPRECATED — Standalone mode is deprecated. MTClaw requires PostgreSQL.
+# Use managed mode (docker-compose.managed.yml) instead.
+# See: docs/00-foundation/product-vision.md — PG is core infrastructure.
+#
+# Original description:
 # Standalone overlay — file-based storage with persistent volumes.
 #
-# Usage:
+# Usage (DEPRECATED):
 #   docker compose -f docker-compose.yml -f docker-compose.standalone.yml up
 
 services:
