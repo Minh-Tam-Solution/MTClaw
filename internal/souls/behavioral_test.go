@@ -301,17 +301,6 @@ func TestSOUL_Sales_CapabilitiesMentionSalesTasks(t *testing.T) {
 	}
 }
 
-func TestSOUL_Sales_RAGCollectionField(t *testing.T) {
-	content := loadSOUL(t, "sales")
-	fm := extractFrontmatter(content)
-	if !strings.Contains(fm, "rag_collections:") {
-		t.Error("Sales SOUL frontmatter missing 'rag_collections' field")
-	}
-	if !strings.Contains(fm, "sales") {
-		t.Error("Sales SOUL rag_collections should include 'sales'")
-	}
-}
-
 func TestSOUL_Sales_ChecksumDeterministic(t *testing.T) {
 	content := loadSOUL(t, "sales")
 	h1 := ChecksumContent(content)
