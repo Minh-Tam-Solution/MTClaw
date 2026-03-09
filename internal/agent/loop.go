@@ -91,6 +91,9 @@ type Loop struct {
 	// Fallback provider for provider chain (nil = no fallback)
 	fallbackProvider providers.Provider
 
+	// Health tracker for provider circuit breaker (nil = no health tracking)
+	healthTracker *providers.ProviderHealthTracker
+
 	// Event callback for broadcasting agent events (run.started, chunk, tool.call, etc.)
 	onEvent func(event AgentEvent)
 
@@ -179,6 +182,9 @@ type LoopConfig struct {
 	// Fallback provider for provider chain (nil = no fallback)
 	FallbackProvider providers.Provider
 
+	// Health tracker for provider circuit breaker (nil = no health tracking)
+	HealthTracker *providers.ProviderHealthTracker
+
 	// Group writer cache for system prompt injection (managed mode)
 	GroupWriterCache *store.GroupWriterCache
 }
@@ -241,6 +247,7 @@ func NewLoop(cfg LoopConfig) *Loop {
 		builtinToolSettings:   cfg.BuiltinToolSettings,
 		thinkingLevel:         cfg.ThinkingLevel,
 		fallbackProvider:      cfg.FallbackProvider,
+		healthTracker:         cfg.HealthTracker,
 		groupWriterCache:      cfg.GroupWriterCache,
 	}
 }
@@ -650,9 +657,20 @@ func (l *Loop) runLoop(ctx context.Context, req RunRequest) (*RunResult, error) 
 		// At iteration=1 with tools, propagate error — don't give wrong text-only answer (CTO-R2-1).
 		usedFallback := false
 		if err != nil && l.fallbackProvider != nil && providers.IsRetryableError(err) {
+			// Record primary failure in health tracker
+			if l.healthTracker != nil {
+				l.healthTracker.RecordFailure(l.provider.Name())
+			}
+
 			canFallback := true
 			if iteration == 1 && len(chatReq.Tools) > 0 {
 				canFallback = false // tools needed but not yet executed
+			}
+			// OBS-028-1: Fail-open on double circuit-open — if fallback circuit is open
+			// but no other option exists, still attempt the call rather than failing the user.
+			if canFallback && l.healthTracker != nil && !l.healthTracker.IsHealthy(l.fallbackProvider.Name()) {
+				slog.Warn("fallback provider circuit open, attempting anyway (fail-open)",
+					"agent", l.id, "fallback", l.fallbackProvider.Name())
 			}
 			if canFallback {
 				primaryErr := err
@@ -671,6 +689,10 @@ func (l *Loop) runLoop(ctx context.Context, req RunRequest) (*RunResult, error) 
 				resp, err = l.fallbackProvider.Chat(ctx, fallbackReq)
 				if err == nil {
 					usedFallback = true
+					// Record fallback success in health tracker
+					if l.healthTracker != nil {
+						l.healthTracker.RecordSuccess(l.fallbackProvider.Name())
+					}
 					slog.Info("fallback provider succeeded",
 						"agent", l.id, "provider", l.fallbackProvider.Name())
 					// Emit fallback span with metadata (primary_provider, primary_error)
@@ -684,8 +706,14 @@ func (l *Loop) runLoop(ctx context.Context, req RunRequest) (*RunResult, error) 
 							Payload: map[string]string{"content": resp.Content},
 						})
 					}
+				} else if l.healthTracker != nil {
+					// Record fallback failure in health tracker
+					l.healthTracker.RecordFailure(l.fallbackProvider.Name())
 				}
 			}
+		} else if err == nil && l.healthTracker != nil {
+			// Record primary success in health tracker
+			l.healthTracker.RecordSuccess(l.provider.Name())
 		}
 
 		if err != nil {

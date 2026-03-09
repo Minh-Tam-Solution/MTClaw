@@ -241,6 +241,17 @@ func (c *Config) applyEnvOverrides() {
 	if v := os.Getenv("MTCLAW_PROVIDER_CHAIN"); v != "" {
 		c.ProviderChain.Chain = strings.Split(v, ",")
 	}
+
+	// Claude Code Bridge (Sprint 26)
+	if v := os.Getenv("MTCLAW_BRIDGE_ENABLED"); v != "" {
+		c.Bridge.Enabled = v == "true" || v == "1"
+	}
+	if v := os.Getenv("MTCLAW_BRIDGE_HOOK_PORT"); v != "" {
+		if port, err := strconv.Atoi(v); err == nil && port > 0 {
+			c.Bridge.HookPort = port
+		}
+	}
+	envStr("MTCLAW_BRIDGE_AUDIT_DIR", &c.Bridge.AuditDir)
 }
 
 // applyContextPruningDefaults auto-enables context pruning when the Anthropic

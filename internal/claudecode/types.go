@@ -29,7 +29,8 @@ const (
 	SessionStateBusy    SessionState = "busy"
 	SessionStateIdle    SessionState = "idle"
 	SessionStateStopped SessionState = "stopped"
-	SessionStateError   SessionState = "error"
+	SessionStateError        SessionState = "error"
+	SessionStateDisconnected SessionState = "disconnected" // recovered from PG after restart (tmux gone)
 )
 
 // RiskMode is the user-facing risk level for a session (UX shorthand).

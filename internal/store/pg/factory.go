@@ -39,5 +39,6 @@ func NewPGStores(cfg store.StoreConfig) (*store.Stores, error) {
 		Specs:            NewPGSpecStore(db),
 		PRGate:           NewPGPRGateStore(db),
 		EvidenceLinks:    NewPGEvidenceLinkStore(db),
+		BridgeSessions:   NewPGBridgeSessionStore(db),
 	}, nil
 }

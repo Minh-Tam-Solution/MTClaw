@@ -16,6 +16,7 @@ services:
       args:
         ENABLE_OTEL: "false"
         ENABLE_CLAUDE_CLI: "${ENABLE_CLAUDE_CLI:-false}"
+        ENABLE_BRIDGE: "${ENABLE_BRIDGE:-false}"
     ports:
       - "${MTCLAW_PORT:-18790}:18790"
     env_file:
@@ -59,6 +60,10 @@ services:
       - MTCLAW_CLAUDE_MODEL=${MTCLAW_CLAUDE_MODEL:-sonnet}
       - MTCLAW_CLAUDE_TIMEOUT=${MTCLAW_CLAUDE_TIMEOUT:-120}
       - MTCLAW_PROVIDER_CHAIN=${MTCLAW_PROVIDER_CHAIN:-}
+      # Claude Code Bridge (Sprint 26)
+      - MTCLAW_BRIDGE_ENABLED=${MTCLAW_BRIDGE_ENABLED:-false}
+      - MTCLAW_BRIDGE_HOOK_PORT=${MTCLAW_BRIDGE_HOOK_PORT:-18792}
+      - MTCLAW_BRIDGE_AUDIT_DIR=${MTCLAW_BRIDGE_AUDIT_DIR:-/app/data/bridge-audit}
       # Debug
       - MTCLAW_TRACE_VERBOSE=${MTCLAW_TRACE_VERBOSE:-0}
     volumes:

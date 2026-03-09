@@ -362,3 +362,96 @@ func (s *PGTracingStore) BatchUpdateTraceAggregates(ctx context.Context, traceID
 	return err
 }
 
+// --- Adoption metrics (Sprint 27) ---
+
+func (s *PGTracingStore) CountDistinctUsers(ctx context.Context, since time.Time) (int, error) {
+	var count int
+	err := s.db.QueryRowContext(ctx,
+		`SELECT COUNT(DISTINCT user_id) FROM traces WHERE created_at >= $1 AND user_id IS NOT NULL AND user_id != ''`,
+		since,
+	).Scan(&count)
+	return count, err
+}
+
+func (s *PGTracingStore) CountByAgent(ctx context.Context, since time.Time) (map[string]int, error) {
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT COALESCE(a.agent_key, t.agent_id::text) AS agent, COUNT(*)
+		 FROM traces t
+		 LEFT JOIN agents a ON t.agent_id = a.id
+		 WHERE t.created_at >= $1 AND t.agent_id IS NOT NULL
+		 GROUP BY agent
+		 ORDER BY COUNT(*) DESC`,
+		since,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[string]int)
+	for rows.Next() {
+		var agent string
+		var count int
+		if err := rows.Scan(&agent, &count); err != nil {
+			slog.Warn("CountByAgent scan error", "error", err)
+			continue
+		}
+		result[agent] = count
+	}
+	return result, rows.Err()
+}
+
+func (s *PGTracingStore) CountByChannel(ctx context.Context, since time.Time) (map[string]int, error) {
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT channel, COUNT(*)
+		 FROM traces
+		 WHERE created_at >= $1 AND channel IS NOT NULL AND channel != ''
+		 GROUP BY channel
+		 ORDER BY COUNT(*) DESC`,
+		since,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[string]int)
+	for rows.Next() {
+		var channel string
+		var count int
+		if err := rows.Scan(&channel, &count); err != nil {
+			slog.Warn("CountByChannel scan error", "error", err)
+			continue
+		}
+		result[channel] = count
+	}
+	return result, rows.Err()
+}
+
+func (s *PGTracingStore) SumTokensByProvider(ctx context.Context, since time.Time) (map[string]store.TokenUsage, error) {
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT provider, COALESCE(SUM(input_tokens), 0), COALESCE(SUM(output_tokens), 0)
+		 FROM spans
+		 WHERE created_at >= $1 AND span_type = 'llm_call' AND provider IS NOT NULL AND provider != ''
+		 GROUP BY provider
+		 ORDER BY COALESCE(SUM(input_tokens), 0) + COALESCE(SUM(output_tokens), 0) DESC`,
+		since,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[string]store.TokenUsage)
+	for rows.Next() {
+		var provider string
+		var inputTokens, outputTokens int
+		if err := rows.Scan(&provider, &inputTokens, &outputTokens); err != nil {
+			slog.Warn("SumTokensByProvider scan error", "error", err)
+			continue
+		}
+		result[provider] = store.TokenUsage{InputTokens: inputTokens, OutputTokens: outputTokens}
+	}
+	return result, rows.Err()
+}
+

@@ -103,6 +103,12 @@ type TraceListOpts struct {
 	Offset     int
 }
 
+// TokenUsage holds input/output token counts for a provider.
+type TokenUsage struct {
+	InputTokens  int
+	OutputTokens int
+}
+
 // TracingStore manages LLM traces and spans (managed mode only).
 type TracingStore interface {
 	CreateTrace(ctx context.Context, trace *TraceData) error
@@ -118,4 +124,10 @@ type TracingStore interface {
 	// Batch operations (async flush)
 	BatchCreateSpans(ctx context.Context, spans []SpanData) error
 	BatchUpdateTraceAggregates(ctx context.Context, traceID uuid.UUID) error
+
+	// Adoption metrics (Sprint 27)
+	CountDistinctUsers(ctx context.Context, since time.Time) (int, error)
+	CountByAgent(ctx context.Context, since time.Time) (map[string]int, error)
+	CountByChannel(ctx context.Context, since time.Time) (map[string]int, error)
+	SumTokensByProvider(ctx context.Context, since time.Time) (map[string]TokenUsage, error)
 }

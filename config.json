@@ -1,0 +1,22 @@
+{
+  "agents": {
+    "list": {
+      "pm": {
+        "displayName": "PM",
+        "provider": "bflow-ai-platform",
+        "model": "qwen3:14b"
+      }
+    }
+  },
+  "bridge": {
+    "enabled": true,
+    "hook_port": 18792,
+    "admission": {
+      "max_sessions_per_agent": 2,
+      "max_total_sessions": 6,
+      "max_cpu_percent": 85,
+      "max_memory_percent": 80,
+      "per_tenant_session_cap": 4
+    }
+  }
+}

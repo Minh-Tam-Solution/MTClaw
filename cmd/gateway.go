@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log/slog"
 	"os"
@@ -579,12 +580,40 @@ func runGateway() {
 			os.Exit(1)
 		}
 
-		// Create additional agents from agents.list
+		// Create additional agents from agents.list.
+		// Each agent gets its own context files loaded from its workspace (Sprint 26 — per-agent SOUL fix).
 		for agentID := range cfg.Agents.List {
 			if agentID == "default" {
 				continue
 			}
-			if err := createAgentLoop(agentID, cfg, agentRouter, providerRegistry, msgBus, sessStore, toolsReg, toolPE, contextFiles, skillsLoader, hasMemory, sandboxMgr, fileAgentStore, ensureUserFiles, contextFileLoader); err != nil {
+			agentSpecificCfg := cfg.ResolveAgent(agentID)
+			agentWS := config.ExpandHome(agentSpecificCfg.Workspace)
+			if !filepath.IsAbs(agentWS) {
+				agentWS, _ = filepath.Abs(agentWS)
+			}
+
+			// Load per-agent context files if workspace differs from default
+			agentContextFiles := contextFiles
+			if agentWS != workspace {
+				rawFiles := bootstrap.LoadWorkspaceFiles(agentWS)
+				truncCfg := bootstrap.TruncateConfig{
+					MaxCharsPerFile: agentSpecificCfg.BootstrapMaxChars,
+					TotalMaxChars:   agentSpecificCfg.BootstrapTotalMaxChars,
+				}
+				if truncCfg.MaxCharsPerFile <= 0 {
+					truncCfg.MaxCharsPerFile = bootstrap.DefaultMaxCharsPerFile
+				}
+				if truncCfg.TotalMaxChars <= 0 {
+					truncCfg.TotalMaxChars = bootstrap.DefaultTotalMaxChars
+				}
+				loaded := bootstrap.BuildContextFiles(rawFiles, truncCfg)
+				if len(loaded) > 0 {
+					agentContextFiles = loaded
+					slog.Info("per-agent context files loaded", "agent", agentID, "workspace", agentWS, "count", len(loaded))
+				}
+			}
+
+			if err := createAgentLoop(agentID, cfg, agentRouter, providerRegistry, msgBus, sessStore, toolsReg, toolPE, agentContextFiles, skillsLoader, hasMemory, sandboxMgr, fileAgentStore, ensureUserFiles, contextFileLoader); err != nil {
 				slog.Error("failed to create agent", "agent", agentID, "error", err)
 			}
 		}
@@ -789,6 +818,36 @@ func runGateway() {
 			slog.Warn("claude code bridge: tmux not available, sessions will not launch terminal", "error", err)
 		}
 		bridgeMgr := claudecode.NewSessionManager(bridgeCfg, tmuxBridge)
+
+		// Wire PG persistence for bridge sessions (Sprint 26 — dual-write pattern)
+		if managedStores != nil && managedStores.BridgeSessions != nil {
+			bridgeMgr.SetStore(managedStores.BridgeSessions)
+			if n, err := bridgeMgr.LoadFromStore(context.Background()); err != nil {
+				slog.Warn("bridge session recovery from PG failed", "error", err)
+			} else if n > 0 {
+				slog.Info("bridge sessions recovered from PG on startup", "count", n)
+			}
+		}
+
+		// Wire audit dual-write (Sprint 26 — JSONL primary + PG secondary)
+		{
+			var auditDB *sql.DB
+			if cfg.Database.Mode == "managed" && cfg.Database.PostgresDSN != "" {
+				if db, err := pg.OpenDB(cfg.Database.PostgresDSN); err != nil {
+					slog.Warn("audit PG connection failed, JSONL-only mode", "error", err)
+				} else {
+					auditDB = db
+				}
+			}
+			auditWriter, err := claudecode.NewAuditWriter(bridgeCfg.AuditDir, auditDB)
+			if err != nil {
+				slog.Warn("audit writer init failed, audit disabled", "error", err)
+			} else {
+				bridgeMgr.SetAuditWriter(auditWriter)
+				defer auditWriter.Close()
+				slog.Info("bridge audit writer enabled", "dir", bridgeCfg.AuditDir, "pg", auditDB != nil)
+			}
+		}
 
 		// Inject into all registered Telegram channels
 		for _, name := range channelMgr.GetEnabledChannels() {

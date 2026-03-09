@@ -81,7 +81,10 @@ func wireManagedExtras(
 		}
 	}
 
-	// 5. Set up agent resolver: lazy-creates Loops from DB
+	// 5. Create provider health tracker (singleton shared across all agent loops)
+	healthTracker := providers.NewProviderHealthTracker()
+
+	// 6. Set up agent resolver: lazy-creates Loops from DB
 	resolver := agent.NewManagedResolver(agent.ResolverDeps{
 		AgentStore:        stores.Agents,
 		ProviderReg:       providerReg,
@@ -108,6 +111,7 @@ func wireManagedExtras(
 		BuiltinToolStore:       stores.BuiltinTools,
 		GroupWriterCache:       groupWriterCache,
 		ProviderChain:          appCfg.ProviderChain.Chain,
+		HealthTracker:          healthTracker,
 		OnEvent: func(event agent.AgentEvent) {
 			msgBus.Broadcast(bus.Event{
 				Name:    protocol.EventAgent,

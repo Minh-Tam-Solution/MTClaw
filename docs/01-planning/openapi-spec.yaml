@@ -1,0 +1,960 @@
+openapi: 3.0.3
+info:
+  title: MTClaw Gateway API
+  description: |
+    Multi-tenant AI agent gateway API. Supports both HTTP REST endpoints
+    and WebSocket RPC methods (documented separately in websocket-protocol-v3.md).
+
+    **Authentication**: Bearer token or browser pairing via WebSocket `connect` method.
+    **Multi-tenancy**: All endpoints enforce tenant isolation via `X-Tenant-ID` header
+    or token-embedded tenant context.
+  version: 2.0.0
+  contact:
+    name: MTClaw Team
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:18790
+    description: Local development
+  - url: https://mtclaw.example.com
+    description: Production
+
+tags:
+  - name: Chat
+    description: OpenAI-compatible chat completions
+  - name: Agents
+    description: Agent CRUD (managed mode)
+  - name: Providers
+    description: LLM provider management (managed mode)
+  - name: Skills
+    description: Skill library management
+  - name: Tools
+    description: Builtin and custom tool management
+  - name: MCP
+    description: Model Context Protocol server management
+  - name: Channels
+    description: Channel instance management
+  - name: Traces
+    description: LLM trace observability
+  - name: Delegations
+    description: Inter-agent delegation history
+  - name: Webhooks
+    description: External webhook integrations
+  - name: System
+    description: Health, WebSocket, and system endpoints
+
+paths:
+  /health:
+    get:
+      tags: [System]
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+                    example: "2.0.0"
+
+  /ws:
+    get:
+      tags: [System]
+      summary: WebSocket upgrade endpoint
+      description: |
+        Upgrade to WebSocket for RPC protocol v3.
+        See `docs/03-integrate/websocket-protocol-v3.md` for full method catalog.
+      operationId: websocketUpgrade
+      responses:
+        "101":
+          description: Switching to WebSocket protocol
+
+  /v1/chat/completions:
+    post:
+      tags: [Chat]
+      summary: OpenAI-compatible chat completions
+      operationId: chatCompletions
+      description: |
+        Send messages to an agent. Supports streaming via `stream: true`.
+        Compatible with OpenAI SDK clients.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatCompletionRequest"
+      responses:
+        "200":
+          description: Chat completion response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatCompletionResponse"
+        "429":
+          description: Rate limited
+        "503":
+          description: Provider unavailable
+
+  /v1/responses:
+    post:
+      tags: [Chat]
+      summary: OpenResponses protocol endpoint
+      operationId: openResponses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Response created
+
+  /v1/tools/invoke:
+    post:
+      tags: [Tools]
+      summary: Direct tool invocation
+      operationId: invokeToolDirect
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tool, input]
+              properties:
+                tool:
+                  type: string
+                  example: read_file
+                input:
+                  type: object
+      responses:
+        "200":
+          description: Tool execution result
+
+  # --- Agents ---
+
+  /v1/agents:
+    get:
+      tags: [Agents]
+      summary: List agents
+      operationId: listAgents
+      responses:
+        "200":
+          description: Agent list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Agent"
+    post:
+      tags: [Agents]
+      summary: Create agent
+      operationId: createAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentCreate"
+      responses:
+        "201":
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+
+  /v1/agents/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Agents]
+      summary: Get agent details
+      operationId: getAgent
+      responses:
+        "200":
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+        "404":
+          description: Agent not found
+    put:
+      tags: [Agents]
+      summary: Update agent
+      operationId: updateAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentUpdate"
+      responses:
+        "200":
+          description: Agent updated
+    delete:
+      tags: [Agents]
+      summary: Delete agent
+      operationId: deleteAgent
+      responses:
+        "204":
+          description: Agent deleted
+
+  /v1/agents/{id}/shares:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Agents]
+      summary: List agent shares
+      operationId: listAgentShares
+      responses:
+        "200":
+          description: Share list
+    post:
+      tags: [Agents]
+      summary: Share agent with user
+      operationId: shareAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: string
+      responses:
+        "201":
+          description: Share created
+
+  # --- Providers ---
+
+  /v1/providers:
+    get:
+      tags: [Providers]
+      summary: List LLM providers
+      operationId: listProviders
+      responses:
+        "200":
+          description: Provider list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Provider"
+    post:
+      tags: [Providers]
+      summary: Create provider
+      operationId: createProvider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProviderCreate"
+      responses:
+        "201":
+          description: Provider created
+
+  /v1/providers/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Providers]
+      summary: Get provider details
+      operationId: getProvider
+      responses:
+        "200":
+          description: Provider details
+    put:
+      tags: [Providers]
+      summary: Update provider
+      operationId: updateProvider
+      responses:
+        "200":
+          description: Provider updated
+    delete:
+      tags: [Providers]
+      summary: Delete provider
+      operationId: deleteProvider
+      responses:
+        "204":
+          description: Provider deleted
+
+  /v1/providers/{id}/models:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Providers]
+      summary: List models for provider
+      operationId: listProviderModels
+      responses:
+        "200":
+          description: Model list
+
+  /v1/providers/verify:
+    post:
+      tags: [Providers]
+      summary: Verify provider credentials
+      operationId: verifyProvider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [provider_type, api_key]
+              properties:
+                provider_type:
+                  type: string
+                  example: anthropic
+                api_key:
+                  type: string
+                base_url:
+                  type: string
+      responses:
+        "200":
+          description: Verification result
+
+  # --- Skills ---
+
+  /v1/skills:
+    get:
+      tags: [Skills]
+      summary: List skills
+      operationId: listSkills
+      responses:
+        "200":
+          description: Skill list
+    post:
+      tags: [Skills]
+      summary: Create skill
+      operationId: createSkill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillCreate"
+      responses:
+        "201":
+          description: Skill created
+
+  /v1/skills/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Skills]
+      summary: Get skill
+      operationId: getSkill
+      responses:
+        "200":
+          description: Skill details
+    put:
+      tags: [Skills]
+      summary: Update skill
+      operationId: updateSkill
+      responses:
+        "200":
+          description: Skill updated
+    delete:
+      tags: [Skills]
+      summary: Delete skill
+      operationId: deleteSkill
+      responses:
+        "204":
+          description: Skill deleted
+
+  /v1/skills/{id}/grants:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Skills]
+      summary: List skill grants
+      operationId: listSkillGrants
+      responses:
+        "200":
+          description: Grant list
+    post:
+      tags: [Skills]
+      summary: Grant skill to agent
+      operationId: grantSkill
+      responses:
+        "201":
+          description: Grant created
+
+  # --- Tools ---
+
+  /v1/tools/builtin:
+    get:
+      tags: [Tools]
+      summary: List builtin tools
+      operationId: listBuiltinTools
+      responses:
+        "200":
+          description: Builtin tool list
+
+  /v1/tools/builtin/{name}:
+    parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Tools]
+      summary: Get builtin tool definition
+      operationId: getBuiltinTool
+      responses:
+        "200":
+          description: Tool definition
+    put:
+      tags: [Tools]
+      summary: Update builtin tool config
+      operationId: updateBuiltinTool
+      responses:
+        "200":
+          description: Tool updated
+
+  /v1/tools/custom:
+    get:
+      tags: [Tools]
+      summary: List custom tools
+      operationId: listCustomTools
+      responses:
+        "200":
+          description: Custom tool list
+    post:
+      tags: [Tools]
+      summary: Create custom tool
+      operationId: createCustomTool
+      responses:
+        "201":
+          description: Custom tool created
+
+  /v1/tools/custom/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Tools]
+      summary: Get custom tool
+      operationId: getCustomTool
+      responses:
+        "200":
+          description: Custom tool details
+    put:
+      tags: [Tools]
+      summary: Update custom tool
+      operationId: updateCustomTool
+      responses:
+        "200":
+          description: Custom tool updated
+    delete:
+      tags: [Tools]
+      summary: Delete custom tool
+      operationId: deleteCustomTool
+      responses:
+        "204":
+          description: Custom tool deleted
+
+  # --- MCP ---
+
+  /v1/mcp/servers:
+    get:
+      tags: [MCP]
+      summary: List MCP servers
+      operationId: listMCPServers
+      responses:
+        "200":
+          description: MCP server list
+    post:
+      tags: [MCP]
+      summary: Create MCP server
+      operationId: createMCPServer
+      responses:
+        "201":
+          description: MCP server created
+
+  /v1/mcp/servers/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [MCP]
+      summary: Get MCP server
+      operationId: getMCPServer
+      responses:
+        "200":
+          description: MCP server details
+    put:
+      tags: [MCP]
+      summary: Update MCP server
+      operationId: updateMCPServer
+      responses:
+        "200":
+          description: MCP server updated
+    delete:
+      tags: [MCP]
+      summary: Delete MCP server
+      operationId: deleteMCPServer
+      responses:
+        "204":
+          description: MCP server deleted
+
+  # --- Channel Instances ---
+
+  /v1/channels/instances:
+    get:
+      tags: [Channels]
+      summary: List channel instances
+      operationId: listChannelInstances
+      responses:
+        "200":
+          description: Channel instance list
+    post:
+      tags: [Channels]
+      summary: Create channel instance
+      operationId: createChannelInstance
+      responses:
+        "201":
+          description: Channel instance created
+
+  /v1/channels/instances/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Channels]
+      summary: Get channel instance
+      operationId: getChannelInstance
+      responses:
+        "200":
+          description: Channel instance details
+    put:
+      tags: [Channels]
+      summary: Update channel instance
+      operationId: updateChannelInstance
+      responses:
+        "200":
+          description: Channel instance updated
+    delete:
+      tags: [Channels]
+      summary: Delete channel instance
+      operationId: deleteChannelInstance
+      responses:
+        "204":
+          description: Channel instance deleted
+
+  # --- Traces ---
+
+  /v1/traces:
+    get:
+      tags: [Traces]
+      summary: List LLM traces
+      operationId: listTraces
+      parameters:
+        - name: agent_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: user_id
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [running, completed, error, cancelled]
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Trace list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trace"
+
+  /v1/traces/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Traces]
+      summary: Get trace details with spans
+      operationId: getTrace
+      responses:
+        "200":
+          description: Trace with spans
+
+  # --- Delegations ---
+
+  /v1/delegations:
+    get:
+      tags: [Delegations]
+      summary: List delegation history
+      operationId: listDelegations
+      responses:
+        "200":
+          description: Delegation list
+
+  /v1/delegations/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Delegations]
+      summary: Get delegation record
+      operationId: getDelegation
+      responses:
+        "200":
+          description: Delegation details
+
+  # --- Webhooks ---
+
+  /webhooks/github:
+    post:
+      tags: [Webhooks]
+      summary: GitHub PR gate webhook
+      operationId: githubWebhook
+      description: Receives GitHub webhook events for PR gate integration (ADR-008).
+      responses:
+        "200":
+          description: Webhook processed
+
+components:
+  schemas:
+    ChatCompletionRequest:
+      type: object
+      required: [messages]
+      properties:
+        model:
+          type: string
+          description: Model override (uses agent default if omitted)
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        tools:
+          type: array
+          items:
+            $ref: "#/components/schemas/ToolDefinition"
+        stream:
+          type: boolean
+          default: false
+        max_tokens:
+          type: integer
+        temperature:
+          type: number
+
+    ChatCompletionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                $ref: "#/components/schemas/Message"
+              finish_reason:
+                type: string
+                enum: [stop, tool_calls, length]
+        usage:
+          $ref: "#/components/schemas/Usage"
+
+    Message:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [system, user, assistant, tool]
+        content:
+          type: string
+        tool_calls:
+          type: array
+          items:
+            $ref: "#/components/schemas/ToolCall"
+        tool_call_id:
+          type: string
+
+    ToolDefinition:
+      type: object
+      required: [type, function]
+      properties:
+        type:
+          type: string
+          enum: [function]
+        function:
+          type: object
+          required: [name]
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+            parameters:
+              type: object
+
+    ToolCall:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [function]
+        function:
+          type: object
+          properties:
+            name:
+              type: string
+            arguments:
+              type: string
+
+    Usage:
+      type: object
+      properties:
+        prompt_tokens:
+          type: integer
+        completion_tokens:
+          type: integer
+        total_tokens:
+          type: integer
+
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        agent_key:
+          type: string
+        display_name:
+          type: string
+        agent_type:
+          type: string
+          enum: [predefined, open]
+        provider:
+          type: string
+        model:
+          type: string
+        workspace:
+          type: string
+        context_window:
+          type: integer
+        max_tool_iterations:
+          type: integer
+        enabled:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    AgentCreate:
+      type: object
+      required: [agent_key]
+      properties:
+        agent_key:
+          type: string
+        display_name:
+          type: string
+        agent_type:
+          type: string
+          enum: [predefined, open]
+        provider:
+          type: string
+        model:
+          type: string
+        workspace:
+          type: string
+
+    AgentUpdate:
+      type: object
+      properties:
+        display_name:
+          type: string
+        provider:
+          type: string
+        model:
+          type: string
+        workspace:
+          type: string
+        enabled:
+          type: boolean
+
+    Provider:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        display_name:
+          type: string
+        provider_type:
+          type: string
+        base_url:
+          type: string
+        enabled:
+          type: boolean
+        has_api_key:
+          type: boolean
+
+    ProviderCreate:
+      type: object
+      required: [name, provider_type, api_key]
+      properties:
+        name:
+          type: string
+        display_name:
+          type: string
+        provider_type:
+          type: string
+        api_key:
+          type: string
+        base_url:
+          type: string
+
+    SkillCreate:
+      type: object
+      required: [name, content]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+        agent_allowlist:
+          type: array
+          items:
+            type: string
+
+    Trace:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+        session_key:
+          type: string
+        channel:
+          type: string
+        status:
+          type: string
+          enum: [running, completed, error, cancelled]
+        total_input_tokens:
+          type: integer
+        total_output_tokens:
+          type: integer
+        span_count:
+          type: integer
+        llm_call_count:
+          type: integer
+        tool_call_count:
+          type: integer
+        duration_ms:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: JWT or API token
+
+security:
+  - bearerAuth: []

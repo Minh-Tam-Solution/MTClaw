@@ -7,12 +7,16 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"sort"
 	"strings"
+	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/spf13/cobra"
 
 	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/cost"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/store/pg"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/upgrade"
 	"github.com/Minh-Tam-Solution/MTClaw/pkg/protocol"
 )
@@ -177,6 +181,16 @@ func runDoctor() {
 	checkBinary("curl")
 	checkBinary("git")
 
+	// Adoption Metrics (managed mode only — Sprint 27)
+	if isManaged && db != nil {
+		checkAdoptionMetrics(db)
+	}
+
+	// Cost Status (managed mode only — Sprint 27)
+	if isManaged && db != nil {
+		checkCostStatus(db)
+	}
+
 	// Workspace
 	fmt.Println()
 	ws := config.ExpandHome(cfg.Agents.Defaults.Workspace)
@@ -277,4 +291,132 @@ func checkBinary(name string) {
 	} else {
 		fmt.Printf("    %-12s %s\n", name+":", path)
 	}
+}
+
+func checkAdoptionMetrics(db *sql.DB) {
+	ctx := context.Background()
+	tracingStore := pg.NewPGTracingStore(db)
+	since := time.Now().AddDate(0, 0, -7)
+
+	fmt.Println()
+	fmt.Println("  Adoption Metrics (last 7 days):")
+
+	// WAU
+	wau, err := tracingStore.CountDistinctUsers(ctx, since)
+	if err != nil {
+		fmt.Printf("    %-12s ERROR (%s)\n", "WAU:", err)
+		return
+	}
+	fmt.Printf("    %-12s %d\n", "WAU:", wau)
+
+	// By SOUL/agent
+	byAgent, err := tracingStore.CountByAgent(ctx, since)
+	if err == nil && len(byAgent) > 0 {
+		parts := sortedMapEntries(byAgent)
+		fmt.Printf("    %-12s %s\n", "By SOUL:", strings.Join(parts, ", "))
+	} else if err == nil {
+		fmt.Printf("    %-12s (no data)\n", "By SOUL:")
+	}
+
+	// By channel
+	byChannel, err := tracingStore.CountByChannel(ctx, since)
+	if err == nil && len(byChannel) > 0 {
+		parts := sortedMapEntries(byChannel)
+		fmt.Printf("    %-12s %s\n", "By Channel:", strings.Join(parts, ", "))
+	} else if err == nil {
+		fmt.Printf("    %-12s (no data)\n", "By Channel:")
+	}
+
+	// Tokens by provider
+	byProvider, err := tracingStore.SumTokensByProvider(ctx, since)
+	if err == nil && len(byProvider) > 0 {
+		var parts []string
+		for provider, usage := range byProvider {
+			parts = append(parts, fmt.Sprintf("%s: %s in / %s out",
+				provider, formatTokenCount(usage.InputTokens), formatTokenCount(usage.OutputTokens)))
+		}
+		sort.Strings(parts)
+		fmt.Printf("    %-12s %s\n", "Tokens:", strings.Join(parts, ", "))
+	} else if err == nil {
+		fmt.Printf("    %-12s (no data)\n", "Tokens:")
+	}
+}
+
+func checkCostStatus(db *sql.DB) {
+	ctx := context.Background()
+	tracingStore := pg.NewPGTracingStore(db)
+
+	fmt.Println()
+	fmt.Println("  Cost Status:")
+
+	// Daily request count
+	_, dailyCount, dailyLimit, err := cost.CheckDailyLimit(ctx, tracingStore)
+	if err != nil {
+		fmt.Printf("    %-12s ERROR (%s)\n", "Daily:", err)
+	} else {
+		pct := 0
+		if dailyLimit > 0 {
+			pct = dailyCount * 100 / dailyLimit
+		}
+		fmt.Printf("    %-12s %d / %d requests (%d%%)\n", "Daily:", dailyCount, dailyLimit, pct)
+	}
+
+	// Monthly token count
+	_, monthlyTokens, monthlyLimit, mErr := cost.CheckMonthlyTokenLimit(ctx, tracingStore)
+	if mErr != nil {
+		fmt.Printf("    %-12s ERROR (%s)\n", "Monthly:", mErr)
+	} else {
+		pct := 0
+		if monthlyLimit > 0 {
+			pct = monthlyTokens * 100 / monthlyLimit
+		}
+		fmt.Printf("    %-12s %s / %s tokens (%d%%)\n", "Monthly:",
+			formatTokenCount(monthlyTokens), formatTokenCount(monthlyLimit), pct)
+	}
+
+	// Overall status
+	status := "OK"
+	if err == nil && dailyLimit > 0 && dailyCount*100/dailyLimit >= 80 {
+		status = "WARNING (daily usage ≥80%)"
+	}
+	if mErr == nil && monthlyLimit > 0 && monthlyTokens*100/monthlyLimit >= 80 {
+		status = "WARNING (monthly tokens ≥80%)"
+	}
+	if err == nil && dailyCount >= dailyLimit {
+		status = "EXCEEDED (daily limit reached)"
+	}
+	if mErr == nil && monthlyTokens >= monthlyLimit {
+		status = "EXCEEDED (monthly token limit reached)"
+	}
+	fmt.Printf("    %-12s %s\n", "Status:", status)
+}
+
+// sortedMapEntries formats a map[string]int as "key: count" entries sorted by count descending.
+func sortedMapEntries(m map[string]int) []string {
+	type kv struct {
+		key   string
+		count int
+	}
+	var entries []kv
+	for k, v := range m {
+		entries = append(entries, kv{k, v})
+	}
+	sort.Slice(entries, func(i, j int) bool { return entries[i].count > entries[j].count })
+
+	parts := make([]string, len(entries))
+	for i, e := range entries {
+		parts[i] = fmt.Sprintf("%s: %d", e.key, e.count)
+	}
+	return parts
+}
+
+// formatTokenCount formats a token count with K/M suffixes for readability.
+func formatTokenCount(n int) string {
+	if n >= 1_000_000 {
+		return fmt.Sprintf("%.1fM", float64(n)/1_000_000)
+	}
+	if n >= 1_000 {
+		return fmt.Sprintf("%.1fK", float64(n)/1_000)
+	}
+	return fmt.Sprintf("%d", n)
 }

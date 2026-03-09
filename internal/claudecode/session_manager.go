@@ -2,6 +2,7 @@ package claudecode
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
@@ -34,6 +36,22 @@ type SessionManager struct {
 	tmux     *TmuxBridge
 	registry *ProviderRegistry
 	projects *ProjectRegistry
+	pgStore  store.BridgeSessionStore // optional PG persistence (nil in standalone)
+	audit    *AuditWriter              // optional audit writer (nil = no audit)
+
+	// Lifetime counters for metrics (OBS-028-4: atomic counters for memory-only tracking)
+	lifetimeCreated int64
+	lifetimeKilled  int64
+}
+
+// BridgeMetrics provides an observable snapshot of bridge session state.
+type BridgeMetrics struct {
+	ActiveSessions int            `json:"active_sessions"`
+	TotalCreated   int            `json:"total_created"`
+	TotalKilled    int            `json:"total_killed"`
+	ByRiskMode     map[string]int `json:"by_risk_mode"`
+	ByAgentRole    map[string]int `json:"by_role"`
+	ByChannel      map[string]int `json:"by_channel"` // OBS-028-5: channel is more useful than provider for bridge
 }
 
 // NewSessionManager creates a session manager.
@@ -45,6 +63,169 @@ func NewSessionManager(cfg BridgeConfig, tmux *TmuxBridge) *SessionManager {
 		tmux:     tmux,
 		registry: NewProviderRegistry(),
 		projects: NewProjectRegistry(),
+	}
+}
+
+// SetStore attaches a PG bridge session store for dual-write persistence.
+// Must be called before CreateSession if PG persistence is desired.
+func (m *SessionManager) SetStore(s store.BridgeSessionStore) {
+	m.pgStore = s
+}
+
+// SetAuditWriter attaches an audit writer for lifecycle event logging.
+func (m *SessionManager) SetAuditWriter(w *AuditWriter) {
+	m.audit = w
+}
+
+// emitAudit records a lifecycle event via the audit writer (best-effort).
+func (m *SessionManager) emitAudit(bs *BridgeSession, action string, detail map[string]interface{}) {
+	if m.audit == nil {
+		return
+	}
+	event := AuditEvent{
+		OwnerID:   bs.TenantID,
+		SessionID: bs.ID,
+		ActorID:   bs.OwnerActorID,
+		Action:    action,
+		RiskMode:  string(bs.RiskMode),
+		Detail:    detail,
+	}
+	if err := m.audit.Write(event); err != nil {
+		slog.Warn("audit write failed", "action", action, "session", bs.ID, "error", err)
+	}
+}
+
+// LoadFromStore recovers non-stopped sessions from PG on startup.
+// Recovered sessions are marked as "disconnected" since tmux is gone after restart.
+func (m *SessionManager) LoadFromStore(ctx context.Context) (int, error) {
+	if m.pgStore == nil {
+		return 0, nil
+	}
+
+	recs, err := m.pgStore.ListActive(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("load bridge sessions from store: %w", err)
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	loaded := 0
+	for _, rec := range recs {
+		if _, exists := m.sessions[rec.ID]; exists {
+			continue // already in memory
+		}
+
+		bs := bridgeSessionFromRecord(rec, rec.OwnerID)
+		bs.Status = SessionStateDisconnected
+		s := NewSession(bs)
+		m.sessions[rec.ID] = s
+		loaded++
+	}
+
+	if loaded > 0 {
+		slog.Info("recovered bridge sessions from PG", "count", loaded)
+	}
+	return loaded, nil
+}
+
+// persistSession does a best-effort dual-write of session state to PG.
+func (m *SessionManager) persistSession(ctx context.Context, bs *BridgeSession) {
+	if m.pgStore == nil {
+		return
+	}
+	rec := bridgeSessionRecordFromSession(bs)
+	if err := m.pgStore.Upsert(ctx, rec); err != nil {
+		slog.Warn("persist bridge session to PG failed (best-effort)",
+			"session", bs.ID, "error", err)
+	}
+}
+
+// persistStatus does a best-effort status update in PG.
+func (m *SessionManager) persistStatus(ctx context.Context, id string, status string, stoppedAt *time.Time) {
+	if m.pgStore == nil {
+		return
+	}
+	if err := m.pgStore.UpdateStatus(ctx, id, status, stoppedAt); err != nil {
+		slog.Warn("persist bridge session status to PG failed (best-effort)",
+			"session", id, "error", err)
+	}
+}
+
+// persistRiskMode does a best-effort risk mode update in PG.
+func (m *SessionManager) persistRiskMode(ctx context.Context, id string, mode string, caps json.RawMessage) {
+	if m.pgStore == nil {
+		return
+	}
+	if err := m.pgStore.UpdateRiskMode(ctx, id, mode, caps); err != nil {
+		slog.Warn("persist bridge session risk mode to PG failed (best-effort)",
+			"session", id, "error", err)
+	}
+}
+
+// bridgeSessionRecordFromSession converts a BridgeSession to a store record.
+func bridgeSessionRecordFromSession(bs *BridgeSession) *store.BridgeSessionRecord {
+	capsJSON, _ := json.Marshal(bs.Capabilities)
+	approverJSON, _ := json.Marshal(bs.ApproverACL)
+	notifyJSON, _ := json.Marshal(bs.NotifyACL)
+
+	return &store.BridgeSessionRecord{
+		ID:                   bs.ID,
+		OwnerID:              bs.TenantID,
+		AgentType:            string(bs.AgentType),
+		TmuxTarget:           bs.TmuxTarget,
+		ProjectPath:          bs.ProjectPath,
+		WorkspaceFingerprint: bs.WorkspaceFingerprint,
+		Status:               string(bs.Status),
+		RiskMode:             string(bs.RiskMode),
+		Capabilities:         capsJSON,
+		OwnerActorID:         bs.OwnerActorID,
+		ApproverACL:          approverJSON,
+		NotifyACL:            notifyJSON,
+		UserID:               bs.UserID,
+		Channel:              bs.Channel,
+		ChatID:               bs.ChatID,
+		InteractiveEligible:  bs.InteractiveEligible,
+		HookSecret:           bs.HookSecret,
+		CreatedAt:            bs.CreatedAt,
+		LastActivityAt:       bs.LastActivityAt,
+	}
+}
+
+// bridgeSessionFromRecord converts a store record back to a BridgeSession.
+func bridgeSessionFromRecord(rec *store.BridgeSessionRecord, tenantID string) BridgeSession {
+	var caps SessionCapabilities
+	if len(rec.Capabilities) > 0 {
+		_ = json.Unmarshal(rec.Capabilities, &caps)
+	}
+	var approverACL, notifyACL []string
+	if len(rec.ApproverACL) > 0 {
+		_ = json.Unmarshal(rec.ApproverACL, &approverACL)
+	}
+	if len(rec.NotifyACL) > 0 {
+		_ = json.Unmarshal(rec.NotifyACL, &notifyACL)
+	}
+
+	return BridgeSession{
+		ID:                   rec.ID,
+		AgentType:            AgentProviderType(rec.AgentType),
+		TmuxTarget:           rec.TmuxTarget,
+		ProjectPath:          rec.ProjectPath,
+		WorkspaceFingerprint: rec.WorkspaceFingerprint,
+		Status:               SessionState(rec.Status),
+		RiskMode:             RiskMode(rec.RiskMode),
+		Capabilities:         caps,
+		OwnerActorID:         rec.OwnerActorID,
+		ApproverACL:          approverACL,
+		NotifyACL:            notifyACL,
+		TenantID:             tenantID,
+		UserID:               rec.UserID,
+		Channel:              rec.Channel,
+		ChatID:               rec.ChatID,
+		InteractiveEligible:  rec.InteractiveEligible,
+		HookSecret:           rec.HookSecret,
+		CreatedAt:            rec.CreatedAt,
+		LastActivityAt:       rec.LastActivityAt,
 	}
 }
 
@@ -201,6 +382,16 @@ func (m *SessionManager) CreateSession(ctx context.Context, opts CreateSessionOp
 	m.mu.Lock()
 	m.sessions[sessionID] = s
 	m.mu.Unlock()
+	atomic.AddInt64(&m.lifetimeCreated, 1)
+
+	// Best-effort PG dual-write
+	m.persistSession(ctx, session)
+	m.emitAudit(session, "session.created", map[string]interface{}{
+		"agent_type":  string(session.AgentType),
+		"project":     session.ProjectPath,
+		"risk_mode":   string(session.RiskMode),
+		"agent_role":  session.AgentRole,
+	})
 
 	return session, nil
 }
@@ -275,6 +466,15 @@ func (m *SessionManager) KillSession(ctx context.Context, sessionID, actorID str
 	}
 
 	s.ForceStop()
+	atomic.AddInt64(&m.lifetimeKilled, 1)
+
+	// Best-effort PG dual-write
+	now := time.Now()
+	m.persistStatus(ctx, sessionID, string(SessionStateStopped), &now)
+	m.emitAudit(&data, "session.killed", map[string]interface{}{
+		"killed_by": actorID,
+	})
+
 	return nil
 }
 
@@ -307,7 +507,21 @@ func (m *SessionManager) UpdateRiskMode(ctx context.Context, sessionID string, m
 		}
 	}
 
-	return s.UpdateRiskMode(mode, actorID)
+	if err := s.UpdateRiskMode(mode, actorID); err != nil {
+		return err
+	}
+
+	// Best-effort PG dual-write
+	newCaps := CapabilitiesForRisk(mode)
+	capsJSON, _ := json.Marshal(newCaps)
+	m.persistRiskMode(ctx, sessionID, string(mode), capsJSON)
+	m.emitAudit(&data, "session.risk_changed", map[string]interface{}{
+		"old_risk": string(data.RiskMode),
+		"new_risk": string(mode),
+		"actor":    actorID,
+	})
+
+	return nil
 }
 
 // TransitionSession changes session state and drains the message queue
@@ -332,6 +546,14 @@ func (m *SessionManager) TransitionSession(ctx context.Context, sessionID string
 	if wasBusy && (newState == SessionStateActive || newState == SessionStateIdle) {
 		m.drainQueue(ctx, s)
 	}
+
+	// Best-effort PG dual-write
+	var stoppedAt *time.Time
+	if newState == SessionStateStopped {
+		now := time.Now()
+		stoppedAt = &now
+	}
+	m.persistStatus(ctx, sessionID, string(newState), stoppedAt)
 
 	return nil
 }
@@ -596,6 +818,16 @@ func (m *SessionManager) CleanupStopped(maxAge time.Duration) int {
 			removed++
 		}
 	}
+
+	// Best-effort PG cleanup
+	if m.pgStore != nil && removed > 0 {
+		if n, err := m.pgStore.DeleteOlderThan(context.Background(), cutoff); err != nil {
+			slog.Warn("PG bridge session cleanup failed (best-effort)", "error", err)
+		} else if n > 0 {
+			slog.Info("cleaned up old bridge sessions from PG", "count", n)
+		}
+	}
+
 	return removed
 }
 
@@ -617,6 +849,47 @@ func (m *SessionManager) allSessions() []BridgeSession {
 		result = append(result, s.Data())
 	}
 	return result
+}
+
+// Metrics returns an observable snapshot of bridge session state.
+func (m *SessionManager) Metrics() BridgeMetrics {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	metrics := BridgeMetrics{
+		ByRiskMode:  make(map[string]int),
+		ByAgentRole: make(map[string]int),
+		ByChannel:   make(map[string]int),
+	}
+
+	for _, s := range m.sessions {
+		d := s.Data()
+		if d.Status != SessionStateStopped {
+			metrics.ActiveSessions++
+		}
+		risk := string(d.RiskMode)
+		if risk == "" {
+			risk = "read"
+		}
+		metrics.ByRiskMode[risk]++
+
+		role := d.AgentRole
+		if role == "" {
+			role = "(bare)"
+		}
+		metrics.ByAgentRole[role]++
+
+		ch := d.Channel
+		if ch == "" {
+			ch = "(unknown)"
+		}
+		metrics.ByChannel[ch]++
+	}
+
+	metrics.TotalCreated = int(atomic.LoadInt64(&m.lifetimeCreated))
+	metrics.TotalKilled = int(atomic.LoadInt64(&m.lifetimeKilled))
+
+	return metrics
 }
 
 // checkAdmission validates resource limits before creating a session.

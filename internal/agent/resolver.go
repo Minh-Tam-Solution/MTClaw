@@ -40,6 +40,9 @@ type ResolverDeps struct {
 	// Provider fallback chain (ordered provider names for fallback)
 	ProviderChain []string
 
+	// Health tracker for provider circuit breaker (nil = no health tracking)
+	HealthTracker *providers.ProviderHealthTracker
+
 	// Security
 	InjectionAction string // "log", "warn", "block", "off"
 	MaxMessageChars int
@@ -287,6 +290,7 @@ func NewManagedResolver(deps ResolverDeps) ResolverFunc {
 			AgentType:         ag.AgentType,
 			Provider:          provider,
 			FallbackProvider:  fallbackProvider,
+			HealthTracker:     deps.HealthTracker,
 			Model:             ag.Model,
 			ContextWindow:     contextWindow,
 			MaxIterations:     maxIter,

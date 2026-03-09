@@ -108,6 +108,7 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 
 		// --- Sprint 6: Tenant cost guardrails (US-039, CTO-9: PostgreSQL-only) ---
 		// Sprint 7: Extracted to cost.CheckDailyLimit (CTO-14).
+		// Sprint 27: Added monthly token limit + warning threshold.
 		if tracingStore != nil {
 			exceeded, dailyCount, dailyLimit, err := cost.CheckDailyLimit(ctx, tracingStore)
 			if err == nil && exceeded {
@@ -121,6 +122,23 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 				})
 				return
 			}
+
+			// Monthly token limit check (Sprint 27)
+			tokenExceeded, totalTokens, tokenLimit, tokenErr := cost.CheckMonthlyTokenLimit(ctx, tracingStore)
+			if tokenErr == nil && tokenExceeded {
+				slog.Warn("tenant monthly token limit exceeded",
+					"tokens", totalTokens, "limit", tokenLimit, "channel", msg.Channel)
+				msgBus.PublishOutbound(bus.OutboundMessage{
+					Channel:  msg.Channel,
+					ChatID:   msg.ChatID,
+					Content:  "⚠️ Đã đạt giới hạn token tháng này. Vui lòng liên hệ admin để nâng giới hạn.",
+					Metadata: msg.Metadata,
+				})
+				return
+			}
+
+			// Warning threshold check (best-effort, log only)
+			cost.CheckWarningThreshold(ctx, tracingStore)
 		}
 
 		// Build session key based on scope config (matching TS buildAgentPeerSessionKey).

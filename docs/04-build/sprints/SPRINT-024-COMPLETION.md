@@ -65,3 +65,33 @@
 - [x] All existing tests pass (no regression)
 - [x] 11+ new tests for claude-cli provider + fallback logic
 - [x] `doctor` command checks claude CLI availability (CTO-R2-5)
+
+---
+
+## Coder Handoff Notes
+
+### Key Files Modified
+
+| File | LOC | What Changed |
+|------|-----|-------------|
+| `internal/providers/claude_cli.go` | 189 | New provider: subprocess spawn, JSON parse, env strip |
+| `internal/providers/claude_cli_test.go` | 165 | 11 tests: parse response, env filter, error cases |
+| `internal/agent/loop.go` | +45 | Fallback logic: retryable error → fallback provider, strip tools |
+| `internal/agent/resolver.go` | +20 | Wire `FallbackProvider` from `ProviderChain` config |
+| `internal/config/config.go` | +15 | `ClaudeCLI` + `ProviderChain` config structs |
+| `internal/config/config_load.go` | +12 | Env var loading for `MTCLAW_CLAUDE_CLI_*` |
+| `cmd/gateway_providers.go` | +10 | Register `claude-cli` in provider registry |
+| `cmd/doctor.go` | +25 | Claude CLI binary + version + OAuth check |
+
+### Architecture Decisions
+
+- **Subprocess model**: Claude CLI runs as child process (`os/exec.Command`), not SDK. Avoids Go SDK dependency, uses official CLI binary.
+- **Single-turn only**: `--max-turns 1` prevents CLI from using its own tools. MTClaw controls the tool loop.
+- **Env sanitization**: `filterEnv()` strips API keys from child process environment to prevent credential leakage.
+- **Fallback guard**: No fallback at iteration=1 with tools — prevents partial tool calls from confusing fallback provider.
+
+### Integration Points for Sprint 25+
+
+- `loop.go` fallback path emits `emitFallbackLLMSpan()` — tracing already captures primary error + fallback provider
+- `resolver.go` reads `ProviderChain` from config — same chain used for all agents (per-agent chain override not implemented yet)
+- Docker deployment needs `claude` binary + OAuth token (`~/.claude/`) — addressed in Sprint 25

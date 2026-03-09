@@ -34,9 +34,11 @@ FROM alpine:3.22
 
 ARG ENABLE_SANDBOX=false
 ARG ENABLE_CLAUDE_CLI=false
+ARG ENABLE_BRIDGE=false
 
 # Install ca-certificates + wget (healthcheck) + optionally docker-cli (sandbox)
 # + optionally nodejs+npm+claude-cli (fallback provider via Claude Max subscription)
+# + optionally tmux (bridge terminal sessions)
 RUN set -eux; \
     apk add --no-cache ca-certificates wget; \
     if [ "$ENABLE_SANDBOX" = "true" ]; then \
@@ -46,6 +48,9 @@ RUN set -eux; \
         apk add --no-cache nodejs npm; \
         npm install -g @anthropic-ai/claude-code; \
         npm cache clean --force; \
+    fi; \
+    if [ "$ENABLE_BRIDGE" = "true" ]; then \
+        apk add --no-cache tmux; \
     fi
 
 # Non-root user
