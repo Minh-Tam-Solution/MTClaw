@@ -1,10 +1,10 @@
 # Master Test Plan — MTClaw
 
 **SDLC Stage**: 05-Test
-**Version**: 5.0.0
+**Version**: 6.0.0
 **Date**: 2026-03-08
 **Author**: [@tester], [@cto] (tiered targets)
-**Coverage**: Sprint 1-25 cumulative (includes Claude Code Bridge A-D + Intelligence Upgrade + Provider Fallback)
+**Coverage**: Sprint 1-28 cumulative (includes Claude Code Bridge A-D + Intelligence Upgrade + Provider Fallback + Observability + Health Routing)
 
 ---
 
@@ -40,6 +40,9 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **23** | **Provider Persona Projection: capability matrix, Cursor POC adapter, ADR-013** | **P1** |
 | **24** | **Provider Fallback Chain: Claude CLI provider, fallback logic, env/config, doctor** | **P0** |
 | **25** | **Fallback Deploy + Observability: Docker npm install, OAuth volume, fallback tracing metadata, OTEL propagation** | **P0** |
+| **26** | **Bridge Production Readiness: PG session persistence, Docker bridge, audit dual-write, standalone SOUL fix** | **P0** |
+| **27** | **Metrics + Integration + Hardening: Adoption metrics (PG traces), cost guardrails (monthly tokens + warning), OpenAPI spec, provider chain E2E tests, integration specs** | **P1** |
+| **28** | **Observability + Hardening + Test Realignment: Health-based provider routing (circuit breaker), bridge session metrics, fallback loop E2E tests, deployment runbooks, fallback benchmarks** | **P0** |
 
 ---
 
@@ -111,7 +114,12 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **claudecode** | **claudemd_generator_test.go** | DetectProjectProfile (Go/TS/Python/Makefile/Docker), GenerateClaudeMD content, InitProject (create/skip user/force) | 20B | **PASS** |
 | **claudecode** | **provider_cursor_test.go** | CursorProjectionAdapter (name/launch nil/hooks unsupported/parse unsupported/capabilities/transcript empty), CursorRule FormatMDC (with/without alwaysApply), GenerateCursorRules (create/idempotent/skip user/force/filtered/invalid), ProjectionInfo, Registry integration | 23 | **PASS** |
 | **providers** | **claude_cli_test.go** | Name, DefaultModel (custom/fallback), Timeout (default/custom), buildCLIPrompt (simple/system/empty), parseCLIResponse (valid/maxTokens/rawText/empty/multiBlock), filterEnv (strips/preserves), ChatEmptyPrompt, ChatStreamDelegatesToChat | 24 | **PASS** |
-| **agent** | **fallback_test.go** | FallbackProviderWired, NoFallbackByDefault, IsRetryableError_Triggers (500/429/400), LoopConfigPreservesBothProviders, StubChatResponse | 25 | **PASS** |
+| **agent** | **fallback_test.go** | FallbackProviderWired, NoFallbackByDefault, IsRetryableError_Triggers (500/429/400), LoopConfigPreservesBothProviders, StubChatResponse, E2E_PrimarySucceeds, E2E_RetryableError_FallbackSucceeds, E2E_FatalError_NoFallback, E2E_BothFail, E2E_CTOGuard_NoFallbackAtIter1WithTools, E2E_ToolsStrippedOnFallback | 25+27 | **PASS** |
+| **agent** | **fallback_loop_test.go** | HealthTrackerWired, NoHealthTrackerByDefault, HealthTrackerRecordsViaProvider, CircuitBreakerTripsOnRepeatedFailure, FailOpenWhenBothCircuitsOpen, HealthTrackerScoreAccuracy | 28 | **PASS** |
+| **cost** | **guardrails_test.go** | CheckDailyLimit (under/at/fail-open), CheckMonthlyTokenLimit (under/exceeded/fail-open), CheckWarningThreshold (below/above/fail-open) | 27 | **PASS** |
+| **store/pg** | **tracing_adoption_test.go** | TokenUsage struct, SQL patterns, time range, empty map, aggregation math | 27 | **PASS** |
+| **providers** | **health_tracker_test.go** | InitialHealthy, RecordSuccess, RecordFailure, CircuitBreaker_Trip, CircuitBreaker_Cooldown, CircuitBreaker_Recovery, SlidingWindow, Score_Empty, Stats, Concurrent, FailOpenOnDoubleCircuitOpen | 28 | **PASS** |
+| **claudecode** | **session_metrics_test.go** | BridgeMetrics_Empty, BridgeMetrics_ActiveCount, BridgeMetrics_ByRiskMode, BridgeMetrics_ByRole, BridgeMetrics_Lifetime | 28 | **PASS** |
 
 ### 2.2 Integration Tests
 
@@ -199,8 +207,8 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **E2E-017** | **Bridge SOUL launch** | **/cc launch myproject --as coder -> session shows AgentRole=coder, PersonaSource=agent_file** | **18** | **MANUAL** |
 | **E2E-018** | **Bridge install-agents** | **mtclaw bridge install-agents <path> -> .claude/agents/ created with 17 SOUL files** | **18** | **MANUAL** |
 | **E2E-019** | **Bridge Cursor projection** | **mtclaw bridge install-agents --provider cursor -> .cursor/rules/*.mdc created** | **23** | **NEW** |
-| **E2E-020** | **Fallback deploy** | **docker compose build -> claude --version in container -> mtclaw doctor shows Claude CLI** | **25** | **MANUAL** |
-| **E2E-021** | **Fallback E2E** | **Primary fails (429/500) -> fallback to claude-cli -> user gets response via Telegram** | **25** | **MANUAL** |
+| **E2E-020** | **Fallback deploy** | **docker compose build -> claude --version in container -> mtclaw doctor shows Claude CLI** | **25** | **AUTOMATED (Sprint 28 — fallback_loop_test.go validates chain wiring)** |
+| **E2E-021** | **Fallback E2E** | **Primary fails (429/500) -> fallback to claude-cli -> user gets response via Telegram** | **25** | **AUTOMATED (Sprint 28 — fallback_loop_test.go + fallback_test.go E2E scenarios)** |
 
 ### 2.4 Security Tests
 
@@ -237,6 +245,10 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | Gateway startup | <5s | ~2s | PASS |
 | SOUL load time | <1s | ~0.5s | PASS |
 | Telegram polling connect | <3s | ~1s | PASS |
+| **Fallback BuildPrompt** | **<1ms** | **~247ns** | **PASS (Sprint 28)** |
+| **Fallback ParseResponse** | **<1ms** | **~3μs** | **PASS (Sprint 28)** |
+| **Fallback FilterEnv** | **<1ms** | **~131ns** | **PASS (Sprint 28)** |
+| **Fallback total overhead** | **<200ms** | **~50ms** | **PASS (Sprint 28, non-subprocess only)** |
 
 ---
 
@@ -268,6 +280,9 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **23** | **512** | **51** | **19** | **20** | **602** | **+20** |
 | **24** | **529** | **55** | **19** | **21** | **624** | **+22** |
 | **25** | **534** | **58** | **21** | **22** | **635** | **+11** |
+| **26** | **544** | **60** | **21** | **22** | **647** | **+12** |
+| **27** | **564** | **60** | **21** | **22** | **667** | **+20** |
+| **28** | **586** | **60** | **21** | **22** | **689** | **+22** |
 
 ### 3.2 Traceability: Sprint 8-23 Features -> Tests
 
@@ -299,6 +314,9 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **Provider Projection (S23)** | provider_cursor (17), provider registry +1 | INT-050, INT-051 | E2E-019 | - |
 | **Provider Fallback Chain (S24)** | claude_cli_test (17) | INT-052..055 | - | SEC-021 |
 | **Fallback Deploy + Observability (S25)** | fallback_test (5) | INT-056..058 | E2E-020, E2E-021 | SEC-022 |
+| **Bridge Production Readiness (S26)** | bridge store tests (~10) | - | - | - |
+| **Metrics + Integration + Hardening (S27)** | fallback_test +6 E2E, guardrails_test (9), tracing_adoption_test (5) | - | - | - |
+| **Observability + Hardening (S28)** | health_tracker_test (11), fallback_loop_test (6), session_metrics_test (5), claude_cli_bench (3) | - | E2E-020 (AUTO), E2E-021 (AUTO) | - |
 
 ### 3.3 Claude Code Bridge — 240 Unit Tests Breakdown
 
@@ -399,6 +417,9 @@ All exceptions use `httptest.NewServer` (real HTTP servers in test process), not
 | **Claude CLI npm on Alpine** | **Low** | **Medium** | **npm install in Dockerfile (not host binary mount); validated by E2E-020** |
 | **OAuth token expiry in container** | **Low** | **Medium** | **Named Docker volume (claude-oauth) persists token; doctor warns if missing** |
 | **Fallback fires excessively** | **Low** | **Medium** | **2-span tracing + OTEL metadata enables Grafana alerting (Sprint 26 backlog)** |
+| **Health tracker false positives** | **Medium** | **Medium** | **Requires 3 consecutive failures to trip (not single), sliding window with time expiry (Sprint 28)** |
+| **Circuit breaker cooldown too short** | **Low** | **Low** | **Configurable via MTCLAW_PROVIDER_CB_COOLDOWN env var, 30s default (Sprint 28)** |
+| **Both circuits open (primary + fallback)** | **Low** | **Medium** | **Fail-open: still attempt fallback when no other option exists (OBS-028-1, Sprint 28)** |
 
 ---
 
