@@ -64,7 +64,7 @@ Token counts are aggregated **only from `llm_call` spans** (not `agent` spans) t
 | Mode | InputPreview | OutputPreview |
 |------|:---:|:---:|
 | Normal | Not recorded | 500 characters max |
-| Verbose (`GOCLAW_TRACE_VERBOSE=1`) | Up to 50KB | 500 characters max |
+| Verbose (`MTCLAW_TRACE_VERBOSE=1`) | Up to 50KB | 500 characters max |
 
 Verbose mode is useful for debugging LLM conversations. Full input messages (including system prompt, history, and tool results) are serialized as JSON and stored in the span's `InputPreview` field, truncated at 50,000 characters.
 

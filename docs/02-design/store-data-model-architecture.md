@@ -142,7 +142,7 @@ flowchart LR
     end
 ```
 
-`GOCLAW_ENCRYPTION_KEY` accepts three formats:
+`MTCLAW_ENCRYPTION_KEY` accepts three formats:
 - **Hex**: 64 characters (decoded to 32 bytes)
 - **Base64**: 44 characters (decoded to 32 bytes)
 - **Raw**: 32 characters (32 bytes direct)

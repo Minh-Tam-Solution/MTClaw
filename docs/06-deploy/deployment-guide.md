@@ -136,7 +136,7 @@ On first start with managed mode, the entrypoint runs:
 docker-entrypoint.sh serve
   → mtclaw upgrade (schema migrations: 12 files)
   → mtclaw (main binary)
-    → Detects GOCLAW_BFLOW_API_KEY in env
+    → Detects MTCLAW_BFLOW_API_KEY in env
     → canAutoOnboard() = true (bflow-ai-platform in providerPriority)
     → Creates /app/data/config.json
     → Seeds database (agents, SOULs, teams)
@@ -168,7 +168,7 @@ The auto-generated `config.json` contains:
 |----------|-------|
 | Image | Built from `Dockerfile` (multi-stage: Go 1.25 → Alpine 3.22) |
 | Internal port | 18790 |
-| Host port | `${GOCLAW_PORT:-18790}` |
+| Host port | `${MTCLAW_PORT:-18790}` |
 | User | `mtclaw` (UID 1000, non-root) |
 | Memory limit | 1 GB |
 | CPU limit | 2.0 cores |

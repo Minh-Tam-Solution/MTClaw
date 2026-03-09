@@ -415,9 +415,9 @@ services:
         ENABLE_CLAUDE_CLI: "${ENABLE_CLAUDE_CLI:-false}"
     ports: ["18790:18790"]
     environment:
-      - GOCLAW_POSTGRES_DSN=postgres://mtclaw_app:${DB_PASS}@postgres:5432/mtclaw
-      - GOCLAW_ENCRYPTION_KEY=${ENCRYPTION_KEY}
-      - GOCLAW_BFLOW_API_KEY=${BFLOW_AI_API_KEY}
+      - MTCLAW_POSTGRES_DSN=postgres://mtclaw_app:${DB_PASS}@postgres:5432/mtclaw
+      - MTCLAW_ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - MTCLAW_BFLOW_API_KEY=${BFLOW_AI_API_KEY}
       - MTCLAW_BFLOW_BASE_URL=http://bflow-ai-gateway-staging:8120/api/v1
       - BFLOW_TENANT_ID=mts
       - MTCLAW_BRIDGE_ENABLED=${MTCLAW_BRIDGE_ENABLED:-false}
@@ -508,7 +508,7 @@ volumes:
 ┌──────────────────────────────────────────────▼──────────────────┐
 │  LAYER 5: Encryption                                             │
 │  → config_secrets: AES-256-GCM (Go crypto/aes + crypto/cipher)  │
-│  → Encryption key from environment (GOCLAW_ENCRYPTION_KEY)       │
+│  → Encryption key from environment (MTCLAW_ENCRYPTION_KEY)       │
 │  → At-rest encryption for API keys, tokens, sensitive config     │
 │  → In-transit: TLS 1.3 for all external connections              │
 └─────────────────────────────────────────────────────────────────┘
@@ -612,7 +612,7 @@ Example: mts-abc123-01HQXYZ9876543210
 
 | Channel | Mode | Config | Status |
 |---------|------|--------|--------|
-| Telegram | Polling / Webhook | `GOCLAW_TELEGRAM_TOKEN` | Primary (Sprint 1+) |
+| Telegram | Polling / Webhook | `MTCLAW_TELEGRAM_TOKEN` | Primary (Sprint 1+) |
 | Zalo | OAuth2 + Polling | `MTCLAW_ZALO_*` vars | Phase 2 (Sprint 6+) |
 | MS Teams | Bot Framework + Webhook | `MTCLAW_MSTEAMS_*` vars | ADR-007 (Sprint 10+) |
 | Discord | — | — | Removed (ADR-006) |

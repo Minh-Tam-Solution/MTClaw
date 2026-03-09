@@ -49,10 +49,10 @@ flowchart TD
 
 | Lane | Concurrency | Env Override | Purpose |
 |------|:-----------:|-------------|---------|
-| `main` | 2 | `GOCLAW_LANE_MAIN` | Primary user chat sessions |
-| `subagent` | 4 | `GOCLAW_LANE_SUBAGENT` | Sub-agents spawned by the main agent |
-| `delegate` | 100 | `GOCLAW_LANE_DELEGATE` | Agent delegation executions |
-| `cron` | 1 | `GOCLAW_LANE_CRON` | Scheduled cron jobs (sequential to avoid conflicts) |
+| `main` | 2 | `MTCLAW_LANE_MAIN` | Primary user chat sessions |
+| `subagent` | 4 | `MTCLAW_LANE_SUBAGENT` | Sub-agents spawned by the main agent |
+| `delegate` | 100 | `MTCLAW_LANE_DELEGATE` | Agent delegation executions |
+| `cron` | 1 | `MTCLAW_LANE_CRON` | Scheduled cron jobs (sequential to avoid conflicts) |
 
 `GetOrCreate()` allows creating new lanes on demand with custom concurrency. All lane concurrency values are configurable via environment variables.
 

@@ -14,7 +14,7 @@
 | Claude CLI 2.x | Yes (for Claude Code bridge) | `claude --version` |
 | OAuth login | Yes (for Claude Code) | `ls ~/.claude/` |
 | MTClaw binary | Yes | `./mtclaw version` |
-| PostgreSQL | Managed mode only | `psql $GOCLAW_POSTGRES_DSN -c 'SELECT 1'` |
+| PostgreSQL | Managed mode only | `psql $MTCLAW_POSTGRES_DSN -c 'SELECT 1'` |
 
 ## Docker Deployment
 

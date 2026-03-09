@@ -476,7 +476,7 @@ flowchart TD
 
 ### Verbose Mode
 
-Enabled via the `GOCLAW_TRACE_VERBOSE=1` environment variable.
+Enabled via the `MTCLAW_TRACE_VERBOSE=1` environment variable.
 
 | Field | Normal Mode | Verbose Mode |
 |-------|-------------|--------------|

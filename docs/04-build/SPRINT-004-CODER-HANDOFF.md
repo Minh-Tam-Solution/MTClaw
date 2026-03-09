@@ -34,7 +34,7 @@ All Sprint 3 code is committed and verified (`go vet` + `go build` PASS):
 
 **Steps**:
 1. Create bot via BotFather (`/newbot`), save token
-2. Set `GOCLAW_TELEGRAM_TOKEN={token}` in `.env`
+2. Set `MTCLAW_TELEGRAM_TOKEN={token}` in `.env`
 3. Register commands with BotFather (`/setcommands`):
    ```
    start - Start MTClaw assistant
@@ -43,7 +43,7 @@ All Sprint 3 code is committed and verified (`go vet` + `go build` PASS):
    reset - Reset conversation
    status - Show current SOUL and session info
    ```
-4. Set `GOCLAW_TELEGRAM_POLLING=true` for local dev
+4. Set `MTCLAW_TELEGRAM_POLLING=true` for local dev
 5. Start gateway: `./mtclaw gateway run --standalone`
 6. Verify: send `/start` → bot responds with welcome
 
@@ -57,8 +57,8 @@ type TelegramConfig struct {
 
 **Env vars needed**:
 ```bash
-GOCLAW_TELEGRAM_TOKEN=     # BotFather token
-GOCLAW_TELEGRAM_POLLING=true  # use polling (not webhook) for dev
+MTCLAW_TELEGRAM_TOKEN=     # BotFather token
+MTCLAW_TELEGRAM_POLLING=true  # use polling (not webhook) for dev
 ```
 
 **Validation**:
@@ -412,13 +412,13 @@ DELETE FROM agents WHERE agent_key = 'itadmin' AND owner_id = 'mts';
 
 ```bash
 # Required env vars (add to .env):
-GOCLAW_TELEGRAM_TOKEN=          # From BotFather
-GOCLAW_TELEGRAM_POLLING=true    # Dev mode
-GOCLAW_BFLOW_API_KEY=aip_...    # Already provisioned
-GOCLAW_BFLOW_BASE_URL=http://ai-platform:8120/api/v1  # Local Docker
+MTCLAW_TELEGRAM_TOKEN=          # From BotFather
+MTCLAW_TELEGRAM_POLLING=true    # Dev mode
+MTCLAW_BFLOW_API_KEY=aip_...    # Already provisioned
+MTCLAW_BFLOW_BASE_URL=http://ai-platform:8120/api/v1  # Local Docker
 BFLOW_TENANT_ID=mts             # MTS tenant
-GOCLAW_PROVIDER=bflow-ai-platform
-GOCLAW_MODEL=qwen3:14b
+MTCLAW_PROVIDER=bflow-ai-platform
+MTCLAW_MODEL=qwen3:14b
 
 # Build + run:
 export PATH=$HOME/.local/go/bin:$PATH
@@ -450,7 +450,7 @@ curl http://localhost:8080/v1/agents  # 17 agents
 | `internal/channels/telegram/commands.go` | Add `/spec` case |
 | `cmd/gateway_consumers.go` | @mention routing + Layer A ExtraPrompt |
 | `Makefile` | Add `souls-validate` target |
-| `.env.example` | Add `GOCLAW_TELEGRAM_TOKEN`, `GOCLAW_TELEGRAM_POLLING` |
+| `.env.example` | Add `MTCLAW_TELEGRAM_TOKEN`, `MTCLAW_TELEGRAM_POLLING` |
 
 ## Files NOT to Modify
 

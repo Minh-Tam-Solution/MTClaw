@@ -54,7 +54,7 @@
 **So that** I can access governance-aware AI from my daily messaging app
 
 **Acceptance Criteria**:
-- [ ] Telegram bot registered via BotFather, token stored in `GOCLAW_TELEGRAM_TOKEN`
+- [ ] Telegram bot registered via BotFather, token stored in `MTCLAW_TELEGRAM_TOKEN`
 - [ ] Bot responds to `/start` with personalized welcome message
 - [ ] Default SOUL routing works (assistant SOUL, `is_default=true`)
 - [ ] Bot handles DM and group conversations
@@ -65,8 +65,8 @@
 
 **Implementation Notes**:
 - GoClaw already has Telegram channel infrastructure in `internal/channels/telegram/`
-- Config: `GOCLAW_TELEGRAM_TOKEN` env var → `config.Channels.Telegram.Token`
-- Webhook vs polling: use polling for dev (`GOCLAW_TELEGRAM_POLLING=true`), webhook for production
+- Config: `MTCLAW_TELEGRAM_TOKEN` env var → `config.Channels.Telegram.Token`
+- Webhook vs polling: use polling for dev (`MTCLAW_TELEGRAM_POLLING=true`), webhook for production
 - Bot commands to register with BotFather: `/start`, `/help`, `/spec`, `/reset`, `/status`
 
 ---
@@ -320,7 +320,7 @@ Refer to your SOUL.md persona for tone and boundaries.
 | Task | Owner | Output |
 |------|-------|--------|
 | Register Telegram bot (BotFather), configure token | [@coder] | Bot responding to `/start` |
-| Configure `GOCLAW_TELEGRAM_TOKEN` in `.env` | [@coder] | Env var set |
+| Configure `MTCLAW_TELEGRAM_TOKEN` in `.env` | [@coder] | Env var set |
 | Create `spec-factory/SKILL.md` | [@coder] | Skill file with schema + instructions |
 | Add `make souls-validate` target (CTO-3) | [@coder] | Char budget check |
 | Verify skills loader discovers spec-factory | [@coder] | `mtclaw skills list` shows it |

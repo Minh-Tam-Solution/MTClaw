@@ -89,10 +89,10 @@ Providers configured in `config.json` or loaded from DB (managed mode). DB provi
 ## Environment Setup
 
 ```bash
-cp .env.example .env    # Then fill in: GOCLAW_POSTGRES_DSN, GOCLAW_BFLOW_API_KEY, GOCLAW_TELEGRAM_TOKEN, GOCLAW_ENCRYPTION_KEY
+cp .env.example .env    # Then fill in: MTCLAW_POSTGRES_DSN, MTCLAW_BFLOW_API_KEY, MTCLAW_TELEGRAM_TOKEN, MTCLAW_ENCRYPTION_KEY
 ```
 
-Key env vars: `GOCLAW_POSTGRES_DSN`, `GOCLAW_BFLOW_API_KEY`, `GOCLAW_BFLOW_BASE_URL`, `BFLOW_TENANT_ID`, `GOCLAW_TELEGRAM_TOKEN`, `GOCLAW_PROVIDER` (default: `bflow-ai-platform`), `GOCLAW_MODEL` (default: `qwen3:14b`).
+Key env vars: `MTCLAW_POSTGRES_DSN`, `MTCLAW_BFLOW_API_KEY`, `MTCLAW_BFLOW_BASE_URL`, `BFLOW_TENANT_ID`, `MTCLAW_TELEGRAM_TOKEN`, `MTCLAW_PROVIDER` (default: `bflow-ai-platform`), `MTCLAW_MODEL` (default: `qwen3:14b`).
 
 ## CLI Subcommands
 

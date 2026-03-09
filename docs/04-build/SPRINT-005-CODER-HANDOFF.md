@@ -21,7 +21,7 @@ All Sprint 4 code is committed and verified (`go vet` + `go build` PASS):
 | Evidence metadata | `gateway_consumer.go` (lines 241-255) | ✅ TraceName + TraceTags |
 | IT Admin SOUL | `migrations/000012_seed_itadmin_soul.up.sql` | ✅ 17th SOUL |
 | souls-validate | `Makefile` (souls-validate target) | ✅ Frontmatter FAIL, char WARN |
-| Telegram polling | `.env.example` | ✅ GOCLAW_TELEGRAM_POLLING |
+| Telegram polling | `.env.example` | ✅ MTCLAW_TELEGRAM_POLLING |
 
 **Post-Review Fixes Applied**:
 - ISSUE-1: `/spec` case-sensitive prefix → `text[len("/spec"):]` (safe byte slice)
@@ -245,13 +245,13 @@ if len(goalRunes) > 200 {
 1. SSH to MTS VPS
 2. Set `.env` with real credentials:
    ```bash
-   GOCLAW_TELEGRAM_TOKEN=<from BotFather>
-   GOCLAW_TELEGRAM_POLLING=true
-   GOCLAW_BFLOW_API_KEY=<aip_c786...>
-   GOCLAW_BFLOW_BASE_URL=http://ai-platform:8120/api/v1
+   MTCLAW_TELEGRAM_TOKEN=<from BotFather>
+   MTCLAW_TELEGRAM_POLLING=true
+   MTCLAW_BFLOW_API_KEY=<aip_c786...>
+   MTCLAW_BFLOW_BASE_URL=http://ai-platform:8120/api/v1
    BFLOW_TENANT_ID=mts
-   GOCLAW_ENCRYPTION_KEY=<openssl rand -hex 32>
-   GOCLAW_POSTGRES_DSN=postgres://mtclaw:...@localhost:5432/mtclaw?sslmode=disable
+   MTCLAW_ENCRYPTION_KEY=<openssl rand -hex 32>
+   MTCLAW_POSTGRES_DSN=postgres://mtclaw:...@localhost:5432/mtclaw?sslmode=disable
    ```
 3. Deploy:
    ```bash

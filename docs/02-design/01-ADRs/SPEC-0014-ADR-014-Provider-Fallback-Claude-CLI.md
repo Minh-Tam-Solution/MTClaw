@@ -375,7 +375,7 @@ if chain := deps.ProviderChain; len(chain) > 1 {
 | CTO-502 | MEDIUM | ChatStream impl needed | `ChatStream` delegates to `Chat`, emits single chunk (section 3.1) |
 | CTO-503 | MEDIUM | `--no-input` flag doesn't exist | Removed from spec, use `-p` only (section 3.1) |
 | CTO-504 | MEDIUM | Missing `--max-turns 1` | Added to CLI invocation (section 3.1) |
-| CTO-505 | LOW | Env var prefix (GOCLAW_ vs MTCLAW_) | Codebase fully renamed to MTCLAW_ — consistent |
+| CTO-505 | LOW | Env var prefix (MTCLAW_ vs MTCLAW_) | Codebase fully renamed to MTCLAW_ — consistent |
 | CTO-506 | LOW | Effort estimate undercount | Updated to ~300-350 lines total |
 | CTO-507 | LOW | int→Duration conversion | Explicit `time.Duration(cfg.Timeout) * time.Second` |
 | CTO-R2-1 | BLOCKING | iteration=1 tool-strip gives wrong answer | Only fallback text-only when `iteration > 1` (section 3.3) |

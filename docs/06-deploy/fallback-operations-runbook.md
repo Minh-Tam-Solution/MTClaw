@@ -171,7 +171,7 @@ MTCLAW_CLAUDE_CLI_ENABLED=false
 
 Force a specific provider for all agents:
 ```bash
-GOCLAW_PROVIDER=openrouter  # Override default provider
+MTCLAW_PROVIDER=openrouter  # Override default provider
 ```
 
 Note: This overrides config.json but not per-agent DB settings.

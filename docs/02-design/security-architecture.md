@@ -124,7 +124,7 @@ The workspace is injected into tools via `WithToolWorkspace(ctx)` context inject
 
 ## 2. Encryption (Managed Mode)
 
-AES-256-GCM encryption for secrets stored in PostgreSQL. Key provided via `GOCLAW_ENCRYPTION_KEY` environment variable.
+AES-256-GCM encryption for secrets stored in PostgreSQL. Key provided via `MTCLAW_ENCRYPTION_KEY` environment variable.
 
 | What's Encrypted | Table | Column |
 |-----------------|-------|--------|

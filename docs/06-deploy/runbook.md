@@ -245,12 +245,12 @@ docker compose -f docker-compose.yml \
 #    → Update RequiredSchemaVersion in internal/upgrade/version.go
 #
 # 2. "No configuration found. Starting setup wizard..."
-#    → Check GOCLAW_BFLOW_API_KEY is set in .env
+#    → Check MTCLAW_BFLOW_API_KEY is set in .env
 #    → Verify bflow-ai-platform is in providerPriority (cmd/onboard_auto.go)
 #
 # 3. "connection refused" to postgres
 #    → Check postgres container is healthy: docker compose ps
-#    → Check GOCLAW_POSTGRES_DSN uses container hostname "postgres", not "localhost"
+#    → Check MTCLAW_POSTGRES_DSN uses container hostname "postgres", not "localhost"
 ```
 
 ### Telegram bot not responding
@@ -263,9 +263,9 @@ docker compose -f docker-compose.yml \
   logs mtclaw 2>&1 | grep -i telegram
 
 # Common issues:
-# 1. "401 Unauthorized" → Invalid GOCLAW_TELEGRAM_TOKEN
+# 1. "401 Unauthorized" → Invalid MTCLAW_TELEGRAM_TOKEN
 # 2. "409 Conflict" → Another bot instance is polling with same token
-# 3. No Telegram logs → GOCLAW_TELEGRAM_TOKEN not set or empty
+# 3. No Telegram logs → MTCLAW_TELEGRAM_TOKEN not set or empty
 ```
 
 ### AI-Platform not reachable

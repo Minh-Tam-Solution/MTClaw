@@ -503,7 +503,7 @@ func CheckDailyLimit(ctx context.Context, tracingStore store.TracingStore) (bool
         return false, 0, 0, err
     }
     limit := 500
-    if envLimit := os.Getenv("GOCLAW_TENANT_DAILY_REQUEST_LIMIT"); envLimit != "" {
+    if envLimit := os.Getenv("MTCLAW_TENANT_DAILY_REQUEST_LIMIT"); envLimit != "" {
         if parsed, parseErr := strconv.Atoi(envLimit); parseErr == nil && parsed > 0 {
             limit = parsed
         }
@@ -670,8 +670,8 @@ RAG client tests (Sprint 6 established pattern): mock HTTP responses for `POST /
 ### Environment Variables
 
 No new env vars required. Existing:
-- `GOCLAW_TENANT_DAILY_REQUEST_LIMIT` (Sprint 6, default 500)
-- `GOCLAW_BFLOW_BASE_URL`, `GOCLAW_BFLOW_API_KEY`, `BFLOW_TENANT_ID` (Sprint 3)
+- `MTCLAW_TENANT_DAILY_REQUEST_LIMIT` (Sprint 6, default 500)
+- `MTCLAW_BFLOW_BASE_URL`, `MTCLAW_BFLOW_API_KEY`, `BFLOW_TENANT_ID` (Sprint 3)
 
 ---
 

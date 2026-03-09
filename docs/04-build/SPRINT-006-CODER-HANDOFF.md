@@ -315,8 +315,8 @@ case "/teams":
 
 1. **Config**: Add to tenant config (or `.env`):
 ```
-GOCLAW_TENANT_MONTHLY_TOKEN_LIMIT=1000000   # 1M tokens/month
-GOCLAW_TENANT_DAILY_REQUEST_LIMIT=500       # 500 requests/day
+MTCLAW_TENANT_MONTHLY_TOKEN_LIMIT=1000000   # 1M tokens/month
+MTCLAW_TENANT_DAILY_REQUEST_LIMIT=500       # 500 requests/day
 ```
 
 2. **Tracking** (PostgreSQL — query traces table):

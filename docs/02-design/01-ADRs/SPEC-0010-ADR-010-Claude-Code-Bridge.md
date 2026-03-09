@@ -64,7 +64,7 @@ Team MTS uses Claude Code as primary coding tool. Currently, developers must sit
 
 ### D4. HookServer = separate from gateway
 
-- `127.0.0.1:18792` (localhost only, configurable via `GOCLAW_BRIDGE_HOOK_PORT`)
+- `127.0.0.1:18792` (localhost only, configurable via `MTCLAW_BRIDGE_HOOK_PORT`)
 - Different lifecycle and security model from gateway
 - Gateway starts HookServer if bridge enabled; also standalone via `mtclaw bridge serve`
 - Token-bucket rate limiting per session ID
@@ -74,8 +74,8 @@ Team MTS uses Claude Code as primary coding tool. Currently, developers must sit
 - Per-session secret (32 bytes `crypto/rand` hex)
 - `HMAC-SHA256(payload + nonce + timestamp, secret)`, 30s window
 - Nonce prefixed with sessionId
-- Secrets encrypted with AES-256-GCM (`GOCLAW_ENCRYPTION_KEY`, reusing `internal/crypto/aes.go`) before DB storage
-- Startup: fail if `GOCLAW_ENCRYPTION_KEY` missing when bridge is enabled
+- Secrets encrypted with AES-256-GCM (`MTCLAW_ENCRYPTION_KEY`, reusing `internal/crypto/aes.go`) before DB storage
+- Startup: fail if `MTCLAW_ENCRYPTION_KEY` missing when bridge is enabled
 
 ### D6. Async permission polling + fail-safe fallback
 

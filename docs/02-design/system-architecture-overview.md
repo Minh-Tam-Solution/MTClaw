@@ -146,7 +146,7 @@ flowchart TD
 
 | Aspect | Standalone | Managed |
 |--------|-----------|---------|
-| Config source | `config.json` + env vars | `config.json` + `GOCLAW_POSTGRES_DSN` |
+| Config source | `config.json` + env vars | `config.json` + `MTCLAW_POSTGRES_DSN` |
 | Storage | JSON files + SQLite (`~/.mtclaw/data/agents.db`) | PostgreSQL |
 | Agents | Defined in `config.json` `agents.list`, created eagerly at startup | `agents` table, lazy-resolved via `ManagedResolver` |
 | Agent store | `FileAgentStore` (filesystem + SQLite) | `PGAgentStore` |
@@ -347,10 +347,10 @@ flowchart TD
 
 | Lane | Concurrency | Env Override | Purpose |
 |------|:-----------:|-------------|---------|
-| `main` | 2 | `GOCLAW_LANE_MAIN` | Primary user chat sessions |
-| `subagent` | 4 | `GOCLAW_LANE_SUBAGENT` | Spawned subagents |
-| `delegate` | 100 | `GOCLAW_LANE_DELEGATE` | Agent delegation executions |
-| `cron` | 1 | `GOCLAW_LANE_CRON` | Scheduled cron jobs |
+| `main` | 2 | `MTCLAW_LANE_MAIN` | Primary user chat sessions |
+| `subagent` | 4 | `MTCLAW_LANE_SUBAGENT` | Spawned subagents |
+| `delegate` | 100 | `MTCLAW_LANE_DELEGATE` | Agent delegation executions |
+| `cron` | 1 | `MTCLAW_LANE_CRON` | Scheduled cron jobs |
 
 ### Session Queue Concurrency
 
@@ -400,13 +400,13 @@ Configuration is loaded from a JSON5 file with environment variable overlay. Sec
 ```mermaid
 flowchart TD
     A{Config path?} -->|--config flag| B[CLI flag path]
-    A -->|GOCLAW_CONFIG env| C[Env var path]
+    A -->|MTCLAW_CONFIG env| C[Env var path]
     A -->|default| D["config.json"]
 
     B & C & D --> LOAD["config.Load()"]
     LOAD --> S1["1. Set defaults"]
     S1 --> S2["2. Parse JSON5"]
-    S2 --> S3["3. Env var overlay<br/>(GOCLAW_*_API_KEY)"]
+    S2 --> S3["3. Env var overlay<br/>(MTCLAW_*_API_KEY)"]
     S3 --> S4["4. Apply computed defaults<br/>(context pruning, etc.)"]
     S4 --> READY[Config ready]
 ```
@@ -424,7 +424,7 @@ flowchart TD
 ### Secret Handling
 
 - Secrets exist only in env vars or `.env.local` -- never in `config.json`.
-- `GOCLAW_POSTGRES_DSN` is tagged `json:"-"` and cannot be read from the config file.
+- `MTCLAW_POSTGRES_DSN` is tagged `json:"-"` and cannot be read from the config file.
 - `MaskedCopy()` replaces API keys with `"***"` when returning config over WebSocket.
 - `StripSecrets()` removes secrets before writing config to disk.
 - Config hot-reload via `fsnotify` watcher with 300ms debounce.
