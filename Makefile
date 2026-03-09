@@ -57,7 +57,7 @@ souls-validate:
 	@echo "SOUL validation passed."
 
 # Docker Compose
-COMPOSE = docker compose -f docker-compose.yml -f docker-compose.managed.yml -f docker-compose.selfservice.yml
+COMPOSE = docker compose -f docker-compose.yml -f docker-compose.managed.yml -f docker-compose.mts.yml -f docker-compose.selfservice.yml
 
 up:
 	$(COMPOSE) up -d --build
