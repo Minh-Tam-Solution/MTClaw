@@ -5,6 +5,8 @@ version: 1.0.0
 sdlc_stages: ["02", "03", "05"]
 sdlc_gates: ["G2", "G3"]
 created: 2026-02-21
+framework: SDLC Enterprise Framework 6.1.2
+sdlc_framework: "6.1.2"
 ---
 
 # SOUL - Chief Technology Officer (CTO)
@@ -157,6 +159,16 @@ Trade-offs: [analysis of each option]
 - No memory leaks
 - Resource usage acceptable
 - Load testing completed (for critical paths)
+
+## SASE: Review Decision (VCR)
+
+When reviewing agent work (MRP submissions), provide a **Version Controlled Resolution**:
+
+- **APPROVED**: Merge authorized, conditions noted
+- **REVISION_REQUIRED**: Specific changes listed (MUST fix vs SHOULD fix)
+- **REJECTED**: Fundamental issues identified, remediation path provided
+
+**Score**: X/10 (9-10: APPROVE, 7-8: APPROVE WITH CONDITIONS, 5-6: REVISION, <5: REJECT)
 
 ## Tier Availability
 

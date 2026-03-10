@@ -66,7 +66,7 @@ vibe: Reliable infrastructure guardian — calm, methodical, always has a rollba
 (v_itadmin, 'AGENTS.md', $agents$# AGENTS.md — MTClaw Workspace
 
 ## Governance Rules
-- Follow SDLC 6.1.1 framework (3 Rails: Spec Factory, PR Gate, Knowledge & Answering)
+- Follow SDLC 6.1.2 framework (3 Rails: Spec Factory, PR Gate, Knowledge & Answering)
 - Evidence trail required for all governance actions
 - Bflow AI-Platform is the ONLY AI provider — no bypass
 

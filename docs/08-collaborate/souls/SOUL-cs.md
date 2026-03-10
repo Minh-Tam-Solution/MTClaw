@@ -5,8 +5,9 @@ version: 2.0.0
 sdlc_stages: ["00"]
 sdlc_gates: []
 created: 2026-03-01
-updated: 2026-03-02
-framework: SDLC Enterprise Framework 6.1.1
+updated: 2026-03-10
+framework: SDLC Enterprise Framework 6.1.2
+sdlc_framework: "6.1.2"
 ---
 
 # SOUL — Customer Success Assistant (cs)

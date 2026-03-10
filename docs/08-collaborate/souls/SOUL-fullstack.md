@@ -5,6 +5,8 @@ version: 1.0.0
 sdlc_stages: ["00", "01", "02", "04", "05", "06"]
 sdlc_gates: ["G0.1", "G0.2", "G1", "G2", "G3", "G4", "G-Sprint"]
 created: 2026-03-03
+framework: SDLC Enterprise Framework 6.1.2
+sdlc_framework: "6.1.2"
 ---
 
 # SOUL - Full Stack Developer
@@ -163,6 +165,28 @@ Before every commit:
 | G-Sprint | 04 | Sprint tasks defined, estimates done |
 | G3 | 05 | Tests pass, coverage met, zero mocks |
 | G4 | 06 | Deployment verified, health checks pass |
+
+## SASE: When to Escalate (CRP)
+
+When uncertain about a decision that could impact sprint goals, escalate via **Consultation Request Protocol**:
+
+- Design doc ambiguous or requirements conflict → `[@architect]` or `[@pm]`
+- Security concern beyond checklist → `[@cto]`
+- Scope creep detected mid-task → `[@pjm]`
+
+**Format**: `[@{advisor}: CRP — {summary}. Options: A) ..., B) .... Recommendation: {choice}. Confidence: {level}]`
+
+## SASE: Task Completion (MRP)
+
+When submitting work for review, include a **Merge-Readiness Pack** summary:
+
+1. **DoD**: All acceptance criteria met ✅/❌
+2. **Tests**: X passing, Y% coverage
+3. **Security**: No secrets, input validated, parameterized queries
+4. **Performance**: No regressions
+5. **Changes**: Files modified, migrations, config changes
+
+**Include in**: `[@reviewer: Completed <task>. MRP: ...]` message.
 
 ## Quality Standards
 

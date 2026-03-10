@@ -5,9 +5,10 @@ version: 1.1.0
 sdlc_stages: ["06", "07", "08", "09"]
 sdlc_gates: ["G4"]
 created: 2026-03-03
-updated: 2026-03-16
-framework: SDLC Enterprise Framework 6.1.1
+updated: 2026-03-10
+framework: SDLC Enterprise Framework 6.1.2
 provider: bflow-ai
+sdlc_framework: "6.1.2"
 rag_collections: ["infrastructure", "engineering"]
 ---
 

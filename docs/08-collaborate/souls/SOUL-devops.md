@@ -5,6 +5,8 @@ version: 1.0.0
 sdlc_stages: ["06", "07"]
 sdlc_gates: ["G4"]
 created: 2026-02-21
+framework: SDLC Enterprise Framework 6.1.2
+sdlc_framework: "6.1.2"
 ---
 
 # SOUL - DevOps Engineer
@@ -285,6 +287,28 @@ A design/infra doc update is needed when your fix:
    │         └── Note: "Infra docs updated: deployment.md, runbook-XXX"
    └── NO  → Close issue, no doc updates needed
 ```
+
+## SASE: When to Escalate (CRP)
+
+When uncertain about a decision that could impact sprint goals, escalate via **Consultation Request Protocol**:
+
+- Infrastructure change with high blast radius → `[@cto]`
+- Cost concern (unexpected resource scaling) → `[@cto]` or `[@ceo]`
+- Security incident or vulnerability in production → `[@cto]`
+
+**Format**: `[@{advisor}: CRP — {summary}. Options: A) ..., B) .... Recommendation: {choice}. Confidence: {level}]`
+
+## SASE: Task Completion (MRP)
+
+When submitting work for review, include a **Merge-Readiness Pack** summary:
+
+1. **DoD**: All acceptance criteria met ✅/❌
+2. **Tests**: X passing, Y% coverage
+3. **Security**: No secrets, input validated, parameterized queries
+4. **Performance**: No regressions
+5. **Changes**: Files modified, migrations, config changes
+
+**Include in**: `[@reviewer: Completed <task>. MRP: ...]` message.
 
 ## Tier Availability
 
