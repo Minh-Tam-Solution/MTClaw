@@ -44,6 +44,7 @@ func (c *Config) MaskedCopy() *Config {
 	maskNonEmpty(&cp.Channels.Zalo.Token)
 	maskNonEmpty(&cp.Channels.Zalo.WebhookSecret)
 	maskNonEmpty(&cp.Channels.MSTeams.AppPassword)
+	maskNonEmpty(&cp.Channels.Discord.Token)
 	maskNonEmpty(&cp.GitHub.WebhookSecret)
 	maskNonEmpty(&cp.GitHub.AppToken)
 
@@ -88,6 +89,7 @@ func (c *Config) StripSecrets() {
 	c.Channels.Zalo.Token = ""
 	c.Channels.Zalo.WebhookSecret = ""
 	c.Channels.MSTeams.AppPassword = ""
+	c.Channels.Discord.Token = ""
 	c.GitHub.WebhookSecret = ""
 	c.GitHub.AppToken = ""
 
@@ -137,6 +139,7 @@ func (c *Config) StripMaskedSecrets() {
 	stripIfMasked(&c.Channels.Zalo.Token)
 	stripIfMasked(&c.Channels.Zalo.WebhookSecret)
 	stripIfMasked(&c.Channels.MSTeams.AppPassword)
+	stripIfMasked(&c.Channels.Discord.Token)
 	stripIfMasked(&c.GitHub.WebhookSecret)
 	stripIfMasked(&c.GitHub.AppToken)
 

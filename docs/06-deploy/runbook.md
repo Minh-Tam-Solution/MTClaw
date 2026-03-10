@@ -1,11 +1,11 @@
 ---
 title: MTClaw Operations Runbook
-version: 1.0.0
+version: 1.1.0
 sdlc_stage: "06-deploy"
 sdlc_version: "6.1.1"
 status: active
 created: 2026-03-03
-updated: 2026-03-03
+updated: 2026-03-10
 owner: "@devops"
 ---
 
@@ -15,7 +15,7 @@ owner: "@devops"
 
 ```bash
 # Set compose alias (add to ~/.bashrc)
-alias mtc='cd /home/nqh/shared/MTClaw && docker compose -f docker-compose.yml -f docker-compose.managed.yml -f docker-compose.mts.yml'
+alias mtc='cd /home/nqh/shared/MTClaw && docker compose -f docker-compose.yml -f docker-compose.managed.yml -f docker-compose.mts.yml -f docker-compose.selfservice.yml'
 
 # Common operations
 mtc ps                     # Status
@@ -110,11 +110,32 @@ docker exec mtclaw-postgres-1 pg_isready -U mtclaw
 # Expected: /var/run/postgresql:5432 - accepting connections
 ```
 
-### AI-Platform reachability (from gateway container)
+### AI-Platform reachability
 
 ```bash
+# From gateway container (Docker mode — uses ai-net network)
 docker exec mtclaw-mtclaw-1 wget -qO- http://ai-platform:8120/health
+
+# From host (dev mode — uses localhost port mapping)
+curl -sf http://localhost:8120/health
 ```
+
+### Discord bot health (if MTCLAW_DISCORD_TOKEN set)
+
+Check gateway logs for Discord connection status:
+
+```bash
+docker logs mtclaw-mtclaw-1 2>&1 | grep -i discord
+# Expected: "discord bot connected" with bot_id and bot_name
+# Error: "discord gateway open" = token invalid or intents not enabled
+```
+
+Verify bot is online in Discord server (shows green dot in member list).
+
+**Common issues:**
+- `401 Unauthorized`: Invalid bot token
+- Empty messages received: Message Content Intent not enabled in Developer Portal
+- No guild messages: Guild ID not in `guild_ids` config (security: empty = no guilds)
 
 ### Container resource usage
 
@@ -242,7 +263,7 @@ docker compose -f docker-compose.yml \
 
 # Common issues:
 # 1. "Database schema (vN) is newer than this binary"
-#    → Update RequiredSchemaVersion in internal/upgrade/version.go
+#    → Update RequiredSchemaVersion in internal/upgrade/version.go (currently 19)
 #
 # 2. "No configuration found. Starting setup wizard..."
 #    → Check MTCLAW_BFLOW_API_KEY is set in .env
@@ -299,12 +320,24 @@ docker compose -f docker-compose.yml \
   restart mtclaw
 ```
 
+### Bridge health (if bridge enabled)
+
+```bash
+# From host
+curl -sf http://localhost:18792/health
+
+# List active bridge sessions via Telegram
+# /cc sessions
+```
+
 ## 8. Port Allocation
 
 | Port | Service | Container | Status |
 |------|---------|-----------|--------|
-| 18790 | MTClaw Gateway | mtclaw-mtclaw-1 | Pending IT Admin |
-| 5470 | PostgreSQL | mtclaw-postgres-1 | Pending IT Admin |
+| 18790 | MTClaw Gateway | mtclaw-mtclaw-1 | Allocated |
+| 18791 | Web Dashboard | mtclaw-mtclaw-ui-1 | Allocated |
+| 18792 | Bridge Hook Server | mtclaw-mtclaw-1 | Allocated |
+| 5470 | PostgreSQL | mtclaw-postgres-1 | Allocated |
 
 Contact: dvhiep@nqh.com.vn (IT Admin)
 Reference: `/home/nqh/shared/models/core/docs/admin/PORT_ALLOCATION_MANAGEMENT.md`

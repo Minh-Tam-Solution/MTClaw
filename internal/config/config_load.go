@@ -122,6 +122,9 @@ func (c *Config) applyEnvOverrides() {
 	envStr("MSTEAMS_APP_PASSWORD", &c.Channels.MSTeams.AppPassword)
 	envStr("MSTEAMS_TENANT_ID", &c.Channels.MSTeams.TenantID)
 
+	// Discord Bot (Sprint 30 — ADR-006-Amendment)
+	envStr("MTCLAW_DISCORD_TOKEN", &c.Channels.Discord.Token)
+
 	// TTS secrets
 	envStr("MTCLAW_TTS_OPENAI_API_KEY", &c.Tts.OpenAI.APIKey)
 	envStr("MTCLAW_TTS_ELEVENLABS_API_KEY", &c.Tts.ElevenLabs.APIKey)
@@ -137,6 +140,9 @@ func (c *Config) applyEnvOverrides() {
 	}
 	if c.Channels.MSTeams.AppID != "" && c.Channels.MSTeams.AppPassword != "" && c.Channels.MSTeams.TenantID != "" {
 		c.Channels.MSTeams.Enabled = true
+	}
+	if c.Channels.Discord.Token != "" {
+		c.Channels.Discord.Enabled = true
 	}
 
 	// Allow overriding default provider/model

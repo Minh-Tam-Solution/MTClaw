@@ -425,7 +425,7 @@ func TestE2E_AuditTrail_EmptyChainReturnsError(t *testing.T) {
 
 func TestE2E_ChannelCleanup_RemovedChannelsDontExist(t *testing.T) {
 	removedDirs := []string{
-		"../../internal/channels/discord",
+		// "../../internal/channels/discord", // Re-added Sprint 30 (ADR-006-Amendment)
 		"../../internal/channels/feishu",
 		"../../internal/channels/whatsapp",
 	}

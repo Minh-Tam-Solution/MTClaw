@@ -5,6 +5,20 @@ type ChannelsConfig struct {
 	Telegram TelegramConfig `json:"telegram"`
 	Zalo     ZaloConfig     `json:"zalo"`
 	MSTeams  MSTeamsConfig  `json:"msteams"`
+	Discord  DiscordConfig  `json:"discord"`
+}
+
+// DiscordConfig holds Discord bot channel configuration.
+// Re-added Sprint 30 (ADR-006-Amendment) for Vietnamese dev team accessibility.
+// Token from env only: MTCLAW_DISCORD_TOKEN.
+type DiscordConfig struct {
+	Enabled        bool                `json:"enabled"`
+	Token          string              `json:"-"`                         // env only: MTCLAW_DISCORD_TOKEN
+	AllowFrom      FlexibleStringSlice `json:"allow_from,omitempty"`
+	DMPolicy       string              `json:"dm_policy,omitempty"`       // pairing|allowlist|open|disabled
+	GroupPolicy    string              `json:"group_policy,omitempty"`    // open|allowlist|disabled
+	RequireMention bool                `json:"require_mention,omitempty"`
+	GuildIDs       FlexibleStringSlice `json:"guild_ids,omitempty"`       // allowlisted guild IDs (empty = no guilds)
 }
 
 // MSTeamsConfig holds MS Teams Bot Framework channel configuration.

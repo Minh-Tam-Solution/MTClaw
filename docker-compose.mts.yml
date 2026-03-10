@@ -25,6 +25,8 @@ services:
       # Tenant cost guardrails
       - TENANT_MONTHLY_TOKEN_LIMIT=${TENANT_MONTHLY_TOKEN_LIMIT:-1000000}
       - TENANT_DAILY_REQUEST_LIMIT=${TENANT_DAILY_REQUEST_LIMIT:-5000}
+      # Discord Bot (Sprint 30)
+      - MTCLAW_DISCORD_TOKEN=${MTCLAW_DISCORD_TOKEN:-}
     volumes:
       - /home/nqh/shared:/home/nqh/shared
     networks:

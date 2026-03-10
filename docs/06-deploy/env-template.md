@@ -1,11 +1,11 @@
 ---
 title: MTClaw Environment Variables Template
-version: 1.0.0
+version: 1.1.0
 sdlc_stage: "06-deploy"
 sdlc_version: "6.1.1"
 status: active
 created: 2026-03-03
-updated: 2026-03-03
+updated: 2026-03-10
 owner: "@devops"
 ---
 
@@ -51,6 +51,7 @@ MTCLAW_TELEGRAM_POLLING=true
 
 # ─── Server ───
 MTCLAW_PORT=18790
+MTCLAW_UI_PORT=18791
 MTCLAW_LOG_LEVEL=info
 MTCLAW_LOG_FORMAT=json
 
@@ -65,6 +66,18 @@ TENANT_DAILY_REQUEST_LIMIT=5000
 # ─── Optional: Gateway Token ───
 # Auto-generated on first start if not set
 # MTCLAW_GATEWAY_TOKEN=
+
+# ─── Discord Bot (Sprint 30 — ADR-006-Amendment) ───
+# Create bot at https://discord.com/developers/applications
+# REQUIRED: Enable Message Content Intent + Server Members Intent in bot settings
+# MTCLAW_DISCORD_TOKEN=
+
+# ─── Claude Code Bridge ───
+MTCLAW_BRIDGE_ENABLED=true
+MTCLAW_BRIDGE_HOOK_PORT=18792
+# Bind address: 127.0.0.1 for host mode, 0.0.0.0 for Docker
+MTCLAW_BRIDGE_HOOK_BIND=127.0.0.1
+# MTCLAW_BRIDGE_AUDIT_DIR=/var/log/mtclaw/bridge-audit
 
 # ─── Optional: Debug ───
 # MTCLAW_TRACE_VERBOSE=1
@@ -100,6 +113,7 @@ TENANT_DAILY_REQUEST_LIMIT=5000
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `MTCLAW_PORT` | Gateway HTTP port | `18790` |
+| `MTCLAW_UI_PORT` | Web Dashboard port | `18791` |
 | `MTCLAW_LOG_LEVEL` | Log level (`debug`, `info`, `warn`, `error`) | `info` |
 | `MTCLAW_LOG_FORMAT` | Log format (`json`, `text`) | `json` |
 
@@ -110,6 +124,15 @@ TENANT_DAILY_REQUEST_LIMIT=5000
 | `TENANT_MONTHLY_TOKEN_LIMIT` | Max tokens per month | `1000000` |
 | `TENANT_DAILY_REQUEST_LIMIT` | Max requests per day | `5000` |
 
+### Bridge Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MTCLAW_BRIDGE_ENABLED` | Enable Claude Code bridge | `false` |
+| `MTCLAW_BRIDGE_HOOK_PORT` | Hook server HTTP port | `18792` |
+| `MTCLAW_BRIDGE_HOOK_BIND` | Hook server bind address (`127.0.0.1` for host, `0.0.0.0` for Docker) | `127.0.0.1` |
+| `MTCLAW_BRIDGE_AUDIT_DIR` | Directory for bridge audit JSONL logs | Empty (PG only) |
+
 ### Optional Variables
 
 | Variable | Description | Default |
@@ -118,6 +141,7 @@ TENANT_DAILY_REQUEST_LIMIT=5000
 | `MTCLAW_GATEWAY_TOKEN` | API auth token (auto-generated if empty) | Auto |
 | `MTCLAW_TRACE_VERBOSE` | Enable verbose tracing (`0`/`1`) | `0` |
 | `MTCLAW_TELEGRAM_POLLING` | Use polling instead of webhook | `true` |
+| `MTCLAW_DISCORD_TOKEN` | Discord bot token (enable Message Content Intent) | Empty |
 
 ## Security Checklist
 

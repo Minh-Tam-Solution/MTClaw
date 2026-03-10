@@ -18,6 +18,7 @@ import (
 	"github.com/Minh-Tam-Solution/MTClaw/internal/claudecode"
 	"github.com/Minh-Tam-Solution/MTClaw/extensions/msteams"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/channels/telegram"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/channels/discord"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/channels/zalo"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/config"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/cron"
@@ -816,6 +817,7 @@ func runGateway() {
 		instanceLoader.RegisterFactory("telegram", telegram.FactoryWithStores(managedStores.Agents, managedStores.Teams, managedStores.Specs))
 		instanceLoader.RegisterFactory("zalo_oa", zalo.Factory)
 		instanceLoader.RegisterFactory("msteams", msteams.Factory)
+		instanceLoader.RegisterFactory("discord", discord.Factory)
 		if err := instanceLoader.LoadAll(context.Background()); err != nil {
 			slog.Error("failed to load channel instances from DB", "error", err)
 		}
@@ -851,6 +853,16 @@ func runGateway() {
 			channelMgr.RegisterChannel("msteams", ms)
 			server.AddMuxHandler(ms.RegisterRoutes)
 			slog.Info("msteams channel enabled (config)", "webhook_path", cfg.Channels.MSTeams.WebhookPath)
+		}
+	}
+
+	if cfg.Channels.Discord.Enabled && cfg.Channels.Discord.Token != "" && instanceLoader == nil {
+		dc, err := discord.New(cfg.Channels.Discord, msgBus, pairingStore)
+		if err != nil {
+			slog.Error("failed to initialize discord channel", "error", err)
+		} else {
+			channelMgr.RegisterChannel("discord", dc)
+			slog.Info("discord channel enabled (config)")
 		}
 	}
 
