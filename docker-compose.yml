@@ -19,6 +19,7 @@ services:
         ENABLE_BRIDGE: "${ENABLE_BRIDGE:-false}"
     ports:
       - "${MTCLAW_PORT:-18790}:18790"
+      - "${MTCLAW_BRIDGE_HOOK_PORT:-18792}:18792"  # Claude Code bridge hook server
     env_file:
       - path: .env
         required: false
@@ -63,6 +64,7 @@ services:
       # Claude Code Bridge (Sprint 26)
       - MTCLAW_BRIDGE_ENABLED=${MTCLAW_BRIDGE_ENABLED:-false}
       - MTCLAW_BRIDGE_HOOK_PORT=${MTCLAW_BRIDGE_HOOK_PORT:-18792}
+      - MTCLAW_BRIDGE_HOOK_BIND=${MTCLAW_BRIDGE_HOOK_BIND:-0.0.0.0}
       - MTCLAW_BRIDGE_AUDIT_DIR=${MTCLAW_BRIDGE_AUDIT_DIR:-/app/data/bridge-audit}
       # Debug
       - MTCLAW_TRACE_VERBOSE=${MTCLAW_TRACE_VERBOSE:-0}

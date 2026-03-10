@@ -63,9 +63,17 @@ type Config struct {
 type BridgeConfig struct {
 	Enabled       bool                   `json:"enabled"`
 	HookPort      int                    `json:"hook_port,omitempty"`
+	HookBind      string                 `json:"hook_bind,omitempty"` // default "127.0.0.1"; set "0.0.0.0" for Docker
 	Admission     map[string]interface{} `json:"admission,omitempty"`
 	AuditDir      string                 `json:"audit_dir,omitempty"`
 	StandaloneDir string                 `json:"standalone_dir,omitempty"`
+	Projects      []BridgeProject        `json:"projects,omitempty"` // pre-registered projects
+}
+
+// BridgeProject is a project pre-registered in config.json.
+type BridgeProject struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
 }
 
 // TailscaleConfig configures the optional Tailscale tsnet listener.

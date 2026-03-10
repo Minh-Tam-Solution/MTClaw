@@ -91,6 +91,17 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 			"/writers — List file writers for this group\n" +
 			"/addwriter — Add a file writer (reply to their message)\n" +
 			"/removewriter — Remove a file writer (reply to their message)\n" +
+			"\n🔧 Claude Code Bridge:\n" +
+			"/cc launch <project> [--as role] — Start Claude Code session\n" +
+			"/cc sessions — List active bridge sessions\n" +
+			"/cc capture [lines] — Show terminal output\n" +
+			"/cc send <text> — Send input to session (interactive mode)\n" +
+			"/cc kill [session] — Terminate a session\n" +
+			"/cc projects — List registered projects\n" +
+			"/cc register <name> <path> — Register a project\n" +
+			"/cc risk <read|patch|interactive> — Change risk mode\n" +
+			"/cc info [session] — Show session details\n" +
+			"/cc switch <session> — Switch active session\n" +
 			"\nUse @soul_name to route to a specific SOUL (e.g. @reviewer, @pm).\n" +
 			"Use @team_name to route to a team lead (e.g. @engineering, @business).\n" +
 			"Just send a message to chat with the AI."

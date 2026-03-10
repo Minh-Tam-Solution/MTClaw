@@ -859,6 +859,7 @@ func runGateway() {
 		bridgeCfg := claudecode.DefaultBridgeConfig()
 		bridgeCfg.Enabled = cfg.Bridge.Enabled
 		bridgeCfg.HookPort = cfg.Bridge.HookPort
+		bridgeCfg.HookBind = cfg.Bridge.HookBind
 		if cfg.Bridge.AuditDir != "" {
 			bridgeCfg.AuditDir = cfg.Bridge.AuditDir
 		}
@@ -919,6 +920,15 @@ func runGateway() {
 			}
 		}
 
+		// Pre-register projects from config.json
+		for _, proj := range cfg.Bridge.Projects {
+			if _, err := bridgeMgr.Projects().Register("global", proj.Name, proj.Path, claudecode.AgentClaudeCode); err != nil {
+				slog.Warn("bridge project registration failed", "name", proj.Name, "path", proj.Path, "error", err)
+			} else {
+				slog.Info("bridge project registered", "name", proj.Name, "path", proj.Path)
+			}
+		}
+
 		// Inject into all registered Telegram channels
 		for _, name := range channelMgr.GetEnabledChannels() {
 			if ch, ok := channelMgr.GetChannel(name); ok {
@@ -933,7 +943,11 @@ func runGateway() {
 		notifier := claudecode.NewNotifier(func(ctx context.Context, channel, chatID, message string) error {
 			return channelMgr.SendToChannel(ctx, channel, chatID, message)
 		})
-		hookServer := claudecode.NewHookServer(bridgeCfg.HookPort, bridgeMgr, notifier)
+		var hookOpts []claudecode.HookServerOption
+		if bridgeCfg.HookBind != "" {
+			hookOpts = append(hookOpts, claudecode.WithHookBind(bridgeCfg.HookBind))
+		}
+		hookServer := claudecode.NewHookServer(bridgeCfg.HookPort, bridgeMgr, notifier, hookOpts...)
 
 		// Inject HookServer into Telegram channels for permission callbacks (Sprint 16/C)
 		for _, name := range channelMgr.GetEnabledChannels() {

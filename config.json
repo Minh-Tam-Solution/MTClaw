@@ -25,6 +25,12 @@
       "max_cpu_percent": 85,
       "max_memory_percent": 80,
       "per_tenant_session_cap": 4
-    }
+    },
+    "projects": [
+      {"name": "MTClaw", "path": "/home/nqh/shared/MTClaw"},
+      {"name": "NQH-Bot", "path": "/home/nqh/shared/NQH-Bot-Platform"},
+      {"name": "BFlow", "path": "/home/nqh/shared/BFlow"},
+      {"name": "SDLC", "path": "/home/nqh/shared/SDLC-Orchestrator"}
+    ]
   }
 }

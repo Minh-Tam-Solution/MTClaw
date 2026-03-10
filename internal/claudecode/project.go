@@ -66,23 +66,48 @@ func (r *ProjectRegistry) Register(ownerID, name, path string, agentType AgentPr
 }
 
 // Get returns a project by owner and name.
+// Falls back to "global" owner for pre-registered projects from config.
 func (r *ProjectRegistry) Get(ownerID, name string) (*BridgeProject, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	p, ok := r.projects[projectKey(ownerID, name)]
-	return p, ok
+	if p, ok := r.projects[projectKey(ownerID, name)]; ok {
+		return p, true
+	}
+	// Fallback: check global pre-registered projects
+	if ownerID != globalOwner {
+		if p, ok := r.projects[projectKey(globalOwner, name)]; ok {
+			return p, true
+		}
+	}
+	return nil, false
 }
 
-// List returns all projects for an owner.
+// GlobalOwner is the owner ID used for pre-registered projects (visible to all tenants).
+const globalOwner = "global"
+
+// List returns all projects for an owner, including globally pre-registered ones.
 func (r *ProjectRegistry) List(ownerID string) []*BridgeProject {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
+	seen := make(map[string]bool)
 	var result []*BridgeProject
+
+	// Owner-specific projects first
 	prefix := ownerID + ":"
 	for key, p := range r.projects {
 		if strings.HasPrefix(key, prefix) {
 			result = append(result, p)
+			seen[p.Name] = true
+		}
+	}
+	// Global pre-registered projects (if not shadowed by owner-specific)
+	if ownerID != globalOwner {
+		globalPrefix := globalOwner + ":"
+		for key, p := range r.projects {
+			if strings.HasPrefix(key, globalPrefix) && !seen[p.Name] {
+				result = append(result, p)
+			}
 		}
 	}
 	return result

@@ -157,5 +157,8 @@ func DefaultMenuCommands() []telego.BotCommand {
 		{Command: "removewriter", Description: "Remove a file writer (reply to their message)"},
 		{Command: "workspace", Description: "Show or change workspace directory"},
 		{Command: "projects", Description: "List available projects"},
+		{Command: "review", Description: "Review a GitHub pull request"},
+		{Command: "teams", Description: "List available teams"},
+		{Command: "cc", Description: "Claude Code bridge (launch, sessions, capture, kill)"},
 	}
 }

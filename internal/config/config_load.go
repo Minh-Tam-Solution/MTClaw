@@ -252,6 +252,7 @@ func (c *Config) applyEnvOverrides() {
 		}
 	}
 	envStr("MTCLAW_BRIDGE_AUDIT_DIR", &c.Bridge.AuditDir)
+	envStr("MTCLAW_BRIDGE_HOOK_BIND", &c.Bridge.HookBind)
 }
 
 // applyContextPruningDefaults auto-enables context pruning when the Anthropic

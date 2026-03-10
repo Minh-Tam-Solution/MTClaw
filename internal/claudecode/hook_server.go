@@ -64,10 +64,17 @@ type PermissionResponse struct {
 	ExpireAt string             `json:"expires_at"`
 }
 
-// NewHookServer creates a hook server bound to localhost.
-func NewHookServer(port int, sessions *SessionManager, notifier *Notifier) *HookServer {
+// NewHookServer creates a hook server. Binds to 127.0.0.1 by default.
+// Pass a different bind address (e.g. "0.0.0.0") when running inside Docker
+// so that host-side Claude Code can reach the hook endpoint.
+func NewHookServer(port int, sessions *SessionManager, notifier *Notifier, opts ...HookServerOption) *HookServer {
 	if port == 0 {
 		port = 18792
+	}
+
+	bind := "127.0.0.1"
+	for _, opt := range opts {
+		opt(&bind)
 	}
 
 	hs := &HookServer{
@@ -82,7 +89,7 @@ func NewHookServer(port int, sessions *SessionManager, notifier *Notifier) *Hook
 	mux.HandleFunc("/health", hs.handleHealth)
 
 	hs.server = &http.Server{
-		Addr:         fmt.Sprintf("127.0.0.1:%d", port),
+		Addr:         fmt.Sprintf("%s:%d", bind, port),
 		Handler:      mux,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
@@ -90,6 +97,18 @@ func NewHookServer(port int, sessions *SessionManager, notifier *Notifier) *Hook
 	}
 
 	return hs
+}
+
+// HookServerOption configures the hook server.
+type HookServerOption func(bind *string)
+
+// WithHookBind overrides the default 127.0.0.1 bind address.
+func WithHookBind(addr string) HookServerOption {
+	return func(bind *string) {
+		if addr != "" {
+			*bind = addr
+		}
+	}
 }
 
 // Start begins listening. Blocks until context is cancelled or error occurs.

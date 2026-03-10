@@ -368,7 +368,14 @@ func (m *SessionManager) CreateSession(ctx context.Context, opts CreateSessionOp
 		}
 		cmd := adapter.LaunchCommand(launchOpts)
 		if cmd != nil {
-			cmdStr := strings.Join(cmd.Args, " ")
+			// Build env exports + command. Unset CLAUDECODE to prevent nested session detection
+			// when gateway itself runs inside a Claude Code session.
+			var envPrefix string
+			envPrefix = "unset CLAUDECODE; "
+			for _, e := range cmd.Env {
+				envPrefix += fmt.Sprintf("export %s; ", e)
+			}
+			cmdStr := envPrefix + strings.Join(cmd.Args, " ")
 			if err := m.tmux.SendKeys(ctx, session.TmuxTarget, cmdStr); err != nil {
 				slog.Warn("launch command sendKeys failed", "session", session.ID, "error", err)
 			} else if err := m.tmux.SendEnter(ctx, session.TmuxTarget); err != nil {
