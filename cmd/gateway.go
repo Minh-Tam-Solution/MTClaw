@@ -856,13 +856,18 @@ func runGateway() {
 		}
 	}
 
-	if cfg.Channels.Discord.Enabled && cfg.Channels.Discord.Token != "" && instanceLoader == nil {
-		dc, err := discord.New(cfg.Channels.Discord, msgBus, pairingStore)
-		if err != nil {
-			slog.Error("failed to initialize discord channel", "error", err)
-		} else {
-			channelMgr.RegisterChannel("discord", dc)
-			slog.Info("discord channel enabled (config)")
+	// Discord: also init from env in managed mode if no DB instance exists.
+	// Other channels (Telegram, Zalo, MSTeams) are fully managed via DB instances,
+	// but Discord is new (Sprint 30) and may not have a DB instance yet.
+	if cfg.Channels.Discord.Enabled && cfg.Channels.Discord.Token != "" {
+		if _, exists := channelMgr.GetChannel("discord"); !exists {
+			dc, err := discord.New(cfg.Channels.Discord, msgBus, pairingStore)
+			if err != nil {
+				slog.Error("failed to initialize discord channel", "error", err)
+			} else {
+				channelMgr.RegisterChannel("discord", dc)
+				slog.Info("discord channel enabled (config/env)")
+			}
 		}
 	}
 
