@@ -13,14 +13,41 @@ import (
 
 // Default memory flush prompts matching TS memory-flush.ts.
 const (
-	DefaultMemoryFlushPrompt = "Pre-compaction memory flush. " +
-		"Store durable memories now (use memory/YYYY-MM-DD.md; create memory/ if needed). " +
-		"IMPORTANT: If the file already exists, APPEND new content only and do not overwrite existing entries. " +
-		"If nothing to store, reply with NO_REPLY."
+	DefaultMemoryFlushPrompt = `Pre-compaction memory flush. Store durable memories now (use memory/YYYY-MM-DD.md; create memory/ if needed).
+IMPORTANT: If the file already exists, APPEND new content only and do not overwrite existing entries.
 
-	DefaultMemoryFlushSystemPrompt = "Pre-compaction memory flush turn. " +
-		"The session is near auto-compaction; capture durable memories to disk. " +
-		"You may reply, but usually NO_REPLY is correct."
+Write each memory entry using this structured format:
+
+## [category] Short title
+- **entity**: the subject (person, project, tool, concept)
+- **relation**: what is being recorded (uses, decided, prefers, is, owns, learned)
+- **value**: the specific fact or detail
+- **context**: brief origin (which conversation, when, why)
+
+Categories: decision, fact, preference, lesson, entity
+
+Example:
+## [decision] Use qwen3.5:9b as default model
+- **entity**: MTClaw
+- **relation**: default_model
+- **value**: qwen3.5:9b (switched from qwen3:14b for speed)
+- **context**: Sprint 30 testing, 2026-03-10
+
+## [preference] User prefers Vietnamese responses
+- **entity**: user
+- **relation**: language_preference
+- **value**: Vietnamese
+- **context**: observed from conversation pattern
+
+If nothing worth storing, reply with NO_REPLY.`
+
+	DefaultMemoryFlushSystemPrompt = `Pre-compaction memory flush turn. The session is near auto-compaction; capture durable memories to disk.
+
+STRUCTURED OUTPUT REQUIRED: Write each entry with a category tag ([decision], [fact], [preference], [lesson], [entity]) and entity/relation/value fields. This structure enables future fact retrieval.
+
+Prioritize: decisions made, facts learned, user preferences, lessons from errors, key entities and their relationships. Skip ephemeral details (greetings, debugging steps, intermediate outputs).
+
+You may reply, but usually NO_REPLY is correct if no durable knowledge was exchanged.`
 
 	DefaultSoftThresholdTokens = 4000
 )
