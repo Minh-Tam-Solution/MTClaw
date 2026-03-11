@@ -418,7 +418,7 @@ services:
       - MTCLAW_POSTGRES_DSN=postgres://mtclaw_app:${DB_PASS}@postgres:5432/mtclaw
       - MTCLAW_ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - MTCLAW_BFLOW_API_KEY=${BFLOW_AI_API_KEY}
-      - MTCLAW_BFLOW_BASE_URL=http://bflow-ai-gateway-staging:8120/api/v1
+      - MTCLAW_BFLOW_BASE_URL=http://ai-platform:8120/api/v1  # via ai-net Docker network
       - BFLOW_TENANT_ID=mts
       - MTCLAW_BRIDGE_ENABLED=${MTCLAW_BRIDGE_ENABLED:-false}
       - MTCLAW_BRIDGE_HOOK_PORT=${MTCLAW_BRIDGE_HOOK_PORT:-19080}

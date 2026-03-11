@@ -1,10 +1,10 @@
 # Master Test Plan — MTClaw
 
 **SDLC Stage**: 05-Test
-**Version**: 6.0.0
-**Date**: 2026-03-08
+**Version**: 7.0.0
+**Date**: 2026-03-11
 **Author**: [@tester], [@cto] (tiered targets)
-**Coverage**: Sprint 1-28 cumulative (includes Claude Code Bridge A-D + Intelligence Upgrade + Provider Fallback + Observability + Health Routing)
+**Coverage**: Sprint 1-34 cumulative (includes Claude Code Bridge A-D + Intelligence Upgrade + Provider Fallback + Observability + Health Routing + Discord Channel + Unified Command Routing)
 
 ---
 
@@ -43,6 +43,12 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **26** | **Bridge Production Readiness: PG session persistence, Docker bridge, audit dual-write, standalone SOUL fix** | **P0** |
 | **27** | **Metrics + Integration + Hardening: Adoption metrics (PG traces), cost guardrails (monthly tokens + warning), OpenAPI spec, provider chain E2E tests, integration specs** | **P1** |
 | **28** | **Observability + Hardening + Test Realignment: Health-based provider routing (circuit breaker), bridge session metrics, fallback loop E2E tests, deployment runbooks, fallback benchmarks** | **P0** |
+| **29** | **Zalo Channel: OAuth 2.0, webhook verification, DM/group support** | **P1** |
+| **30** | **Discord Channel: DM/group policy, guild allowlist, mention gate, env-based init** | **P0** |
+| **31** | **Memory Enhancement Phase 0: improved memory flush prompt** | **P1** |
+| **32** | **Memory Phase 1: Discord reactions** | **P1** |
+| **33** | **Unified Command Routing Sprint A: shared `internal/commands/` package, Responder interface, CommandMetadata struct, ResolveAgentUUID extraction, PublishReset/Stop/StopAll shared helpers** | **P0** |
+| **34** | **Discord Command Parity Sprint B: FactoryWithStores expansion (3 stores), 11 new Discord commands (/spec, /review, /teams, /status, /spec_list, /spec_detail, /tasks, /task_detail, /writers, /addwriter, /removewriter), shared formatters (specs, tasks, writers), Telegram refactored to shared package** | **P0** |
 
 ---
 
@@ -120,6 +126,9 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **store/pg** | **tracing_adoption_test.go** | TokenUsage struct, SQL patterns, time range, empty map, aggregation math | 27 | **PASS** |
 | **providers** | **health_tracker_test.go** | InitialHealthy, RecordSuccess, RecordFailure, CircuitBreaker_Trip, CircuitBreaker_Cooldown, CircuitBreaker_Recovery, SlidingWindow, Score_Empty, Stats, Concurrent, FailOpenOnDoubleCircuitOpen | 28 | **PASS** |
 | **claudecode** | **session_metrics_test.go** | BridgeMetrics_Empty, BridgeMetrics_ActiveCount, BridgeMetrics_ByRiskMode, BridgeMetrics_ByRole, BridgeMetrics_Lifetime | 28 | **PASS** |
+| **channels/discord** | **discord_test.go** | New() constructor (4→6 params), guild allowlist, mention gate, DM policy, group policy, message routing | 30+34 | **PASS** |
+| **commands** | **resolver_test.go** | ResolveAgentUUID_ParsesUUID, _FallbackToStore, _EmptyKey | 33 | **PASS** |
+| **commands** | **(inline in workspace/tasks/specs/writers)** | Shared formatters: FormatTaskList, FormatTaskDetail, FormatSpecList, FormatSpecDetail, ListWriters, AddWriter, RemoveWriter, TruncateStr, TaskStatusIcon, PublishSpec, PublishReview, PublishReset, CommandMetadata.ToMap() | 33+34 | **PASS** |
 
 ### 2.2 Integration Tests
 
@@ -183,6 +192,20 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **INT-056** | **Fallback tracing: 2-span pattern — primary fail span + fallback success span** | **25** | **P0** | **PASS** |
 | **INT-057** | **OTEL metadata propagation: fallback=true + primary_provider + primary_error in mtclaw.meta.*** | **25** | **P1** | **PASS** |
 | **INT-058** | **Doctor: Claude CLI binary check + OAuth dir check + provider chain display** | **25** | **P1** | **PASS** |
+| **INT-059** | **Discord channel: guild allowlist rejects non-allowed guilds** | **30** | **P0** | **PASS** |
+| **INT-060** | **Discord channel: DM policy enforcement (open/disabled/pairing/allowlist)** | **30** | **P0** | **PASS** |
+| **INT-061** | **Discord mention gate: require_mention=true filters unmentioned messages** | **30** | **P1** | **PASS** |
+| **INT-062** | **Shared commands: ResolveAgentUUID parses UUID directly or falls back to store** | **33** | **P0** | **PASS** |
+| **INT-063** | **Shared commands: PublishSpec routes to PM SOUL with rail=spec-factory metadata** | **33** | **P0** | **NEW** |
+| **INT-064** | **Shared commands: PublishReview routes to reviewer SOUL with rail=pr-gate + pr_url** | **33** | **P0** | **NEW** |
+| **INT-065** | **Shared commands: CommandMetadata.ToMap() skips empty fields** | **33** | **P1** | **PASS** |
+| **INT-066** | **Discord /spec_list: shared ListSpecs returns formatted spec list** | **34** | **P1** | **NEW** |
+| **INT-067** | **Discord /tasks: shared ListTasks returns formatted task list via teamStore** | **34** | **P1** | **NEW** |
+| **INT-068** | **Discord /writers: shared WritersCmd.ListWriters returns writer list** | **34** | **P1** | **NEW** |
+| **INT-069** | **Discord /addwriter: mention regex parses `<@123>` and `<@!123>` formats** | **34** | **P0** | **NEW** |
+| **INT-070** | **Discord FactoryWithStores: expanded to (agentStore, teamStore, specStore)** | **34** | **P0** | **PASS** |
+| **INT-071** | **Telegram /spec refactored: uses shared PublishSpec (same behavior, no regression)** | **33** | **P0** | **NEW** |
+| **INT-072** | **Telegram /tasks refactored: uses shared FormatTaskDetail + MaxTasksInList (preserves inline keyboard UX)** | **34** | **P0** | **NEW** |
 
 ### 2.3 E2E Tests
 
@@ -209,6 +232,10 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **E2E-019** | **Bridge Cursor projection** | **mtclaw bridge install-agents --provider cursor -> .cursor/rules/*.mdc created** | **23** | **NEW** |
 | **E2E-020** | **Fallback deploy** | **docker compose build -> claude --version in container -> mtclaw doctor shows Claude CLI** | **25** | **AUTOMATED (Sprint 28 — fallback_loop_test.go validates chain wiring)** |
 | **E2E-021** | **Fallback E2E** | **Primary fails (429/500) -> fallback to claude-cli -> user gets response via Telegram** | **25** | **AUTOMATED (Sprint 28 — fallback_loop_test.go + fallback_test.go E2E scenarios)** |
+| **E2E-022** | **Discord channel E2E** | **Discord DM -> SOUL routing -> AI response -> Discord send** | **30** | **MANUAL** |
+| **E2E-023** | **Discord command parity** | **All 17 commands tested on Discord: /help, /status, /teams, /workspace, /projects, /reset, /stop, /stopall, /spec, /review, /spec_list, /spec_detail, /tasks, /task_detail, /writers, /addwriter, /removewriter** | **34** | **MANUAL** |
+| **E2E-024** | **Telegram regression** | **All Telegram commands unchanged after Sprint 33 refactoring to shared package** | **33** | **MANUAL** |
+| **E2E-025** | **Cross-channel parity** | **Same command on Telegram + Discord produces equivalent output (format may differ per platform)** | **34** | **MANUAL** |
 
 ### 2.4 Security Tests
 
@@ -283,8 +310,14 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **26** | **544** | **60** | **21** | **22** | **647** | **+12** |
 | **27** | **564** | **60** | **21** | **22** | **667** | **+20** |
 | **28** | **586** | **60** | **21** | **22** | **689** | **+22** |
+| **29** | **586** | **60** | **21** | **22** | **689** | **+0** |
+| **30** | **599** | **63** | **22** | **22** | **706** | **+17** |
+| **31** | **599** | **63** | **22** | **22** | **706** | **+0** |
+| **32** | **599** | **63** | **22** | **22** | **706** | **+0** |
+| **33** | **608** | **67** | **24** | **22** | **721** | **+15** |
+| **34** | **618** | **72** | **25** | **22** | **737** | **+16** |
 
-### 3.2 Traceability: Sprint 8-23 Features -> Tests
+### 3.2 Traceability: Sprint 8-34 Features -> Tests
 
 | Feature | Unit Tests | Integration | E2E | Security |
 |---------|-----------|-------------|-----|----------|
@@ -317,6 +350,9 @@ This plan covers all automated testing for MTClaw gateway across Sprint 1-25, or
 | **Bridge Production Readiness (S26)** | bridge store tests (~10) | - | - | - |
 | **Metrics + Integration + Hardening (S27)** | fallback_test +6 E2E, guardrails_test (9), tracing_adoption_test (5) | - | - | - |
 | **Observability + Hardening (S28)** | health_tracker_test (11), fallback_loop_test (6), session_metrics_test (5), claude_cli_bench (3) | - | E2E-020 (AUTO), E2E-021 (AUTO) | - |
+| **Discord Channel (S30)** | discord_test (13) | INT-059..061 | E2E-022 | - |
+| **Shared Commands Extraction (S33)** | resolver_test (3), commands shared formatters | INT-062..065, INT-071 | E2E-024 | - |
+| **Discord Command Parity (S34)** | discord_test updated, commands formatters | INT-066..070, INT-072 | E2E-023, E2E-025 | - |
 
 ### 3.3 Claude Code Bridge — 240 Unit Tests Breakdown
 
@@ -393,6 +429,10 @@ All exceptions use `httptest.NewServer` (real HTTP servers in test process), not
 | E2E-019: Cursor projection | Requires Cursor IDE installed | @devops | Low (unit tests cover file generation) |
 | E2E-020: Fallback deploy | Docker build + claude login required | @devops | Medium (unit tests cover all logic) |
 | E2E-021: Fallback E2E via Telegram | Requires primary provider failure (429/500) | @ceo | Medium (unit + structural tests cover chain) |
+| E2E-022: Discord channel E2E | Requires live Discord bot + managed mode | @devops | Medium (unit tests cover routing logic) |
+| E2E-023: Discord command parity | Requires live Discord + Telegram bots + managed mode + test data | @tester | High (manual test plan covers all 17 commands) |
+| E2E-024: Telegram regression | Requires live Telegram bot + managed mode | @tester | High (ensures Sprint 33 refactoring didn't break) |
+| E2E-025: Cross-channel parity | Requires both bots running simultaneously | @tester | Medium (verifies shared package produces consistent output) |
 
 ---
 
@@ -420,6 +460,11 @@ All exceptions use `httptest.NewServer` (real HTTP servers in test process), not
 | **Health tracker false positives** | **Medium** | **Medium** | **Requires 3 consecutive failures to trip (not single), sliding window with time expiry (Sprint 28)** |
 | **Circuit breaker cooldown too short** | **Low** | **Low** | **Configurable via MTCLAW_PROVIDER_CB_COOLDOWN env var, 30s default (Sprint 28)** |
 | **Both circuits open (primary + fallback)** | **Low** | **Medium** | **Fail-open: still attempt fallback when no other option exists (OBS-028-1, Sprint 28)** |
+| **Sprint 33 refactoring breaks Telegram commands** | **Low** | **High** | **Pure extraction — shared functions return `(string, error)`, channels format independently. TC-26 regression suite covers all 10 Telegram commands.** |
+| **Discord command parity incomplete** | **Low** | **Medium** | **17 commands verified in PJM review (9.8/10) + CTO verification. TC-01..TC-19 manual test matrix.** |
+| **Discord /addwriter mention parsing fails** | **Low** | **Medium** | **Regex `<@!?(\d+)>` tested for both `<@123>` and `<@!123>` formats (TC-17.4, TC-17.5)** |
+| **Shared PublishSpec/Review SOUL routing incorrect** | **Low** | **High** | **AgentID hardcoded ("pm" / "reviewer") — cannot be overridden by callers. TC-13.5, TC-14.5 verify routing.** |
+| **Discord FactoryWithStores expansion breaks existing** | **Low** | **Medium** | **discord_test.go updated (13 tests). All `New()` calls use 6 params. `make test` passes.** |
 
 ---
 
@@ -833,6 +878,421 @@ Step 6: Record latency:
 
 ---
 
-**Next review**: After Sprint 25 deploy verification (E2E-020, E2E-021)
+## 9. Manual Test Plan — Sprint 33+34: Unified Command Routing (E2E-023, E2E-024, E2E-025)
+
+**Target**: MTClaw repo (`/home/nqh/shared/MTClaw`)
+**Test Type**: Manual testing against live Discord + Telegram bots
+**Scope**: Sprint 33 (Shared Commands Package) + Sprint 34 (Discord Command Parity)
+
+### Prerequisites
+
+| Item | Requirement |
+|------|-------------|
+| MTClaw binary | Built from current branch (`make build`) |
+| PostgreSQL | Running with migrations applied (`make migrate-up`) |
+| Discord bot | Token configured in `.env` or DB `channel_instances` |
+| Telegram bot | Token configured in `.env` or DB `channel_instances` |
+| Managed mode | `MTCLAW_POSTGRES_DSN` set, stores wired via `FactoryWithStores` |
+| Agent configured | At least 1 agent with workspace set |
+| Team configured | At least 1 team with tasks |
+| Spec store | At least 1 governance spec in DB |
+
+### Test Data Setup
+
+```sql
+-- Verify agent exists with workspace
+SELECT id, key, workspace FROM agents WHERE owner_id = '<tenant_id>' LIMIT 1;
+
+-- Verify team exists with tasks
+SELECT t.id, t.name, COUNT(tt.id) as task_count
+FROM agent_teams t
+LEFT JOIN agent_team_tasks tt ON t.id = tt.team_id
+WHERE t.owner_id = '<tenant_id>'
+GROUP BY t.id, t.name;
+
+-- Verify specs exist
+SELECT spec_id, title, status FROM governance_specs
+WHERE owner_id = '<tenant_id>'
+ORDER BY created_at DESC LIMIT 5;
+```
+
+### Legend
+
+| Symbol | Meaning |
+|--------|---------|
+| P | PASS |
+| F | FAIL |
+| S | SKIP (precondition not met) |
+| N/A | Not applicable for this channel |
+
+### TC-CMD-01: /help
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 01.1 | Send `/help` in DM | Shows full command list | | |
+| 01.2 | Send `/help` in group | Shows full command list | | |
+| 01.3 | Verify Telegram `/help` includes `/cc` commands | /cc section present | | N/A |
+| 01.4 | Verify Discord `/help` does NOT include `/cc` | No /cc section | N/A | |
+| 01.5 | Verify Discord `/help` lists `/addwriter @user` | Mention-based syntax shown | N/A | |
+| 01.6 | Verify Telegram `/help` lists `/addwriter` reply-to syntax | Reply-to syntax shown | | N/A |
+
+### TC-CMD-02: /status
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 02.1 | Send `/status` in DM | Shows "Bot status: Running" + channel name | | |
+| 02.2 | Telegram shows bot username | `Bot: @<bot_username>` present | | N/A |
+| 02.3 | Discord shows "Channel: Discord" | Channel name correct | N/A | |
+
+### TC-CMD-03: /teams
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 03.1 | Send `/teams` | Shows 3 teams: engineering, business, advisory | | |
+| 03.2 | Verify team leads shown | @pm, @assistant, @cto | | |
+| 03.3 | Verify usage hint | "Use @team_name" instruction present | | |
+
+### TC-CMD-04: /workspace
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 04.1 | Send `/workspace` (no arg) | Shows current workspace path | | |
+| 04.2 | Send `/workspace /home/nqh/shared/MTClaw` | Updates workspace, confirms new path | | |
+| 04.3 | Send `/workspace` again | Shows updated path from step 04.2 | | |
+| 04.4 | Send `/workspace /nonexistent/path` | Error: path does not exist | | |
+| 04.5 | Send `/workspace /etc/passwd` | Error: not a directory | | |
+| 04.6 | Without agentStore (standalone) | "Workspace commands require managed mode." | | |
+
+### TC-CMD-05: /projects
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 05.1 | Send `/projects` (workspace set) | Lists sibling directories | | |
+| 05.2 | Current workspace marked with `>` | `> N. <current_dir>` visible | | |
+| 05.3 | Hidden dirs (`.xxx`) excluded | No dot-prefixed entries | | |
+| 05.4 | Switch hint shown | `Switch: /workspace <parent>/<name>` | | |
+| 05.5 | Without agentStore (standalone) | "Project commands require managed mode." | | |
+
+### TC-CMD-06: /spec_list
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 06.1 | Send `/spec_list` (specs exist) | "Recent Specifications:" header + numbered list | | |
+| 06.2 | Each spec shows: `N. SPEC-ID — Title [Status]` | Format matches | | |
+| 06.3 | Max 10 specs shown | List capped at 10 | | |
+| 06.4 | Footer shows usage hint | "Use /spec_detail <SPEC-ID>" | | |
+| 06.5 | Send `/spec-list` (hyphenated) | Same result as `/spec_list` | | |
+| 06.6 | No specs in DB | "No specs found. Use /spec..." | | |
+| 06.7 | Without specStore | "Spec features are not available." | | |
+
+### TC-CMD-07: /spec_detail
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 07.1 | Send `/spec_detail SPEC-2026-0001` | Full spec detail shown | | |
+| 07.2 | Verify header: `SPEC-ID — Title` | Present | | |
+| 07.3 | Verify fields: Status, Priority, Effort, Author, Version, Created | All present | | |
+| 07.4 | Verify narrative: As a / I want / So that | If narrative exists in spec | | |
+| 07.5 | Verify acceptance criteria | If criteria exist in spec | | |
+| 07.6 | Verify risks section | If risks exist in spec | | |
+| 07.7 | Send `/spec_detail` (no ID) | Usage message shown | | |
+| 07.8 | Send `/spec_detail NONEXISTENT` | "spec not found" error | | |
+| 07.9 | Send `/spec-detail SPEC-2026-0001` | Same result as underscore variant | | |
+| 07.10 | Case-insensitive: `/spec_detail spec-2026-0001` | Finds spec (uppercased internally) | | |
+
+### TC-CMD-08: /tasks
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 08.1 | Send `/tasks` (team has tasks) | "Tasks for team \"name\" (N):" header | | |
+| 08.2 | Each task shows: `N. [icon] Subject — @owner` | Format matches | | |
+| 08.3 | Telegram uses emoji icons (✅🔄⛔⏳) | Emoji visible | | N/A |
+| 08.4 | Discord uses text icons (done, >>, !!, ..) | Text icons visible | N/A | |
+| 08.5 | Max 30 tasks shown | "showing 30 of N" if >30 tasks | | |
+| 08.6 | Telegram shows inline keyboard buttons | Tap-to-view buttons present | | N/A |
+| 08.7 | Discord shows "Use /task_detail <id>" footer | Text footer present | N/A | |
+| 08.8 | No tasks | "No tasks for team \"name\"." | | |
+| 08.9 | Agent not in team | "This agent is not part of any team." | | |
+| 08.10 | Without teamStore | "Team features are not available." | | |
+
+### TC-CMD-09: /task_detail
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 09.1 | Send `/task_detail <full-uuid>` | Full task detail shown | | |
+| 09.2 | Verify fields: Subject, ID, Status, Owner, Priority, Created | All present | | |
+| 09.3 | Verify Description section | If task has description | | |
+| 09.4 | Verify Result section | If task has result | | |
+| 09.5 | Verify BlockedBy section | If task has blockers | | |
+| 09.6 | UUID prefix match: `/task_detail <first-8-chars>` | Finds task by prefix | | |
+| 09.7 | Send `/task_detail` (no ID) | "Usage: /task_detail <task_id>" | | |
+| 09.8 | Send `/task_detail nonexistent` | "task not found" error | | |
+| 09.9 | Telegram callback button tap (td:uuid) | Shows same task detail | | N/A |
+
+### TC-CMD-10: /reset
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 10.1 | Send `/reset` in DM | "Conversation history has been reset." | | |
+| 10.2 | Send a follow-up message | Agent has no prior context | | |
+| 10.3 | Send `/reset` in group | Same confirmation message | | |
+| 10.4 | Verify metadata: `command=reset, platform=<channel>` | Check server logs for InboundMessage metadata | | |
+
+### TC-CMD-11: /stop
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 11.1 | Start a long task, then send `/stop` | Task cancelled, feedback from consumer | | |
+| 11.2 | Send `/stop` with no running task | No error (silent, no crash) | | |
+| 11.3 | Verify metadata: `command=stop, platform=<channel>` | Check server logs | | |
+
+### TC-CMD-12: /stopall
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 12.1 | Start multiple tasks, send `/stopall` | All tasks cancelled | | |
+| 12.2 | Verify metadata: `command=stopall, platform=<channel>` | Check server logs | | |
+
+### TC-CMD-13: /spec (Bus-Routed)
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 13.1 | Send `/spec Create login feature` | Ack message shown, then PM SOUL generates spec | | |
+| 13.2 | Telegram ack: "📋 Generating spec..." | Emoji ack visible | | N/A |
+| 13.3 | Discord ack: "Generating spec..." | Text ack visible (no emoji) | N/A | |
+| 13.4 | Verify bus metadata: `command=spec, rail=spec-factory` | Check logs for metadata | | |
+| 13.5 | Verify AgentID routes to "pm" | PM SOUL processes the request | | |
+| 13.6 | Send `/spec` (no description) | Usage message with example | | |
+| 13.7 | Generated spec appears in `/spec_list` | New spec listed after generation | | |
+
+### TC-CMD-14: /review (Bus-Routed)
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 14.1 | Send `/review https://github.com/org/repo/pull/123` | Ack message, reviewer SOUL processes | | |
+| 14.2 | Telegram ack: "🔍 Reviewing PR..." | Emoji ack visible | | N/A |
+| 14.3 | Discord ack: "Reviewing PR..." | Text ack visible (no emoji) | N/A | |
+| 14.4 | Verify bus metadata: `command=review, rail=pr-gate, pr_url=<url>` | Check logs | | |
+| 14.5 | Verify AgentID routes to "reviewer" | Reviewer SOUL processes | | |
+| 14.6 | Send `/review` (no URL) | Usage message with example | | |
+| 14.7 | Send `/review not-a-pr-url` | Usage message (must contain /pull/) | | |
+
+### TC-CMD-15: /writers (Group-Only)
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 15.1 | Send `/writers` in group (writers configured) | "File writers for this group (N):" | | |
+| 15.2 | Each writer: `N. @username (ID: xxx)` | Format matches | | |
+| 15.3 | Send `/writers` in DM | "This command only works in group chats." | | |
+| 15.4 | No writers configured | "No file writers configured..." auto-add message | | |
+| 15.5 | Without agentStore | "File writer management is not available." | | |
+
+### TC-CMD-16: /addwriter (Telegram — reply-to)
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 16.1 | Reply to user's message with `/addwriter` | "Added @username as a file writer." | | N/A |
+| 16.2 | Send `/addwriter` without reply | Instruction to reply to a message | | N/A |
+| 16.3 | Non-writer tries to add | "Only existing file writers can manage..." | | N/A |
+| 16.4 | Verify cache invalidation event broadcast | Check logs for `EventCacheInvalidate` | | N/A |
+
+### TC-CMD-17: /addwriter (Discord — mention)
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 17.1 | Send `/addwriter @user` in group | "Added @user as a file writer." (or ID-based) | N/A | |
+| 17.2 | Send `/addwriter` without mention | "To add a writer, mention them: /addwriter @user" | N/A | |
+| 17.3 | Non-writer tries to add | "only existing file writers can manage..." | N/A | |
+| 17.4 | Verify mention regex parses `<@123456>` | Writer added with correct numeric ID | N/A | |
+| 17.5 | Verify mention regex parses `<@!123456>` (nickname) | Writer added with correct numeric ID | N/A | |
+
+### TC-CMD-18: /removewriter (Telegram — reply-to)
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 18.1 | Reply to writer's message with `/removewriter` | "Removed @username from file writers." | | N/A |
+| 18.2 | Try to remove last writer | "Cannot remove the last file writer." | | N/A |
+| 18.3 | Non-writer tries to remove | "Only existing file writers can manage..." | | N/A |
+
+### TC-CMD-19: /removewriter (Discord — mention)
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 19.1 | Send `/removewriter @user` in group | "Removed @user from file writers." | N/A | |
+| 19.2 | Try to remove last writer | "cannot remove the last file writer" | N/A | |
+| 19.3 | Non-writer tries to remove | "only existing file writers can manage..." | N/A | |
+
+### TC-CMD-20: Cross-Cutting — Metadata Correctness
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 20.1 | Telegram `/reset`: Check metadata has `platform=telegram` | Correct platform | | N/A |
+| 20.2 | Discord `/reset`: Check metadata has `platform=discord` | Correct platform | N/A | |
+| 20.3 | Telegram `/spec`: Check metadata has `rail=spec-factory` | Rail auto-set | | N/A |
+| 20.4 | Discord `/spec`: Check metadata has `rail=spec-factory` | Rail auto-set | N/A | |
+| 20.5 | Telegram `/review`: Check `pr_url` in metadata | PR URL present | | N/A |
+| 20.6 | Discord `/review`: Check `pr_url` in metadata | PR URL present | N/A | |
+| 20.7 | Telegram forum: Check `local_key`, `is_forum`, `message_thread_id` | Forum-specific fields present | | N/A |
+| 20.8 | Discord: Verify NO `local_key`/`is_forum`/`message_thread_id` | Empty fields skipped by ToMap() | N/A | |
+
+### TC-CMD-21: Cross-Cutting — Message Chunking
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 21.1 | Command response >4096 chars (Telegram limit) | Split into multiple messages | | N/A |
+| 21.2 | Command response >2000 chars (Discord limit) | Split into chunks at newline boundaries | N/A | |
+| 21.3 | Verify chunk split prefers newline boundary | No mid-word splits | N/A | |
+
+### TC-CMD-22: Telegram Regression (Sprint 33 Refactoring)
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 22.1 | `/workspace` GET returns same format as pre-Sprint 33 | Output format unchanged | | N/A |
+| 22.2 | `/workspace <path>` SET updates workspace + reloads PROJECT.md | Cache invalidation broadcast in logs | | N/A |
+| 22.3 | `/projects` returns same format as pre-Sprint 33 | Output format unchanged | | N/A |
+| 22.4 | `/spec_list` returns same format as pre-Sprint 33 | Output format unchanged | | N/A |
+| 22.5 | `/spec_detail` returns same format as pre-Sprint 33 | Narrative, criteria, risks sections unchanged | | N/A |
+| 22.6 | `/tasks` inline keyboard still works | Buttons appear and respond to taps | | N/A |
+| 22.7 | `/task_detail` returns same format as pre-Sprint 33 | All fields present and formatted correctly | | N/A |
+| 22.8 | `/addwriter` via reply-to still works | Writer added, cache invalidated | | N/A |
+| 22.9 | `/writers` returns same format as pre-Sprint 33 | List format unchanged | | N/A |
+| 22.10 | `/cc launch` still works | Claude Code session starts normally | | N/A |
+
+### TC-CMD-23: Discord Regression (Sprint 33 Refactoring)
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 23.1 | `/workspace` GET works on Discord | Current workspace shown | N/A | |
+| 23.2 | `/projects` works on Discord | Project list shown | N/A | |
+| 23.3 | `/reset` works on Discord | Confirmation + history cleared | N/A | |
+| 23.4 | `/stop` works on Discord | No crash, task stopped if running | N/A | |
+| 23.5 | `/stopall` works on Discord | No crash, all tasks stopped if running | N/A | |
+
+### TC-CMD-24: Discord Platform-Specific
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 24.1 | Guild allowlist: command from allowlisted guild | Command processed normally | N/A | |
+| 24.2 | Guild allowlist: command from non-allowlisted guild | Message silently ignored | N/A | |
+| 24.3 | `require_mention=true`: `/help` without @bot | Message ignored | N/A | |
+| 24.4 | `require_mention=true`: `@bot /help` | Command processed, bot mention stripped | N/A | |
+| 24.5 | `require_mention=false`: `/help` without @bot | Command processed normally | N/A | |
+
+### TC-CMD-25: DM Policy Enforcement
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 25.1 | `dm_policy=open`: Send DM command | Command processed | | |
+| 25.2 | `dm_policy=disabled`: Send DM command | DM rejected silently | | |
+| 25.3 | `dm_policy=pairing`: Unpaired user sends DM | Pairing code message sent | | |
+| 25.4 | `dm_policy=allowlist`: Allowed user sends DM | Command processed | | |
+| 25.5 | `dm_policy=allowlist`: Non-allowed user sends DM | DM rejected silently | | |
+
+### TC-CMD-26: Error Handling & Edge Cases
+
+| # | Step | Expected Result | TG | DC |
+|---|------|-----------------|----|----|
+| 26.1 | `/workspace` without agentStore | "Workspace commands require managed mode." | | |
+| 26.2 | `/projects` without agentStore | "Project commands require managed mode." | | |
+| 26.3 | `/spec_list` without specStore | "Spec features are not available." | | |
+| 26.4 | `/tasks` without teamStore | "Team features are not available." | | |
+| 26.5 | `/writers` without agentStore | "File writer management is not available." | | |
+| 26.6 | Send `/` alone | Not handled (returns false, passes to agent) | | |
+| 26.7 | Send `/unknowncommand` | Not handled, passes to agent loop | | |
+| 26.8 | Send `/WORKSPACE` (uppercase) | Handled (case-insensitive) | | |
+| 26.9 | Send `/workspace   ` (trailing spaces) | Treated as GET (trimmed to empty) | | |
+
+### Pre-Test Verification
+
+```bash
+# Must pass before manual testing
+make build
+go test ./internal/commands/ ./internal/channels/discord/ ./internal/channels/telegram/ -v -count=1
+```
+
+### Test Execution Log
+
+| Field | Value |
+|-------|-------|
+| Tester | |
+| Date | |
+| MTClaw version | `git rev-parse --short HEAD` |
+| Branch | |
+| Telegram bot | @________________ |
+| Discord bot | ________________ |
+| Managed mode | Yes / No |
+| Agent key | |
+| Team name | |
+
+### Summary
+
+| Category | Total | Pass | Fail | Skip |
+|----------|-------|------|------|------|
+| TC-CMD-01..09: Channel-local commands | 60 | | | |
+| TC-CMD-10..14: Bus-routed commands | 22 | | | |
+| TC-CMD-15..19: Writers commands | 19 | | | |
+| TC-CMD-20..21: Cross-cutting | 11 | | | |
+| TC-CMD-22..23: Regression | 15 | | | |
+| TC-CMD-24..25: Platform-specific | 10 | | | |
+| TC-CMD-26: Error handling | 9 | | | |
+| **Total** | **146** | | | |
+
+### Defects Found
+
+| # | TC | Severity | Description | Status |
+|---|-----|----------|-------------|--------|
+| | | | | |
+
+### Sprint 33 AC Cross-Reference
+
+| AC | Description | Test Cases |
+|----|-------------|------------|
+| AC-1 | `make test` passes | Pre-test verification |
+| AC-2 | `make build` produces binary | Pre-test verification |
+| AC-3 | 7 extracted functions in commands/ | Code review (verified in PJM review) |
+| AC-4 | Responder interface by both channels | Code review (verified in PJM review) |
+| AC-5 | CommandMetadata with ToMap() | TC-CMD-20 |
+| AC-6 | ResolveAgentUUID 3 tests | Unit test suite |
+| AC-7 | No duplicated reloadProjectContext | Code review (verified in PJM review) |
+| AC-8 | Manual testing Telegram | TC-CMD-22 |
+| AC-9 | Manual testing Discord | TC-CMD-23 |
+
+### Sprint 34 AC Cross-Reference
+
+| AC | Description | Test Cases |
+|----|-------------|------------|
+| AC-1 | `make test` passes | Pre-test verification |
+| AC-2 | /spec routes to PM SOUL | TC-CMD-13 |
+| AC-3 | /review routes to reviewer | TC-CMD-14 |
+| AC-4 | /spec_list shows specs | TC-CMD-06 |
+| AC-5 | /tasks shows tasks | TC-CMD-08 |
+| AC-6 | /writers lists writers | TC-CMD-15 |
+| AC-7 | /addwriter @user parses mention | TC-CMD-17 |
+| AC-8 | /help lists all commands | TC-CMD-01 |
+| AC-9 | Telegram unchanged | TC-CMD-22 |
+| AC-10 | Shared formatters by both | TC-CMD-06..09 (same format both channels) |
+| AC-11 | PublishSpec/Review tested | TC-CMD-13, TC-CMD-14, TC-CMD-20 |
+
+### Test Result Tracking (Sprint 33+34)
+
+| Test ID | Description | Tester | Date | Result | Notes |
+|---------|-------------|--------|------|--------|-------|
+| TEST-M01 | Bridge status | | | | |
+| TEST-M02 | Identity linking | | | | |
+| TEST-M03 | Session lifecycle | | | | |
+| TEST-M04 | Risk escalation | | | | |
+| TEST-M05 | Free-text relay | | | | |
+| TEST-M06 | Project registration | | | | |
+| TEST-M07 | Setup + uninstall CLI | | | | |
+| TEST-M08 | Stop notification | | | | |
+| TEST-M09 | Permission approval | | | | |
+| TEST-M10 | SOUL-aware launch | | | | |
+| TEST-M11 | Install agents CLI | | | | |
+| TEST-M12 | Fallback Docker deploy | | | | |
+| TEST-M13 | Fallback E2E Telegram | | | | |
+
+---
+
+**Next review**: After Sprint 34 manual testing (E2E-023, E2E-024, E2E-025)
 **Owner**: [@tester]
-**Approved by**: [@cto] (pending Sprint 25 deploy sign-off)
+**Approved by**: [@cto] (pending Sprint 34 manual test sign-off)

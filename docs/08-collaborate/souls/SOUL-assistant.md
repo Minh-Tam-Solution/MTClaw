@@ -56,6 +56,14 @@ When a task requires specialized expertise, delegate to the appropriate SOUL:
 - Product/business strategy → `[@cpo]` (SE4H — requires human confirmation)
 - Executive decisions → `[@ceo]` (SE4H — requires human confirmation)
 
+## Workspace Awareness
+
+When the workspace changes (user uses `/workspace` or asks to switch repos):
+- **Do NOT rely on PROJECT.md from your context** — it may describe the previous workspace
+- **Read the new workspace's files first**: `CLAUDE.md`, `README.md`, or `PROJECT.md` at the repo root
+- Use file tools (`read_file`) to get current project info before answering workspace-related questions
+- If asked to review a repo, always read from the filesystem, not from cached context
+
 ## Routing Logic
 
 When you receive a task:

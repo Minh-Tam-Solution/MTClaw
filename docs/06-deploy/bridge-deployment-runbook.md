@@ -1,7 +1,7 @@
 # Bridge Deployment Runbook
 
-**Version**: 1.0.0
-**Sprint**: 28 (T28.4)
+**Version**: 1.1.0
+**Sprint**: 29
 **Status**: Current
 
 ---
@@ -45,15 +45,18 @@ services:
     environment:
       MTCLAW_BRIDGE_ENABLED: "true"
       MTCLAW_BRIDGE_HOOK_PORT: "18792"
+      MTCLAW_BRIDGE_HOOK_BIND: "0.0.0.0"  # 0.0.0.0 for Docker, 127.0.0.1 for host
       MTCLAW_BRIDGE_AUDIT_DIR: "/var/log/mtclaw/bridge-audit"
     volumes:
       - claude-oauth:/app/.claude  # Persist OAuth tokens across restarts
     ports:
-      - "18792:18792"  # Hook server (localhost only in production)
+      - "18792:18792"  # Hook server
 
 volumes:
   claude-oauth:
 ```
+
+**`MTCLAW_BRIDGE_HOOK_BIND`**: When MTClaw runs in Docker, set `0.0.0.0` so host-side Claude Code processes can reach the hook endpoint. When running directly on host, use the default `127.0.0.1`.
 
 ### Volume Mounts
 
@@ -70,15 +73,23 @@ volumes:
      "bridge": {
        "enabled": true,
        "hook_port": 18792,
+       "hook_bind": "0.0.0.0",
        "audit_dir": "/var/log/mtclaw/bridge-audit",
        "admission": {
          "max_sessions_per_agent": 2,
          "max_total_sessions": 6,
          "per_tenant_session_cap": 4
-       }
+       },
+       "projects": [
+         {"name": "MTClaw", "path": "/home/nqh/shared/MTClaw"},
+         {"name": "NQH-Bot", "path": "/home/nqh/shared/NQH-Bot-Platform"},
+         {"name": "SDLC", "path": "/home/nqh/shared/SDLC-Orchestrator"}
+       ]
      }
    }
    ```
+
+   **`projects`**: Pre-registered at gateway startup as "global" owner — visible to all tenants. Users can also register per-tenant projects via `/cc register <name> <path>` on Telegram.
 
 2. **Run bridge setup** to generate hook scripts:
    ```bash
@@ -94,6 +105,30 @@ volumes:
    ```bash
    ./mtclaw doctor
    ```
+
+## Host-Mode Bridge (Dev/Test)
+
+When running MTClaw directly on the host (not in Docker), the bridge works more naturally since tmux and Claude Code run in the same environment:
+
+```bash
+# Build binary
+make build
+
+# Override Docker-internal hostnames
+export MTCLAW_POSTGRES_DSN=postgres://mtclaw:PASSWORD@localhost:5470/mtclaw?sslmode=disable
+export MTCLAW_BFLOW_BASE_URL=http://localhost:8120/api/v1
+
+# Load env and run
+set -a && source .env && set +a
+./mtclaw
+```
+
+Notes for host mode:
+- `MTCLAW_BRIDGE_HOOK_BIND` defaults to `127.0.0.1` (correct for host mode)
+- PostgreSQL container exposes port `5470` on host
+- AI-Platform container (`bflow-ai-gateway-staging`) exposes port `8120` on host via `ai-net` Docker network
+- Claude Code sessions inherit the host environment — no need for Docker volume mounts
+- The gateway unsets `CLAUDECODE` env var before launching sessions to prevent nested session detection
 
 ## OAuth Token Management
 
