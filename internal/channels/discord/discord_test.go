@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 
 func TestNew_RequiresToken(t *testing.T) {
 	cfg := config.DiscordConfig{Enabled: true, Token: ""}
-	_, err := New(cfg, bus.New(), nil)
+	_, err := New(cfg, bus.New(), nil, nil, nil, nil)
 	if err == nil {
 		t.Fatal("expected error for empty token")
 	}
@@ -20,7 +21,7 @@ func TestNew_RequiresToken(t *testing.T) {
 
 func TestNew_DefaultPolicies(t *testing.T) {
 	cfg := config.DiscordConfig{Enabled: true, Token: "test-token"}
-	ch, err := New(cfg, bus.New(), nil)
+	ch, err := New(cfg, bus.New(), nil, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -40,7 +41,7 @@ func TestNew_CustomPolicies(t *testing.T) {
 		GroupPolicy: "open",
 		GuildIDs:    []string{"123", "456"},
 	}
-	ch, err := New(cfg, bus.New(), nil)
+	ch, err := New(cfg, bus.New(), nil, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -57,7 +58,7 @@ func TestNew_CustomPolicies(t *testing.T) {
 
 func TestCheckDMPolicy_Open(t *testing.T) {
 	cfg := config.DiscordConfig{Enabled: true, Token: "test-token", DMPolicy: "open"}
-	ch, _ := New(cfg, bus.New(), nil)
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
 	if !ch.checkDMPolicy("user1|testuser", "ch1") {
 		t.Error("open policy should accept all DMs")
 	}
@@ -65,7 +66,7 @@ func TestCheckDMPolicy_Open(t *testing.T) {
 
 func TestCheckDMPolicy_Disabled(t *testing.T) {
 	cfg := config.DiscordConfig{Enabled: true, Token: "test-token", DMPolicy: "disabled"}
-	ch, _ := New(cfg, bus.New(), nil)
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
 	if ch.checkDMPolicy("user1|testuser", "ch1") {
 		t.Error("disabled policy should reject all DMs")
 	}
@@ -78,7 +79,7 @@ func TestCheckDMPolicy_Allowlist(t *testing.T) {
 		DMPolicy: "allowlist",
 		AllowFrom: config.FlexibleStringSlice{"user1"},
 	}
-	ch, _ := New(cfg, bus.New(), nil)
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
 
 	if !ch.checkDMPolicy("user1|testuser", "ch1") {
 		t.Error("allowlist should accept allowed sender")
@@ -90,7 +91,7 @@ func TestCheckDMPolicy_Allowlist(t *testing.T) {
 
 func TestIsGuildAllowed_EmptyDefault(t *testing.T) {
 	cfg := config.DiscordConfig{Enabled: true, Token: "test-token"}
-	ch, _ := New(cfg, bus.New(), nil)
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
 
 	if ch.isGuildAllowed("any-guild") {
 		t.Error("empty guild_ids should reject all guilds (security default)")
@@ -103,7 +104,7 @@ func TestIsGuildAllowed_Allowlisted(t *testing.T) {
 		Token:    "test-token",
 		GuildIDs: []string{"guild-123"},
 	}
-	ch, _ := New(cfg, bus.New(), nil)
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
 
 	if !ch.isGuildAllowed("guild-123") {
 		t.Error("allowlisted guild should be accepted")
@@ -154,7 +155,7 @@ func TestSenderIDFormat(t *testing.T) {
 		Token:     "test-token",
 		AllowFrom: config.FlexibleStringSlice{"123456789"},
 	}
-	ch, _ := New(cfg, bus.New(), nil)
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
 	if !ch.IsAllowed(senderID) {
 		t.Error("IsAllowed should match compound senderID by ID part")
 	}
@@ -162,7 +163,7 @@ func TestSenderIDFormat(t *testing.T) {
 
 func TestIsMentioned_BotMentioned(t *testing.T) {
 	cfg := config.DiscordConfig{Enabled: true, Token: "test-token"}
-	ch, _ := New(cfg, bus.New(), nil)
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
 	ch.botUserID = "bot-123"
 
 	msg := &discordgo.Message{
@@ -177,7 +178,7 @@ func TestIsMentioned_BotMentioned(t *testing.T) {
 
 func TestIsMentioned_NotMentioned(t *testing.T) {
 	cfg := config.DiscordConfig{Enabled: true, Token: "test-token"}
-	ch, _ := New(cfg, bus.New(), nil)
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
 	ch.botUserID = "bot-123"
 
 	msg := &discordgo.Message{
@@ -192,7 +193,7 @@ func TestIsMentioned_NotMentioned(t *testing.T) {
 
 func TestIsMentioned_NoBotID(t *testing.T) {
 	cfg := config.DiscordConfig{Enabled: true, Token: "test-token"}
-	ch, _ := New(cfg, bus.New(), nil)
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
 	// botUserID is empty (not yet connected)
 
 	msg := &discordgo.Message{
@@ -227,5 +228,39 @@ func TestFactory_EmptyToken(t *testing.T) {
 	_, err := Factory("discord-test", creds, nil, bus.New(), nil)
 	if err == nil {
 		t.Fatal("expected error for empty token in factory")
+	}
+}
+
+func TestHandleBotCommand_WorkspaceDetected(t *testing.T) {
+	cfg := config.DiscordConfig{Enabled: true, Token: "test-token"}
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
+
+	// Without agentStore, /workspace should still be intercepted (returns error message via send).
+	// We can't test actual send, but verify it returns true (handled).
+	// Note: handleBotCommand will call handleWorkspace which will send "managed mode" error.
+	// Since session is nil, send will fail silently but command is still "handled".
+	handled := ch.handleBotCommand(context.Background(), "ch1", "/workspace", "user1|test", "direct")
+	if !handled {
+		t.Error("/workspace should be handled as a command")
+	}
+}
+
+func TestHandleBotCommand_NonCommand(t *testing.T) {
+	cfg := config.DiscordConfig{Enabled: true, Token: "test-token"}
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
+
+	handled := ch.handleBotCommand(context.Background(), "ch1", "hello world", "user1|test", "direct")
+	if handled {
+		t.Error("regular message should not be handled as command")
+	}
+}
+
+func TestHandleBotCommand_UnknownCommand(t *testing.T) {
+	cfg := config.DiscordConfig{Enabled: true, Token: "test-token"}
+	ch, _ := New(cfg, bus.New(), nil, nil, nil, nil)
+
+	handled := ch.handleBotCommand(context.Background(), "ch1", "/unknown", "user1|test", "direct")
+	if handled {
+		t.Error("unknown command should not be handled")
 	}
 }

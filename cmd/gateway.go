@@ -817,7 +817,7 @@ func runGateway() {
 		instanceLoader.RegisterFactory("telegram", telegram.FactoryWithStores(managedStores.Agents, managedStores.Teams, managedStores.Specs))
 		instanceLoader.RegisterFactory("zalo_oa", zalo.Factory)
 		instanceLoader.RegisterFactory("msteams", msteams.Factory)
-		instanceLoader.RegisterFactory("discord", discord.Factory)
+		instanceLoader.RegisterFactory("discord", discord.FactoryWithStores(managedStores.Agents, managedStores.Teams, managedStores.Specs))
 		if err := instanceLoader.LoadAll(context.Background()); err != nil {
 			slog.Error("failed to load channel instances from DB", "error", err)
 		}
@@ -861,7 +861,7 @@ func runGateway() {
 	// but Discord is new (Sprint 30) and may not have a DB instance yet.
 	if cfg.Channels.Discord.Enabled && cfg.Channels.Discord.Token != "" {
 		if _, exists := channelMgr.GetChannel("discord"); !exists {
-			dc, err := discord.New(cfg.Channels.Discord, msgBus, pairingStore)
+			dc, err := discord.New(cfg.Channels.Discord, msgBus, pairingStore, nil, nil, nil)
 			if err != nil {
 				slog.Error("failed to initialize discord channel", "error", err)
 			} else {

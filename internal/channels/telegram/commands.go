@@ -9,28 +9,12 @@ import (
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 
-	"github.com/Minh-Tam-Solution/MTClaw/internal/bus"
+	"github.com/Minh-Tam-Solution/MTClaw/internal/commands"
 )
 
-// resolveAgentUUID looks up the agent UUID from the channel's agent key.
-// Returns uuid.Nil if the agent key is empty or not found.
+// resolveAgentUUID delegates to the shared commands.ResolveAgentUUID.
 func (c *Channel) resolveAgentUUID(ctx context.Context) (uuid.UUID, error) {
-	key := c.AgentID()
-	if key == "" {
-		return uuid.Nil, fmt.Errorf("no agent key configured")
-	}
-
-	// Try direct UUID parse first (future-proofing).
-	if id, err := uuid.Parse(key); err == nil {
-		return id, nil
-	}
-
-	// Look up by agent key.
-	agent, err := c.agentStore.GetByKey(ctx, key)
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("agent %q not found: %w", key, err)
-	}
-	return agent.ID, nil
+	return commands.ResolveAgentUUID(ctx, c.agentStore, c.AgentID())
 }
 
 // handleBotCommand checks if the message is a known bot command and handles it.
@@ -112,7 +96,6 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 
 	case "/spec":
 		// Rail #1: Spec Factory — route to PM SOUL for structured spec generation.
-		// Extract description text after "/spec ".
 		taskText := strings.TrimSpace(text[len("/spec"):])
 		if taskText == "" {
 			usageMsg := tu.Message(chatIDObj, "Usage: /spec <requirement description>\n\nExample: /spec Create login feature for Bflow mobile app")
@@ -121,32 +104,21 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 			return true
 		}
 
-		// Send acknowledgment
 		ackMsg := tu.Message(chatIDObj, "📋 Generating spec...")
 		setThread(ackMsg)
 		c.bot.SendMessage(ctx, ackMsg)
 
-		// Publish to agent loop — PM SOUL handles /spec via spec-factory skill
 		peerKind := "direct"
 		if isGroup {
 			peerKind = "group"
 		}
-		c.Bus().PublishInbound(bus.InboundMessage{
-			Channel:  c.Name(),
-			SenderID: senderID,
-			ChatID:   chatIDStr,
-			Content:  taskText,
-			PeerKind: peerKind,
-			AgentID:  "pm", // Always route to PM SOUL for /spec
-			UserID:   strings.SplitN(senderID, "|", 2)[0],
-			Metadata: map[string]string{
-				"command":           "spec",
-				"rail":              "spec-factory",
-				"local_key":         localKey,
-				"is_forum":          fmt.Sprintf("%t", isForum),
-				"message_thread_id": fmt.Sprintf("%d", messageThreadID),
-			},
-		})
+		meta := commands.CommandMetadata{
+			Platform:        "telegram",
+			LocalKey:        localKey,
+			IsForum:         fmt.Sprintf("%t", isForum),
+			MessageThreadID: fmt.Sprintf("%d", messageThreadID),
+		}
+		commands.PublishSpec(c.Bus(), c.Name(), senderID, chatIDStr, peerKind, taskText, meta)
 		return true
 
 	case "/review":
@@ -167,23 +139,13 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 		if isGroup {
 			peerKind = "group"
 		}
-		c.Bus().PublishInbound(bus.InboundMessage{
-			Channel:  c.Name(),
-			SenderID: senderID,
-			ChatID:   chatIDStr,
-			Content:  prURL,
-			PeerKind: peerKind,
-			AgentID:  "reviewer", // Always route to Reviewer SOUL
-			UserID:   strings.SplitN(senderID, "|", 2)[0],
-			Metadata: map[string]string{
-				"command":           "review",
-				"rail":              "pr-gate",
-				"pr_url":            prURL,
-				"local_key":         localKey,
-				"is_forum":          fmt.Sprintf("%t", isForum),
-				"message_thread_id": fmt.Sprintf("%d", messageThreadID),
-			},
-		})
+		meta := commands.CommandMetadata{
+			Platform:        "telegram",
+			LocalKey:        localKey,
+			IsForum:         fmt.Sprintf("%t", isForum),
+			MessageThreadID: fmt.Sprintf("%d", messageThreadID),
+		}
+		commands.PublishReview(c.Bus(), c.Name(), senderID, chatIDStr, peerKind, prURL, meta)
 		return true
 
 	case "/teams":
@@ -201,26 +163,17 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 		return true
 
 	case "/reset":
-		// Fix: use correct PeerKind so the gateway consumer builds the right session key.
 		peerKind := "direct"
 		if isGroup {
 			peerKind = "group"
 		}
-		c.Bus().PublishInbound(bus.InboundMessage{
-			Channel:  c.Name(),
-			SenderID: senderID,
-			ChatID:   chatIDStr,
-			Content:  "/reset",
-			PeerKind: peerKind,
-			AgentID:  c.AgentID(),
-			UserID:   strings.SplitN(senderID, "|", 2)[0],
-			Metadata: map[string]string{
-				"command":           "reset",
-				"local_key":         localKey,
-				"is_forum":          fmt.Sprintf("%t", isForum),
-				"message_thread_id": fmt.Sprintf("%d", messageThreadID),
-			},
-		})
+		meta := commands.CommandMetadata{
+			Platform:        "telegram",
+			LocalKey:        localKey,
+			IsForum:         fmt.Sprintf("%t", isForum),
+			MessageThreadID: fmt.Sprintf("%d", messageThreadID),
+		}
+		commands.PublishReset(c.Bus(), c.Name(), senderID, chatIDStr, c.AgentID(), peerKind, meta)
 		msg := tu.Message(chatIDObj, "Conversation history has been reset.")
 		setThread(msg)
 		c.bot.SendMessage(ctx, msg)
@@ -231,21 +184,13 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 		if isGroup {
 			peerKind = "group"
 		}
-		c.Bus().PublishInbound(bus.InboundMessage{
-			Channel:  c.Name(),
-			SenderID: senderID,
-			ChatID:   chatIDStr,
-			Content:  "/stop",
-			PeerKind: peerKind,
-			AgentID:  c.AgentID(),
-			UserID:   strings.SplitN(senderID, "|", 2)[0],
-			Metadata: map[string]string{
-				"command":           "stop",
-				"local_key":         localKey,
-				"is_forum":          fmt.Sprintf("%t", isForum),
-				"message_thread_id": fmt.Sprintf("%d", messageThreadID),
-			},
-		})
+		meta := commands.CommandMetadata{
+			Platform:        "telegram",
+			LocalKey:        localKey,
+			IsForum:         fmt.Sprintf("%t", isForum),
+			MessageThreadID: fmt.Sprintf("%d", messageThreadID),
+		}
+		commands.PublishStop(c.Bus(), c.Name(), senderID, chatIDStr, c.AgentID(), peerKind, meta)
 		// Feedback is sent by the consumer after cancel result is known.
 		return true
 
@@ -254,21 +199,13 @@ func (c *Channel) handleBotCommand(ctx context.Context, message *telego.Message,
 		if isGroup {
 			peerKind = "group"
 		}
-		c.Bus().PublishInbound(bus.InboundMessage{
-			Channel:  c.Name(),
-			SenderID: senderID,
-			ChatID:   chatIDStr,
-			Content:  "/stopall",
-			PeerKind: peerKind,
-			AgentID:  c.AgentID(),
-			UserID:   strings.SplitN(senderID, "|", 2)[0],
-			Metadata: map[string]string{
-				"command":           "stopall",
-				"local_key":         localKey,
-				"is_forum":          fmt.Sprintf("%t", isForum),
-				"message_thread_id": fmt.Sprintf("%d", messageThreadID),
-			},
-		})
+		meta := commands.CommandMetadata{
+			Platform:        "telegram",
+			LocalKey:        localKey,
+			IsForum:         fmt.Sprintf("%t", isForum),
+			MessageThreadID: fmt.Sprintf("%d", messageThreadID),
+		}
+		commands.PublishStopAll(c.Bus(), c.Name(), senderID, chatIDStr, c.AgentID(), peerKind, meta)
 		// Feedback is sent by the consumer after cancel result is known.
 		return true
 

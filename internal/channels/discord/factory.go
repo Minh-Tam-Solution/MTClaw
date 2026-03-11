@@ -24,9 +24,23 @@ type discordInstanceConfig struct {
 	AllowFrom      []string `json:"allow_from,omitempty"`
 }
 
-// Factory creates a Discord channel from DB instance data.
+// Factory creates a Discord channel from DB instance data (no stores).
 func Factory(name string, creds json.RawMessage, cfg json.RawMessage,
 	msgBus *bus.MessageBus, pairingSvc store.PairingStore) (channels.Channel, error) {
+	return buildChannel(name, creds, cfg, msgBus, pairingSvc, nil, nil, nil)
+}
+
+// FactoryWithStores returns a ChannelFactory that includes stores
+// for workspace, team, and spec commands.
+func FactoryWithStores(agentStore store.AgentStore, teamStore store.TeamStore, specStore store.SpecStore) channels.ChannelFactory {
+	return func(name string, creds json.RawMessage, cfg json.RawMessage,
+		msgBus *bus.MessageBus, pairingSvc store.PairingStore) (channels.Channel, error) {
+		return buildChannel(name, creds, cfg, msgBus, pairingSvc, agentStore, teamStore, specStore)
+	}
+}
+
+func buildChannel(name string, creds json.RawMessage, cfg json.RawMessage,
+	msgBus *bus.MessageBus, pairingSvc store.PairingStore, agentStore store.AgentStore, teamStore store.TeamStore, specStore store.SpecStore) (channels.Channel, error) {
 
 	var c discordCreds
 	if len(creds) > 0 {
@@ -55,7 +69,7 @@ func Factory(name string, creds json.RawMessage, cfg json.RawMessage,
 		GuildIDs:       ic.GuildIDs,
 	}
 
-	ch, err := New(dCfg, msgBus, pairingSvc)
+	ch, err := New(dCfg, msgBus, pairingSvc, agentStore, teamStore, specStore)
 	if err != nil {
 		return nil, err
 	}

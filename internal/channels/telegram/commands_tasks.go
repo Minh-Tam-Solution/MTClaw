@@ -9,14 +9,13 @@ import (
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 
+	"github.com/Minh-Tam-Solution/MTClaw/internal/commands"
 	"github.com/Minh-Tam-Solution/MTClaw/internal/store"
 )
 
 // --- Team tasks ---
 
-const maxTasksInList = 30
-
-// taskStatusIcon returns a short icon for each task status.
+// taskStatusIcon returns an emoji icon for each task status (Telegram-specific).
 func taskStatusIcon(status string) string {
 	switch status {
 	case "completed":
@@ -30,16 +29,7 @@ func taskStatusIcon(status string) string {
 	}
 }
 
-// truncateStr truncates a string to maxLen runes, appending "…" if truncated.
-func truncateStr(s string, maxLen int) string {
-	runes := []rune(s)
-	if len(runes) <= maxLen {
-		return s
-	}
-	return string(runes[:maxLen]) + "…"
-}
-
-// handleTasksList handles the /tasks command — lists team tasks.
+// handleTasksList handles the /tasks command — lists team tasks with inline keyboard.
 func (c *Channel) handleTasksList(ctx context.Context, chatID int64, setThread func(*telego.SendMessageParams)) {
 	chatIDObj := tu.ID(chatID)
 
@@ -85,17 +75,19 @@ func (c *Channel) handleTasksList(ctx context.Context, chatID int64, setThread f
 	}
 
 	total := len(tasks)
-	if total > maxTasksInList {
-		tasks = tasks[:maxTasksInList]
+	display := tasks
+	if total > commands.MaxTasksInList {
+		display = tasks[:commands.MaxTasksInList]
 	}
 
+	// Use Telegram-specific formatting with emoji icons
 	var sb strings.Builder
-	if total > maxTasksInList {
-		sb.WriteString(fmt.Sprintf("Tasks for team %q (showing %d of %d):\n\n", team.Name, maxTasksInList, total))
+	if total > commands.MaxTasksInList {
+		sb.WriteString(fmt.Sprintf("Tasks for team %q (showing %d of %d):\n\n", team.Name, commands.MaxTasksInList, total))
 	} else {
 		sb.WriteString(fmt.Sprintf("Tasks for team %q (%d):\n\n", team.Name, total))
 	}
-	for i, t := range tasks {
+	for i, t := range display {
 		owner := ""
 		if t.OwnerAgentKey != "" {
 			owner = " — @" + t.OwnerAgentKey
@@ -104,10 +96,10 @@ func (c *Channel) handleTasksList(ctx context.Context, chatID int64, setThread f
 	}
 	sb.WriteString("\nTap a button below to view details.")
 
-	// Build inline keyboard — one button per task.
+	// Build inline keyboard — one button per task (Telegram-specific UX).
 	var rows [][]telego.InlineKeyboardButton
-	for i, t := range tasks {
-		label := fmt.Sprintf("%d. %s %s", i+1, taskStatusIcon(t.Status), truncateStr(t.Subject, 35))
+	for i, t := range display {
+		label := fmt.Sprintf("%d. %s %s", i+1, taskStatusIcon(t.Status), commands.TruncateStr(t.Subject, 35))
 		rows = append(rows, []telego.InlineKeyboardButton{
 			{Text: label, CallbackData: "td:" + t.ID.String()},
 		})
@@ -133,7 +125,6 @@ func (c *Channel) handleTaskDetail(ctx context.Context, chatID int64, text strin
 		}
 	}
 
-	// Extract task ID argument: "/task_detail <id>" or "/task_detail@botname <id>"
 	parts := strings.SplitN(text, " ", 2)
 	if len(parts) < 2 || strings.TrimSpace(parts[1]) == "" {
 		send("Usage: /task_detail <task_id>")
@@ -141,47 +132,19 @@ func (c *Channel) handleTaskDetail(ctx context.Context, chatID int64, text strin
 	}
 	taskIDArg := strings.TrimSpace(parts[1])
 
-	if c.teamStore == nil {
+	if c.teamStore == nil || c.agentStore == nil {
 		send("Team features are not available.")
 		return
 	}
 
-	agentID, err := c.resolveAgentUUID(ctx)
+	result, err := commands.GetTaskDetail(ctx, c.agentStore, c.teamStore, c.AgentID(), taskIDArg)
 	if err != nil {
-		slog.Debug("task_detail command: agent resolve failed", "error", err)
-		send("Team features are not available (no agent).")
+		slog.Warn("task_detail command failed", "error", err)
+		send(err.Error())
 		return
 	}
 
-	team, err := c.teamStore.GetTeamForAgent(ctx, agentID)
-	if err != nil {
-		slog.Warn("task_detail command: GetTeamForAgent failed", "error", err)
-		send("Failed to look up team. Please try again.")
-		return
-	}
-	if team == nil {
-		send("This agent is not part of any team.")
-		return
-	}
-
-	tasks, err := c.teamStore.ListTasks(ctx, team.ID, "newest", store.TeamTaskFilterAll)
-	if err != nil {
-		slog.Warn("task_detail command: ListTasks failed", "error", err)
-		send("Failed to list tasks. Please try again.")
-		return
-	}
-
-	// Find task by full UUID or prefix match.
-	taskIDLower := strings.ToLower(taskIDArg)
-	for i := range tasks {
-		tid := tasks[i].ID.String()
-		if tid == taskIDLower || strings.HasPrefix(tid, taskIDLower) {
-			send(formatTaskDetail(&tasks[i]))
-			return
-		}
-	}
-
-	send(fmt.Sprintf("Task %q not found. Use /tasks to see available tasks.", taskIDArg))
+	send(result)
 }
 
 // handleCallbackQuery handles inline keyboard button presses.
@@ -240,38 +203,9 @@ func (c *Channel) handleCallbackQuery(ctx context.Context, query *telego.Callbac
 
 	for i := range tasks {
 		if tasks[i].ID.String() == taskIDStr {
-			send(formatTaskDetail(&tasks[i]))
+			send(commands.FormatTaskDetail(&tasks[i]))
 			return
 		}
 	}
 	send(fmt.Sprintf("Task %s not found.", taskIDStr[:8]))
-}
-
-// formatTaskDetail formats a single task for display.
-func formatTaskDetail(t *store.TeamTaskData) string {
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Task: %s\n", t.Subject))
-	sb.WriteString(fmt.Sprintf("ID: %s\n", t.ID.String()))
-	sb.WriteString(fmt.Sprintf("Status: %s %s\n", taskStatusIcon(t.Status), t.Status))
-	if t.OwnerAgentKey != "" {
-		sb.WriteString(fmt.Sprintf("Owner: @%s\n", t.OwnerAgentKey))
-	}
-	sb.WriteString(fmt.Sprintf("Priority: %d\n", t.Priority))
-	if !t.CreatedAt.IsZero() {
-		sb.WriteString(fmt.Sprintf("Created: %s\n", t.CreatedAt.Format("2006-01-02 15:04")))
-	}
-	if t.Description != "" {
-		sb.WriteString(fmt.Sprintf("\nDescription:\n%s\n", t.Description))
-	}
-	if t.Result != nil && *t.Result != "" {
-		sb.WriteString(fmt.Sprintf("\nResult:\n%s\n", *t.Result))
-	}
-	if len(t.BlockedBy) > 0 {
-		ids := make([]string, len(t.BlockedBy))
-		for j, bid := range t.BlockedBy {
-			ids[j] = bid.String()[:8]
-		}
-		sb.WriteString(fmt.Sprintf("\nBlocked by: %s\n", strings.Join(ids, ", ")))
-	}
-	return sb.String()
 }

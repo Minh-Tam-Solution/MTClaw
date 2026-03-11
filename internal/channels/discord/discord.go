@@ -37,13 +37,17 @@ type Channel struct {
 	requireMention  bool
 	guildIDs        map[string]bool // allowlisted guild IDs (empty = no guilds allowed)
 	pairingService  store.PairingStore
-	pairingDebounce sync.Map // senderID → time.Time
+	agentStore      store.AgentStore // for workspace commands (nil in standalone)
+	teamStore       store.TeamStore  // for /tasks, /task_detail, /teams (nil in standalone)
+	specStore       store.SpecStore  // for /spec_list, /spec_detail (nil in standalone)
+	pairingDebounce sync.Map         // senderID → time.Time
 	stopCh          chan struct{}
 	botUserID       string // populated on Start, for mention detection
 }
 
 // New creates a new Discord channel.
-func New(cfg config.DiscordConfig, msgBus *bus.MessageBus, pairingSvc store.PairingStore) (*Channel, error) {
+// agentStore, teamStore, specStore are optional (nil = respective commands disabled).
+func New(cfg config.DiscordConfig, msgBus *bus.MessageBus, pairingSvc store.PairingStore, agentStore store.AgentStore, teamStore store.TeamStore, specStore store.SpecStore) (*Channel, error) {
 	if cfg.Token == "" {
 		return nil, fmt.Errorf("discord token is required")
 	}
@@ -86,6 +90,9 @@ func New(cfg config.DiscordConfig, msgBus *bus.MessageBus, pairingSvc store.Pair
 		requireMention: cfg.RequireMention,
 		guildIDs:       guildIDs,
 		pairingService: pairingSvc,
+		agentStore:     agentStore,
+		teamStore:      teamStore,
+		specStore:      specStore,
 		stopCh:         make(chan struct{}),
 	}, nil
 }
@@ -196,6 +203,11 @@ func (c *Channel) handleMessageCreate(s *discordgo.Session, m *discordgo.Message
 		"guild_id", m.GuildID,
 		"preview", channels.Truncate(content, 50),
 	)
+
+	// Command parsing: intercept /workspace, /projects, /help, /reset, /stop, /stopall.
+	if c.handleBotCommand(context.Background(), chatID, content, senderID, peerKind) {
+		return
+	}
 
 	metadata := map[string]string{
 		"platform":   "discord",
